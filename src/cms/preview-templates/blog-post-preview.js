@@ -5,11 +5,9 @@ import Layout from "../../components/layout"
 
 export default function BlogPostPreview({ entry }) {
   return (
-    <Layout>
-      <BlogPost
-        title={entry.getIn(["data", "title"])}
-        mdx={entry.getIn(["data", "mdx"])}
-      />
-    </Layout>
+    <BlogPost
+      title={entry.getIn(["data", "title"])}
+      mdx={entry.getIn(["data", "mdx"]) || ''}
+    />
   )
 }
