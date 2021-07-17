@@ -1,13 +1,15 @@
 import React from "react"
 
 import BlogPost from "../../components/blog-post"
-import Layout from "../../components/layout"
+import LayoutPreview from "./layout-preview"
 
 export default function BlogPostPreview({ entry }) {
   return (
-    <BlogPost
-      title={entry.getIn(["data", "title"])}
-      mdx={entry.getIn(["data", "mdx"]) || ''}
-    />
+    <LayoutPreview>
+      <BlogPost
+        title={entry.getIn(["data", "title"])}
+        mdx={entry.getIn(["data", "body"]) || ""}
+      />
+    </LayoutPreview>
   )
 }

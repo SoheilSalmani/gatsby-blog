@@ -1,20 +1,12 @@
 import { css } from "@emotion/react"
-import { graphql, Link, useStaticQuery } from "gatsby"
+import { Link } from "gatsby"
 import React from "react"
+
+import useSiteMetadata from "../hooks/use-site-metadata"
 import { rhythm } from "../utils/typography"
 
 export default function Layout({ children }) {
-  const data = useStaticQuery(
-    graphql`
-      query {
-        site {
-          siteMetadata {
-            title
-          }
-        }
-      }
-    `
-  )
+  const { title } = useSiteMetadata()
 
   return (
     <>
@@ -42,7 +34,7 @@ export default function Layout({ children }) {
               font-size: 1.5rem;
             `}
           >
-            {data.site.siteMetadata.title}
+            {title}
           </Link>
         </p>
         <nav>

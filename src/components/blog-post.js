@@ -13,15 +13,19 @@ const UnsupportedComponent = ({ label, ...rest }) => (
 
 export default function BlogPost({ title, mdx, compiledMdx }) {
   let body
-  if (mdx || mdx === '') {
-    body = <MDX
-      components={{
-        h1: (props) => <h1 style={{ color: 'tomato' }} {...props} />,
-      }}
-      scope={{
-        Wave: <Wave />
-      }}
-    >{mdx}</MDX>
+  if (mdx || mdx === "") {
+    body = (
+      <MDX
+        components={{
+          h1: props => <h1 style={{ color: "tomato" }} {...props} />,
+        }}
+        scope={{
+          Wave: () => <Wave />,
+        }}
+      >
+        {mdx}
+      </MDX>
+    )
   } else {
     body = <MDXRenderer>{compiledMdx}</MDXRenderer>
   }

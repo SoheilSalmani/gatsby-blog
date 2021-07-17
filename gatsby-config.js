@@ -36,7 +36,7 @@ module.exports = {
             fs: "empty",
             child_process: "empty",
             module: "empty",
-          };
+          }
         },
       },
     },
