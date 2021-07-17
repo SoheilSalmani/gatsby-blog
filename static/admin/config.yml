@@ -1,0 +1,13 @@
+backend:
+  name: git-gateway
+
+media_folder: "static/media"
+media_folder: "/media"
+
+collections:
+  - name: 'blog'
+    label: 'Blog'
+    folder: 'posts'
+    fields:
+      - { label: 'Title', name: 'title', widget: 'string' }
+      - { label: 'Date', name: 'date', widget: 'datetime' }
