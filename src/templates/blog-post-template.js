@@ -1,7 +1,7 @@
 import { graphql } from "gatsby"
-import { MDXRenderer } from "gatsby-plugin-mdx"
 import React from "react"
 
+import BlogPost from "../components/blog-post"
 import Layout from "../components/layout"
 
 export const query = graphql`
@@ -17,12 +17,11 @@ export const query = graphql`
 
 export default function BlogPostTemplate({ data }) {
   const title = data.mdx.frontmatter.title
-  const body = data.mdx.body
+  const compiledMdx = data.mdx.body
 
   return (
     <Layout>
-      <h1>{title}</h1>
-      <MDXRenderer>{body}</MDXRenderer>
+      <BlogPost title={title} compiledMdx={compiledMdx} />
     </Layout>
   )
 }

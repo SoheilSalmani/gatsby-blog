@@ -9,7 +9,9 @@ collections:
     label: 'Blog'
     folder: 'posts'
     create: true
+    extension: mdx
+    format: frontmatter
     fields:
       - { label: 'Title', name: 'title', widget: 'string' }
       - { label: 'Date', name: 'date', widget: 'datetime' }
-      - { label: 'Body', name: 'body', widget: 'markdown' }
+      - { label: 'MDX Content', name: 'mdx', widget: 'markdown' }
