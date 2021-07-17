@@ -1,18 +1,21 @@
 import { MDXRenderer } from "gatsby-plugin-mdx"
-import MDX from '@mdx-js/runtime'
+import MDX from "@mdx-js/runtime"
 import React from "react"
 
+import Layout from "./layout"
+
 export default function BlogPost({ title, mdx, compiledMdx }) {
+  let body
   if (mdx) {
-    const body = <MDX>{mdx}</MDX>
+    body = <MDX>{mdx}</MDX>
   } else {
-    const body = <MDXRenderer>{compiledMdx}</MDXRenderer>
+    body = <MDXRenderer>{compiledMdx}</MDXRenderer>
   }
 
   return (
     <Layout>
       <h1>{title}</h1>
-      <MDXRenderer>{body}</MDXRenderer>
+      {body}
     </Layout>
   )
 }
