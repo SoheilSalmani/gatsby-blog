@@ -2,7 +2,7 @@ backend:
   name: git-gateway
 
 media_folder: "static/media"
-media_folder: "/media"
+public_folder: "/media"
 
 collections:
   - name: 'blog'
