@@ -17,7 +17,7 @@ export default function HomePage() {
       <h2>{revisionNotes.length} {revisionNotes.length === 1 ? "fiche" : "fiches"} de révision</h2>
       {revisionNotes.map(revisionNote => (
         <Link
-          to={`/blog/${revisionNote.slug}/`}
+          to={`/revision-note/${revisionNote.slug}/`}
           css={css`
             text-decoration: none;
             color: inherit;
