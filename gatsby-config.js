@@ -1,14 +1,14 @@
 module.exports = {
   siteMetadata: {
-    title: "Pandas Eating Lots",
-    description: "Demo site.",
+    title: "Soheil Salmani",
+    description: "Soheil Salmani's personal website.",
   },
   plugins: [
     {
       resolve: `gatsby-source-filesystem`,
       options: {
-        name: `posts`,
-        path: `posts`,
+        name: `revisionNotes`,
+        path: `content/revision-notes`,
       },
     },
     {

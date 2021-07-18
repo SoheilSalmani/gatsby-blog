@@ -5,13 +5,13 @@ media_folder: "static/media"
 public_folder: "/media"
 
 collections:
-  - name: 'blog'
-    label: 'Blog'
-    folder: 'posts'
+  - name: 'revision-notes'
+    label: 'Revision Notes'
+    folder: 'content/revision-notes'
     create: true
     extension: mdx
     format: frontmatter
     fields:
       - { label: 'Title', name: 'title', widget: 'string' }
-      - { label: 'Date', name: 'date', widget: 'datetime' }
+      - { label: 'Resource ID', name: 'resource-id', widget: 'string' }
       - { label: 'Content (MDX)', name: 'body', widget: 'markdown' }

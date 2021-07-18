@@ -1,12 +1,12 @@
 import React from "react"
 
-import BlogPost from "../../components/blog-post"
+import RevisionNote from "../../components/revision-note"
 import LayoutPreview from "./layout-preview"
 
-export default function BlogPostPreview({ entry }) {
+export default function RevisionNotePreview({ entry }) {
   return (
     <LayoutPreview>
-      <BlogPost
+      <RevisionNote
         title={entry.getIn(["data", "title"])}
         mdx={entry.getIn(["data", "body"]) || ""}
       />

@@ -31,8 +31,8 @@ exports.createPages = async ({ graphql, actions }) => {
 
   result.data.allMdx.nodes.forEach(node => {
     createPage({
-      path: path.join("/blog/", node.fields.slug),
-      component: path.resolve(`./src/templates/blog-post-template.js`),
+      path: path.join("/revision-note/", node.fields.slug),
+      component: path.resolve(`./src/templates/revision-note-template.js`),
       context: {
         id: node.id,
       },

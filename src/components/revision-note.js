@@ -2,14 +2,7 @@ import { MDXRenderer } from "gatsby-plugin-mdx"
 import MDX from "mdx-scoped-runtime"
 import React from "react"
 
-import Wave from "../components/wave"
-
-const UnsupportedComponent = ({ label, ...rest }) => (
-  <div {...rest}>
-    <code>{label}</code> requires a bit more magic than we are able to display
-    in the CMS.
-  </div>
-)
+import CodeBlock from "./code-block"
 
 export default function BlogPost({ title, mdx, compiledMdx }) {
   let body
@@ -17,10 +10,7 @@ export default function BlogPost({ title, mdx, compiledMdx }) {
     body = (
       <MDX
         components={{
-          h1: props => <h1 style={{ color: "tomato" }} {...props} />,
-        }}
-        scope={{
-          Wave: () => <Wave />,
+          code: props => <CodeBlock {...props} />,
         }}
       >
         {mdx}

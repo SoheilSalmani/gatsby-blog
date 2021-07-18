@@ -1,7 +1,7 @@
 import { graphql } from "gatsby"
 import React from "react"
 
-import BlogPost from "../components/blog-post"
+import RevisionNote from "../components/revision-note"
 import Layout from "../components/layout"
 
 export const query = graphql`
@@ -15,13 +15,13 @@ export const query = graphql`
   }
 `
 
-export default function BlogPostTemplate({ data }) {
+export default function RevisionNoteTemplate({ data }) {
   const title = data.mdx.frontmatter.title
   const compiledMdx = data.mdx.body
 
   return (
     <Layout>
-      <BlogPost title={title} compiledMdx={compiledMdx} />
+      <RevisionNote title={title} compiledMdx={compiledMdx} />
     </Layout>
   )
 }
