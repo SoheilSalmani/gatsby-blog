@@ -1,3 +1,4 @@
+import { css } from "@emotion/react"
 import { MDXRenderer } from "gatsby-plugin-mdx"
 import MDX from "mdx-scoped-runtime"
 import React from "react"
@@ -22,7 +23,13 @@ export default function BlogPost({ title, mdx, compiledMdx }) {
 
   return (
     <>
-      <h1>{title}</h1>
+      <h1
+        css={css`
+          margin-top: 0;
+        `}
+      >
+        {title}
+      </h1>
       {body}
     </>
   )

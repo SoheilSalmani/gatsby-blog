@@ -9,6 +9,7 @@ export default function useRevisionNotes() {
           frontmatter {
             title
             resourceId
+            stoppedAt
           }
           excerpt
           body
@@ -24,6 +25,7 @@ export default function useRevisionNotes() {
     id: revisionNote.id,
     title: revisionNote.frontmatter.title,
     resourceId: revisionNote.frontmatter.resourceId,
+    stoppedAt: revisionNote.frontmatter.stoppedAt,
     slug: revisionNote.fields.slug,
     body: revisionNote.body,
   }))

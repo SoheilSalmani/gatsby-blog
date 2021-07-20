@@ -14,7 +14,10 @@ export default function HomePage() {
       <h1>Fiches de révision</h1>
       <p>Toutes les fiches de révision conçues par Soheil Salmani.</p>
       <hr />
-      <h2>{revisionNotes.length} {revisionNotes.length === 1 ? "fiche" : "fiches"} de révision</h2>
+      <h2>
+        {revisionNotes.length} {revisionNotes.length === 1 ? "fiche" : "fiches"}{" "}
+        de révision
+      </h2>
       {revisionNotes.map(revisionNote => (
         <Link
           to={`/revision-note/${revisionNote.slug}/`}
@@ -24,13 +27,22 @@ export default function HomePage() {
           `}
         >
           <article key={revisionNote.id}>
-            <h3
+            <p
               css={css`
                 margin-bottom: ${rhythm(0.25)};
               `}
             >
               {revisionNote.title}{" "}
-            </h3>
+              {revisionNote.stoppedAt && (
+                <span
+                  css={css`
+                    color: #d00;
+                  `}
+                >
+                  (stopped at: {revisionNote.stoppedAt})
+                </span>
+              )}
+            </p>
           </article>
         </Link>
       ))}

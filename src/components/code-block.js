@@ -62,8 +62,10 @@ export default function CodeBlock({ children, className, hl = "", nu }) {
           className={className}
           style={style}
           css={css`
+            break-inside: avoid;
             border-radius: 5px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19),
+              0 6px 6px rgba(0, 0, 0, 0.23);
           `}
         >
           {tokens.map((line, i) => (

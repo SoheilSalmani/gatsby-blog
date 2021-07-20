@@ -1,0 +1,88 @@
+---
+title: An Explanation of How the Intersection Observer Watches
+resourceId: https://css-tricks.com/an-explanation-of-how-the-intersection-observer-watches/
+stoppedAt: The observer object
+---
+
+## A brief explanation of the Intersection Observer
+
+"This specification describes an API that can be used to understand the
+visibility and position of DOM elements (“targets”) relative to a containing
+element or to the top-level viewport (“root”). The position is delivered
+asynchronously and is useful for understanding the visibility of elements and
+implementing pre-loading and deferred loading of DOM content."
+
+## A basic example
+
+The Observer is made up of 4 parts:
+
+1. the “root”, which is the parent element the observer is tied to, which can be
+   the viewport
+2. the “target,” which is a child element being observed and there can be more
+   than one
+3. the options object, which defines certain aspects of the observer’s behavior
+4. the callback function, which is invoked each time an intersection change is
+   observed
+
+```js nu
+const options = {
+  root: document.body,
+  rootMargin: "0px",
+  threshold: 0,
+}
+
+function callback(entries, observer) {
+  console.log(observer)
+
+  entries.forEach(entry => {
+    console.log(entry)
+  })
+}
+
+let observer = new IntersectionObserver(callback, options)
+observer.observe(targetElement)
+```
+
+The `root` is the parent element, often a scrolling element, that contains the
+observed elements. This can be just about any single element on the page as
+needed. If the property isn’t provided at all or the value is set to null, the
+viewport is set to be the root element.
+
+The `rootMargin` is a string of values describing what can be called the margin
+of the root element, which affects the resulting bounding box that the target
+element scrolls into. It behaves much like the CSS margin property. You can have
+values like `10px 15px 20px` which gives us a top margin of `10px`, left and
+right margins of `15px`, and a bottom margin of `20px`. Only the bounding box is
+affected and not the element itself. Keep in mind that the only lengths allowed
+are pixels and percentage values, which can be negative or positive. Also note
+that the rootMargin does not work if the root element is not an actual element
+on the page, such as the viewport.
+
+The `threshold` is the value used to determine when an intersection change
+should be observed. More than one value can be included in an array so that the
+same target can trigger the intersection multiple times. These values relate to
+the target’s intersection ratio. A threshold of zero triggers the intersection
+when the first pixel of the target element intersects the root element. A
+threshold of one triggers when the entire target element is inside the root
+element.
+
+In the callback function, 2 parameters are passed; the entries are stored in an
+array and represent each target element that triggers the intersection change.
+This provides a good bit of information that can be used for the bulk of any
+functionality that a developer might create. The second parameter is information
+about the observer itself, which is essentially the data from the provided
+`options` object. This provides a way to identify which observer is in play in
+case a target is tied to multiple observers.
+
+The third section in the code is the creation of the observer itself and where
+it is observing the target. When creating the observer, the callback function
+and options object can be external to the observer, as shown. A developer could
+write the code inline, but the observer is very flexible. For example, the
+callback and options can be used across multiple observers, if needed. The
+observe() method is then passed the target element that needs to be observed. It
+can only accept one target but the method can be repeated on the same observer
+for multiple targets. Again, very flexible.
+
+### The observer object
+
+### The entry object

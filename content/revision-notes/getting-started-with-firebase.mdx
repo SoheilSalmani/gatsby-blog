@@ -1,0 +1,89 @@
+---
+title: Getting started with Firebase
+resourceId: https://firebase.google.com/docs/web/setup?hl=en
+stoppedAt: Step 4
+---
+
+## Add Firebase to an app
+
+### Add Firebase to your iOS project
+
+_Not now..._
+
+### Add Firebase to your Android project
+
+_Not now..._
+
+### Add Firebase to your JavaScript project
+
+#### Step 1: Create a Firebase project
+
+Before you can add Firebase to your JavaScript app, you need to create a
+Firebase project to connect to your app.
+
+1. `Firebase console > Add project`: enter a project name. If you have an
+   existing Google Cloud project, you can select the project from the dropdown
+   menu to add Firebase resources to that project.
+1. If you are creating a new project, you can edit the **Project ID**.
+1. _(Optional)_ Set up Google Analytics for your project, which enables you to
+   have an optimal experience using any of the following Firebase products:
+
+   - Firebase Crashlytics
+   - Firebase Predictions
+   - Firebase Cloud Messaging
+   - Firebase In-App Messaging
+   - Firebase Remote Config
+   - Firebase A/B Testing
+
+   **Note:** You can always set up Google Analytics later in the _Integrations_
+   tab of your settings _Project settings_.
+
+#### Step 2: Register your app with Firebase
+
+After you have a Firebase project, you can add your web app to it.
+
+1. Click the **Web** icon to launch the setup workflow.
+1. Enter you app's nickname. This nickname is an internal, convenience
+   identifier and is only visible to you in the Firebase console.
+1. _(Optional)_ Set up Firebase Hosting for your web app.
+
+   - You can set up Firebase Hosting now or later. You can also link your
+     Firebase Web App to a Hosting site at any time in your Project settings.
+   - If you choose to set up Hosting up now, select a site from the dropdown
+     list to link to your Firebase Web App.
+     - This list displays your project's default Hosting site and any other
+       sites that you've set up in your project.
+     - Any site that you've already linked to a Firebase Web App is unavailable
+       for additional linking. Each Hosting site can only be linked to a single
+       Firebase Web App.
+
+#### Step 3: add Firebase SDKs and initialize Firebase
+
+How you add Firebase SDKs to your Web app depends on whether you've chosen to
+use Firebase Hosting for your app, what tooling you're using with your app (like
+a module bundler), or if you're configuring a Node.js app. Check this
+[link](https://firebase.google.com/docs/web/setup?hl=en&sdk_version=v9#with-npm).
+
+To initialize Firebase in your app, you need to provide your app's Firebase
+project configuration.
+
+- If you use reserved Hosting URLs, your Firebase config is automatically pulled
+  from your Firebase project, so you don't need to explicitly provide your
+  config object in your code.
+- If you enabled Google Analytics in your Firebase project, your config object
+  contains the field `measurementId`.
+
+**Note:** The Firebase config object contains unique, but non-secret identifiers
+for your Firebase project.
+
+## Add Firebase to a game
+
+_Not now..._
+
+## Add Firebase to a server
+
+## Use Firebase with a framework
+
+_Not now..._
+
+## Set up project programmatically

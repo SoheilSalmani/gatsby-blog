@@ -1,6 +1,7 @@
 import { graphql } from "gatsby"
 import React from "react"
 
+import Reader from "../components/reader"
 import RevisionNote from "../components/revision-note"
 import Layout from "../components/layout"
 
@@ -21,7 +22,9 @@ export default function RevisionNoteTemplate({ data }) {
 
   return (
     <Layout>
-      <RevisionNote title={title} compiledMdx={compiledMdx} />
+      <Reader>
+        <RevisionNote title={title} compiledMdx={compiledMdx} />
+      </Reader>
     </Layout>
   )
 }

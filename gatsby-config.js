@@ -24,6 +24,27 @@ module.exports = {
         defaultLayouts: {
           default: require.resolve("./src/components/layout.js"),
         },
+        gatsbyRemarkPlugins: [
+          {
+            resolve: `gatsby-remark-table-of-contents`,
+            options: {
+              exclude: "Table of Contents",
+              tight: true,
+              ordered: true,
+              fromHeading: 2,
+              toHeading: 6,
+              className: "table-of-contents",
+            },
+          },
+          {
+            resolve: `gatsby-remark-autolink-headers`,
+            options: {
+              maintainCase: false,
+              removeAccents: false,
+              isIconAfterHeader: true,
+            },
+          },
+        ],
       },
     },
     {
