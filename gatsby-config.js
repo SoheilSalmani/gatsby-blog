@@ -7,7 +7,7 @@ module.exports = {
     {
       resolve: `gatsby-source-filesystem`,
       options: {
-        name: `revisionNotes`,
+        name: `revision-notes`,
         path: `content/revision-notes`,
       },
     },

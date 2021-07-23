@@ -22,9 +22,9 @@ export default function RevisionNoteTemplate({ data }) {
 
   return (
     <Layout>
-      <Reader>
-        <RevisionNote title={title} compiledMdx={compiledMdx} />
-      </Reader>
+      {/* <Reader> */}
+      <RevisionNote title={title} compiledMdx={compiledMdx} />
+      {/* </Reader> */}
     </Layout>
   )
 }

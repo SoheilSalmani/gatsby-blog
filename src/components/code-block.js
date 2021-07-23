@@ -4,10 +4,23 @@ import Highlight, { defaultProps } from "prism-react-renderer"
 import theme from "prism-react-renderer/themes/nightOwl"
 import React from "react"
 
-const Code = styled.pre`
+const Code = styled.div`
   padding: 0.5rem 0 0.5rem 0;
   display: grid;
   grid-template-columns: auto 1fr;
+  break-inside: avoid;
+`
+
+const CodeTitle = styled.div`
+  padding: 0.25rem 0 0.25rem calc(0.5rem + 5px);
+  background-color: #2a3c4f;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: rgb(214, 222, 235);
+
+  & + pre {
+    border-radius: 0 0 5px 5px;
+  }
 `
 
 const LineNumber = styled.div`
@@ -46,7 +59,7 @@ const LineContent = styled.div`
       : "5px solid transparent"};
 `
 
-export default function CodeBlock({ children, className, hl = "", nu }) {
+export default function CodeBlock({ children, className, hl = "", nu, fp }) {
   const language = className.replace(/language-/, "")
   const highlightedLines = hl.split(",")
 
@@ -58,36 +71,40 @@ export default function CodeBlock({ children, className, hl = "", nu }) {
       language={language}
     >
       {({ className, style, tokens, getLineProps, getTokenProps }) => (
-        <Code
-          className={className}
-          style={style}
+        <div
           css={css`
-            break-inside: avoid;
-            border-radius: 5px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19),
               0 6px 6px rgba(0, 0, 0, 0.23);
+            border-radius: 5px;
+            overflow: hidden;
           `}
         >
-          {tokens.map((line, i) => (
-            <>
-              {nu && (
-                <LineNumber lineNumber={i} highlightedLines={highlightedLines}>
-                  {i + 1}
-                </LineNumber>
-              )}
-              <LineContent
-                lineNumber={i}
-                highlightedLines={highlightedLines}
-                isNumbered={nu}
-                {...getLineProps({ line, key: i })}
-              >
-                {line.map((token, key) => (
-                  <span {...getTokenProps({ token, key })} />
-                ))}
-              </LineContent>
-            </>
-          ))}
-        </Code>
+          {fp && <CodeTitle>{fp}</CodeTitle>}
+          <Code className={className} style={style}>
+            {tokens.map((line, i) => (
+              <>
+                {nu && (
+                  <LineNumber
+                    lineNumber={i}
+                    highlightedLines={highlightedLines}
+                  >
+                    {i + 1}
+                  </LineNumber>
+                )}
+                <LineContent
+                  lineNumber={i}
+                  highlightedLines={highlightedLines}
+                  isNumbered={nu}
+                  {...getLineProps({ line, key: i })}
+                >
+                  {line.map((token, key) => (
+                    <span {...getTokenProps({ token, key })} />
+                  ))}
+                </LineContent>
+              </>
+            ))}
+          </Code>
+        </div>
       )}
     </Highlight>
   )

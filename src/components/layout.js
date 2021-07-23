@@ -12,7 +12,7 @@ export default function Layout({ children }) {
     <>
       <header
         css={css`
-          width: 1600px;
+          width: 700px;
           max-width: 90vw;
           margin: ${rhythm(1)} auto;
           display: flex;
@@ -56,7 +56,7 @@ export default function Layout({ children }) {
       </header>
       <main
         css={css`
-          width: 1600px;
+          width: 700px;
           max-width: 90vw;
           margin: ${rhythm(1)} auto;
           position: relative;

@@ -147,6 +147,96 @@ Each project will have:
 
 ## Mastering CRUD Operations and Navigation with the Notes Application
 
+### Setup and Review a Project Created with the react-native-cli
+
+```sh
+npx react-native init reactnativenotes
+```
+
+```sh
+cd AwesomeProject
+npx react-native run-ios
+```
+
+```js fp=index.js
+/**
+ * @format
+ */
+
+import { AppRegistry } from "react-native"
+import App from "./App"
+import { name as appName } from "./app.json"
+
+AppRegistry.registerComponent(appName, () => App)
+```
+
+```sh
+npm install native-base react-native-svg styled-components styled-system react-native-safe-area-context
+```
+
+```sh
+npm install @react-native-async-storage/async-storage
+```
+
+```sh
+npm install @react-navigation/native
+```
+
+```sh
+npm install react-native-reanimated react-native-gesture-handler react-native-screens react-native-safe-area-context @react-native-masked-view/masked-view
+npm install @react-navigation/stack
+```
+
+If you're on a Mac and developing for iOS, you need to install the pods (via
+Cocoapods) to complete the linking.
+
+```sh
+npx pod-install ios
+```
+
+To finalize installation of `react-native-gesture-handler`, add the following at
+the **top** (make sure it's at the top and there's nothing else before it) of
+your entry file, such as `index.js` or `App.js`.
+
+Now, we need to wrap the whole app in `NavigationContainer`. Usually you'd do
+this in your entry file, such as `index.js` or `App.js`:
+
+```js
+import "react-native-gesture-handler"
+import * as React from "react"
+import { NavigationContainer } from "@react-navigation/native"
+
+export default function App() {
+  return (
+    <NavigationContainer>{/* Rest of your app code */}</NavigationContainer>
+  )
+}
+```
+
+### Reviewing Note Application: Requirements and User Stories
+
+What:
+
+- is the goal of this application?
+- are the project requirements?
+
+The goal of the application is to store, create, and modify notes on a mobile device.
+
+Planning:
+
+* Step 1: Each page has a common layout
+* Step 2: We want access to our same data list throughout our application to modify it
+* Step 3: We want to be able to navigate through multiple screens
+
+Key Stories:
+
+* As a user, I would like the style of the application to be consistent on each page
+* As a user, I would like to access my notes in my application
+* As a user, I would like to have an overview of my notes, with a detailed view
+* As a user, I would like my notes get saved to my device
+
+### Developing a Layout for Application with NativeBase
+
 ## Working with Multiple APIs with the Cat Facts Application
 
 ## Enhancing UI Skills with the GitHub Repo Application

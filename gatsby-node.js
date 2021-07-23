@@ -1,6 +1,19 @@
 const { createFilePath } = require(`gatsby-source-filesystem`)
 const path = require("path")
 
+exports.createSchemaCustomization = ({ actions }) => {
+  actions.createTypes(`
+    type RevisionNote implements Node @dontInfer {
+      id: ID!
+      path: String!
+      title: String!
+      body: String!
+      tags: [String]!
+      updated: Date! @dateformat
+    }
+  `)
+}
+
 exports.onCreateNode = ({ node, getNode, actions }) => {
   const { createNodeField } = actions
   if (node.internal.type === `Mdx`) {

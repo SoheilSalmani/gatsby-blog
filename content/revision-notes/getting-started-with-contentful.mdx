@@ -1,0 +1,53 @@
+---
+title: Getting started with Contentful
+resourceId: https://www.contentful.com/developers/docs/tutorials/general/get-started/
+---
+
+## See how Contentful works with Gatsby and the latest web technologies
+
+![](/media/contentful-gatsby-hosting.png)
+
+## Explore how the sample website is built with Contentful
+
+![](/media/website-built-with-contentful.gif)
+
+## Ready to start? Set-up and deploy a website through the Contentful CLI
+
+### Install the Contentful CLI tool
+
+```sh
+yarn global add contentful-cli
+```
+
+### Run the guide and follow the steps
+
+Steps that the guide will take you through:
+
+1. Sign in to new or existing account
+2. Create a Space to hold your content. This step uses the Content Management
+   API.
+3. Create your Content model and first entries. This step uses the Content
+   Management API.
+4. Clone the
+   [Starter Gatsby Blog](https://github.com/contentful/starter-gatsby-blog)
+   repository from Github.
+5. Run the website in development mode on your machine. This step uses the
+   Content Delivery API.
+
+### Netlify CLI Commands
+
+1.  ```sh
+    yarn global add netlify-cli
+    ```
+2.  ```sh
+    netlify login
+    ```
+3.  ```sh
+    yarn build
+    ```
+4.  ```sh
+    netlify deploy -d public/
+    ```
+5.  ```sh
+    netlify deploy -d public/ -p
+    ```
