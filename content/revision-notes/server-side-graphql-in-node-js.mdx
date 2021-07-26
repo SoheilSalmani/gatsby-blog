@@ -1,0 +1,749 @@
+---
+title: Server-Side GraphQL in Node.js
+resourceId: https://frontendmasters.com/courses/server-graphql-nodejs/
+stoppedAt: TODO
+---
+
+## Introduction
+
+### Introduction
+
+**What is GraphQL?** A spec that describes a declarative query language that
+your clients can use to ask an API for the exact data they want. This is
+achieved by creating a strongly typed Schema for your API, ultimate flexibilty
+in how your API can resolve data, and client queries validated against your
+Schema.
+
+It's just a **spec**. There are several implementations and variations.
+
+Server-side GraphQL:
+
+- Type Definitions
+- Resolvers
+- Query Definitions
+- Mutation Definitions
+- Composition
+- Schema
+
+Client-side GraphQL:
+
+- Queries
+- Mutations
+- Fragments
+
+Where does GraphQL fit in?
+
+- A GraphQL server with a connected DB (most greenfields)
+- A GraphQL server as a layer in front of many 3rd party services and connects
+  them all with one GraphQL API
+- A hybrid approach where a GraphQL server has a connected DB and also
+  communicates with 3rd party services
+
+Node GraphQL Tools:
+
+- Servers
+  - Apollo server
+  - GraphQL Yoga
+- Services
+  - Amplify
+- Tools
+  - Prisma
+
+### Schemas
+
+Creating a Schema:
+
+- Using Schema Definition Language (SDL)
+- Programmatically Creating a Schema using language constructs
+
+Basic parts:
+
+- **Types** - a construct defining a shape with fields
+- **Fields** - keys on a Type that have a name and a value type
+- **Scalars** - primitive value type built into GraphQL
+- **Query** - type that defines how clients can access data
+- **Mutation** - type that defines how clients can modify or create data
+
+### GraphQL Server
+
+```shell
+npm install graphql apollo-server
+```
+
+```js
+const { ApolloServer, gql } = require("apollo-server")
+
+const typeDefs = gql`
+  type User {
+    email: String!
+    avatar: String
+    friends: [User]!
+  }
+
+  type Query {
+    me: User!
+  }
+`
+
+const resolvers = {
+  Query: {
+    me() {
+      return {
+        email: "soheil@salmani.me",
+        avatar: "http://soheil.salmani.me/static/avatar.png",
+        friends: [],
+      }
+    },
+  },
+}
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+})
+
+server.listen(4000).then(() => console.log("on port 4000"))
+```
+
+## Queries & Resolvers
+
+### Query Types
+
+**What is a Query ?** A **Type** on a Schema that defines operations clients can
+perform to access data that resembles the shape of the other Types in the
+Schema.
+
+Creating Queries:
+
+- Create Query Type in the Schema using SDL
+- Add fields to the Query Type
+- Create Resolvers for the fields
+
+### Resolvers
+
+**What are Resolvers?** Functions that are responsible for returning values for
+fields that exist on Types in a Schema. Resolvers execution is dependent on the
+incoming client Query.
+
+**Note:** GraphQL = 1 endpoint. It doesn't care of HTTP, all is based on the
+response.
+
+Creating Resolvers:
+
+- Resolver names must match the exact field name on your Schema's Types
+- Resolvers must return the value type declared for the matching field
+- Resolvers can be async
+- Can retrieve data from any source
+
+Schema + Resolvers => Server: To create a server, at minimum, we need a Query
+Type with a field, and a Resolver for that field.
+
+### Query Types Solution
+
+```shell
+yarn add graphql apollo-server lowdb
+```
+
+```js fp=src/schema.js
+import { gql } from "apollo-server"
+
+const typeDefs = gql`
+  type User {
+    id: ID!
+    username: ID!
+  }
+
+  type Pet {
+    id: ID!
+    type: String!
+    createdAt: String!
+    name: String!
+    img: String
+  }
+
+  type Query {
+    pets: [Pet]!
+  }
+`
+
+export default typeDefs
+```
+
+```js fp=src/resolvers.js
+const resolvers = {
+  Query: {
+    pets(_, __, ctx) {
+      return ctx.models.Pet.findMany()
+    },
+  },
+  Pet: {
+    id() {
+      return 0
+    },
+  },
+}
+
+export default resolvers
+```
+
+```js fp=src/server.js
+import { ApolloServer } from "apollo-server"
+import db, { models } from "./db/index.js"
+import typeDefs from "./schema.js"
+import resolvers from "./resolvers.js"
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  context() {
+    return { models, db }
+  },
+})
+
+server.listen().then(({ url }) => {
+  console.log(`🚀 Server ready at ${url}`)
+})
+```
+
+```js fp=src/db/pet.js
+import _ from lodash
+
+const createPetModel = db => {
+  return {
+    findMany(filter) {
+      return _.filter(db.data.pet, filter)
+    },
+    findOne(filter) {
+      return _.filter(db.data.pet, filter)
+    }
+  }
+}
+
+export default createPetModel
+```
+
+```js fp=src/db/user.js
+import _ from lodash
+
+const createUserModel = db => {
+  return {
+    findMany(filter) {
+      return _.filter(db.data.user, filter)
+    }
+  }
+}
+
+export default createUserModel
+```
+
+```js fp=src/db/index.js
+import { join } from "path"
+import { Low, JSONFile } from "lowdb"
+import createPetModel from "./pet.js"
+import createUserModel from "./user.js"
+
+const file = join("src/db/db.json")
+const adapter = new JSONFile(file)
+const db = new Low(adapter)
+await db.read()
+
+export const models = {
+  Pet: createPetModel(db),
+  User: createUserModel(db),
+}
+export default db
+```
+
+```json fp=src/db/db.json
+{
+  "user": {
+    "id": "jBWMVGjm50l6LGwepDoty",
+    "username": "frontendmaster"
+  },
+  "pet": []
+}
+```
+
+## Arguments & Input Types
+
+### Arguments
+
+Arguments:
+
+- Allows clients to pass variables along with Queries that can be used in your
+  Resolvers to get data
+- Must be defined in your Schema
+- Can be added to any field
+- Either have to be Scalars or Input Types
+
+```js fp=src/schema.js
+const typeDefs = gql`
+  ...
+
+  type Query {
+    pets(type: String!): [Pet]!
+  }
+`
+```
+
+```js fp=src/resolvers.js
+module.exports = {
+  Query: {
+    pets(_, { type }, ctx) {
+      ...
+    }
+  },
+  ...
+}
+```
+
+### Input Types
+
+Input Type:
+
+- Just like Types, but used for Arguments.
+- All field value types must be other Input Types or Scalars
+
+```js fp=src/schema.js
+...
+
+const typeDefs = gql`
+  ...
+
+  input PetInput {
+    name: String
+    type: String
+  }
+
+  type Query {
+    pets(input: PetInput): [Pet]!
+  }
+`
+
+...
+```
+
+### Arguments & Input Types Solution
+
+```js fp=src/schema.js
+...
+
+const typeDefs = gql`
+  ...
+
+  input PetInput {
+    name: String
+    type: String
+  }
+
+  type Query {
+    pets(input: PetInput): [Pet]!
+    pet(input: PetInput): Pet
+  }
+`
+
+...
+```
+
+```js fp=src/resolvers.js
+module.exports = {
+  Query: {
+    pets(_, { input }, ctx) {
+      return ctx.models.Pet.findMany(input)
+    },
+    pet(_, { input }, ctx) {
+      return ctx.models.Pet.findOne(input)
+    }
+  },
+  ...
+}
+```
+
+```graphql
+{
+  pets(input: { type: "CAT" }) {
+    name
+  }
+}
+```
+
+## Mutations
+
+### Mutation Type
+
+What are Mutations?
+
+A **Type** on a Schema that defines operations clients can perform to mutate
+data (create, update, delete).
+
+Creating Mutations:
+
+- Define Mutation Type on Schema using SDL
+- Add fields for Mutation type
+- Add arguments for Mutation fields
+- Create Resolvers for Mutation fields
+
+```js fp=src/schema.js
+...
+
+const typeDefs = gql`
+  ...
+
+  input NewShoeInput {
+    brand: String!
+    size: Int!
+  }
+
+  type Mutation {
+    newShoe(input: NewShoeInput!): Shoe!
+  }
+`
+
+...
+```
+
+```js fp=src/resolvers.js
+module.exports = {
+  Query: {
+    ...
+  },
+  Mutation: {
+    newShoe(_, { input }) {
+      return input
+    }
+  }
+}
+```
+
+```graphql
+mutation {
+  newShoe(input: { brand: "jordan", size: 9 }) {
+    size
+    brand
+  }
+}
+```
+
+Return values for Mutation fields:
+
+- Dependent on your clients and use case
+- If using a client side GraphQL cache, you should return the exact values
+  Queries return
+
+### Mutation Solution
+
+```js fp=src/db/pet.js
+import _ from "lodash"
+import nanoid from "nanoid"
+
+const createPetModel = db => {
+  return {
+    findMany(filter) {
+      return _.filter(db.data.pet, filter)
+    },
+    findOne(filter) {
+      return _.filter(db.data.pet, filter)
+    },
+    create(pet) {
+      const newPet = { id: nanoid(), createdAt: Date.now(), ...pet }
+      db.data.pet.push(newPet).write()
+      return newPet
+    },
+  }
+}
+
+export default createPetModel
+```
+
+```js fp=src/schema.js
+...
+
+const typeDefs = gql`
+  ...
+
+  input NewPetInput {
+    name: String!
+    type: String!
+  }
+
+  type Mutation {
+    newPet(input: NewPetInput!): Pet!
+  }
+`
+
+...
+```
+
+```js fp=src/resolvers.js
+module.exports = {
+  Query: {
+    ...
+  },
+  Mutation: {
+    newPet(_, { input }, ctx) {
+      const pet = ctx.models.Pet.create(input)
+      return pet
+    }
+  }
+}
+```
+
+## Advanced SDL
+
+### Enums
+
+**Enums:** A set of discrete values that can be used in place of Scalars. An
+enum field must resolve to one of the values in the Enum. Great for limiting a
+field to only a few different options.
+
+```js fp=src/schema.js
+...
+
+const typeDefs = gql`
+  ...
+
+  enum ShoeType {
+    NIKE
+    JORDAN
+    ADIDAS
+    TIMBERLAND
+  }
+
+  input NewShoeInput {
+    brand: ShoeType!
+    size: Int!
+  }
+
+  type Shoe {
+    brand: ShoeType!
+    size: Int!
+  }
+
+  input ShoesInput {
+    brand: ShoeType
+    size: Int
+  }
+
+  input NewShoeInput {
+    brand: ShoeType!
+    size: Int!
+  }
+
+  type Mutation {
+    newShoe(input: NewShoeInput!): Shoe!
+  }
+`
+
+...
+```
+
+```graphql
+mutation {
+  newShoe(input: { brand: JORDAN, size: 9 }) {
+    size
+    brand
+  }
+}
+```
+
+### Interfaces
+
+**Interfaces:** Abstract Types that can't be used as field values but instead
+used as foundations for explicit Types. Great for when you have Types that share
+common fields, but differ slightly.
+
+```js fp=src/schema.js
+...
+
+const typeDefs = gql`
+  ...
+
+  interface Shoe {
+    brand: ShoeType!
+    size: Int!
+  }
+
+  type Sneaker implements Shoe {
+    brand: ShoeType!
+    size: Int!
+    sport: String!
+  }
+
+  type Boot implements Shoe {
+    brand: ShoeType!
+    size: Int!
+    hasGrip: Boolean!
+  }
+
+  ...
+`
+
+...
+```
+
+```js fp=src/resolvers.js
+module.exports = {
+  Query: {
+    shoes(_, { input }) {
+      return [
+        { brand: "NIKE", size: 12, sport: "basketball" },
+        { brand: "TIMBERLAND", size: 14, hasGrip: true }
+      ]
+    },
+    ...
+  },
+  Mutation: {
+    newShoe(_, { input }) {
+      return input
+    }
+  },
+  Shoe: {
+    __resolverType(shoe) {
+      if (shoe.sport) return "Sneaker"
+      return "Boot"
+    }
+  }
+}
+```
+
+```graphql
+{
+  shoes {
+    brand
+    size
+    ... on Sneaker {
+      sport
+      __typename
+    }
+    ... on Boot {
+      hasGrip
+      __typename
+    }
+  }
+}
+```
+
+### Unions
+
+**Unions:** Like interfaces, but without any defined common fields amongst the
+Types. Useful when you need to access more than one disjoint Type from one
+Query, like a search.
+
+```js fp=src/schema.js
+...
+
+const typeDefs = gql`
+  union Footwear = Sneaker | Boot
+
+  ...
+`
+
+...
+```
+
+```js fp=src/resolvers.js
+module.exports = {
+  ...
+  Shoe: {
+    __resolverType(shoe) {
+      if (shoe.sport) return "Sneaker"
+      return "Boot"
+    }
+  },
+  Footwear: {
+    __resolverType(shoe) {
+      if (shoe.sport) return "Sneaker"
+      return "Boot"
+    }
+  }
+}
+```
+
+### Relationships
+
+Thinking in Graphs:
+
+Your API is no longer a predefined list of operations that always return the
+same shapes. Instead, your API is a set of Nodes that know how to resolve
+themselves and have links to other Nodes. This allows a client to ask for Nodes
+and then follow those links to get related Nodes.
+
+Adding Relationships:
+
+- Add a Type as a field value on another Type
+- Create resolvers for those fields on the Type
+
+```js fp=src/schema.js
+...
+
+const typeDefs = gql`
+  ...
+
+  type User {
+    email: String!
+    avatar: String
+    shoes: [Shoe]!
+  }
+
+  interface Shoe {
+    brand: ShoeType!
+    size: Int!
+    user: User!
+  }
+
+  ...
+`
+
+...
+```
+
+```js fp=src/resolvers.js
+const user = {
+  id: 1,
+  email: "yoda@masters.com",
+  avatar: "http://yoda.png",
+  shoes: []
+}
+
+const shoes = [
+  { brand: "NIKE", size: 12, sport: "basketball", user: 1 },
+  { brand: "TIMBERLAND", size: 14, hasGrip: true,  user: 1 }
+]
+
+module.exports = {
+  Query: {
+    shoes(_, { input }) {
+      return shoes
+    },
+    ...
+  },
+  Mutation: {
+    newShoe(_, { input }) {
+      return input
+    }
+  },
+  User: {
+    shoes(user) {
+      return shoes
+    }
+  },
+  Shoe: {
+    __resolverType(shoe) {
+      if (shoe.sport) return "Sneaker"
+      return "Boot"
+    }
+  },
+  Sneakers: {
+    user(shoes) {
+      return user
+    }
+  },
+  Boot: {
+    user(shoes) {
+      return user
+    }
+  }
+}
+```
+
+### Relationships Solution: Adding Fields on Types

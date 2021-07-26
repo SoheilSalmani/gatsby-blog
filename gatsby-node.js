@@ -24,14 +24,27 @@ exports.onCreateNode = ({ node, getNode, actions }) => {
       name: `slug`,
       value: slug,
     })
+    if (fileNode.sourceInstanceName === "revision-notes") {
+      createNodeField({
+        node,
+        name: `type`,
+        value: `RevisionNote`,
+      })
+    } else if (fileNode.sourceInstanceName === "exercises") {
+      createNodeField({
+        node,
+        name: `type`,
+        value: `ExerciseSheet`,
+      })
+    }
   }
 }
 
 exports.createPages = async ({ graphql, actions }) => {
   const { createPage } = actions
-  const result = await graphql(`
+  const allRevisionNotes = await graphql(`
     query {
-      allMdx {
+      allMdx(filter: { fields: { type: { eq: "RevisionNote" } } }) {
         nodes {
           id
           fields {
@@ -42,10 +55,33 @@ exports.createPages = async ({ graphql, actions }) => {
     }
   `)
 
-  result.data.allMdx.nodes.forEach(node => {
+  const allExercises = await graphql(`
+    query {
+      allMdx(filter: { fields: { type: { eq: "ExerciseSheet" } } }) {
+        nodes {
+          id
+          fields {
+            slug
+          }
+        }
+      }
+    }
+  `)
+
+  allRevisionNotes.data.allMdx.nodes.forEach(node => {
     createPage({
       path: path.join("/revision-note/", node.fields.slug),
       component: path.resolve(`./src/templates/revision-note-template.js`),
+      context: {
+        id: node.id,
+      },
+    })
+  })
+
+  allExercises.data.allMdx.nodes.forEach(node => {
+    createPage({
+      path: path.join("/exercise-sheet/", node.fields.slug),
+      component: path.resolve(`./src/templates/exercise-sheet-template.js`),
       context: {
         id: node.id,
       },

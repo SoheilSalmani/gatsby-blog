@@ -3,7 +3,7 @@ import { graphql, useStaticQuery } from "gatsby"
 export default function useRevisionNotes() {
   const data = useStaticQuery(graphql`
     query {
-      allMdx {
+      allMdx(filter: { fields: { type: { eq: "RevisionNote" } } }) {
         nodes {
           id
           frontmatter {

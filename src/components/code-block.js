@@ -9,6 +9,7 @@ const Code = styled.div`
   display: grid;
   grid-template-columns: auto 1fr;
   break-inside: avoid;
+  overflow: auto;
 `
 
 const CodeTitle = styled.div`
@@ -49,6 +50,7 @@ const LineContent = styled.div`
   line-height: 1.1rem;
   grid-column-start: 2;
   padding-left: ${({ isNumbered }) => (isNumbered ? "1rem" : "0.5rem")};
+  padding-right: ${({ isNumbered }) => (isNumbered ? "1rem" : "0.5rem")};
   background-color: ${({ lineNumber, highlightedLines }) =>
     highlightedLines.includes((lineNumber + 1).toString())
       ? "rgba(199, 146, 234, 0.25)"

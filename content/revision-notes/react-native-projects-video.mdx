@@ -1,7 +1,7 @@
 ---
 title: React Native Projects
 resourceId: "9781839210112"
-stoppedAt: Mastering CRUD Operations and Navigation with the Notes Application
+stoppedAt: Advanced Navigation with React Navigation
 ---
 
 ## Getting Prepared for React Native Projects
@@ -154,7 +154,7 @@ npx react-native init reactnativenotes
 ```
 
 ```sh
-cd AwesomeProject
+cd reactnativenotes
 npx react-native run-ios
 ```
 
@@ -201,9 +201,9 @@ your entry file, such as `index.js` or `App.js`.
 Now, we need to wrap the whole app in `NavigationContainer`. Usually you'd do
 this in your entry file, such as `index.js` or `App.js`:
 
-```js
+```jsx nu fp=App.js
 import "react-native-gesture-handler"
-import * as React from "react"
+import React from "react"
 import { NavigationContainer } from "@react-navigation/native"
 
 export default function App() {
@@ -213,6 +213,10 @@ export default function App() {
 }
 ```
 
+```sh
+mkdir Components Contexts Screens
+```
+
 ### Reviewing Note Application: Requirements and User Stories
 
 What:
@@ -220,22 +224,223 @@ What:
 - is the goal of this application?
 - are the project requirements?
 
-The goal of the application is to store, create, and modify notes on a mobile device.
+The goal of the application is to store, create, and modify notes on a mobile
+device.
 
 Planning:
 
-* Step 1: Each page has a common layout
-* Step 2: We want access to our same data list throughout our application to modify it
-* Step 3: We want to be able to navigate through multiple screens
+- Step 1: Each page has a common layout
+- Step 2: We want access to our same data list throughout our application to
+  modify it
+- Step 3: We want to be able to navigate through multiple screens
 
 Key Stories:
 
-* As a user, I would like the style of the application to be consistent on each page
-* As a user, I would like to access my notes in my application
-* As a user, I would like to have an overview of my notes, with a detailed view
-* As a user, I would like my notes get saved to my device
+- As a user, I would like the style of the application to be consistent on each
+  page
+- As a user, I would like to access my notes in my application
+- As a user, I would like to have an overview of my notes, with a detailed view
+- As a user, I would like my notes get saved to my device
 
 ### Developing a Layout for Application with NativeBase
+
+```jsx fp=Components/Layout.js
+import React from "react"
+import {
+  Container,
+  Header,
+  Footer,
+  FooterTab,
+  Left,
+  Right,
+  Body,
+} from "native-base"
+
+export const Layout = props => (
+  <Container>
+    <Header>
+      <Left>{props.left}</Left>
+      <Body>
+        <Title>{props.title}</Title>
+      </Body>
+      <Right>{props.right}</Right>
+    </Header>
+    {props.children}
+    <Footer>
+      <FooterTab>{props.footer}</FooterTab>
+    </Footer>
+  </Container>
+)
+```
+
+```jsx fp=Components/Card.js
+import React from "react"
+import { Card, CardItem, Body, H3, Text } from "native-base"
+
+export const NoteContent = ({ note }) => (
+  <Card>
+    <CardItem>
+      <Body>
+        <H3>{note.item.title}</H3>
+        <Text>
+          {note.item.content.length > 120
+            ? `${note.item.content.substr(0, 120)}...}`
+            : note.item.content}
+        </Text>
+      </Body>
+    </CardItem>
+  </Card>
+)
+```
+
+### Reviewing Hooks
+
+Why even create Hooks?
+
+- We can write cleaner, more reusable code, with less complexity
+- We can also use more React features, without classes
+
+```jsx fp=Contexts/NoteContext.js
+import React, { createContext, Component } from "react"
+import { Alert } from "react-native"
+
+export const NoteContext = createContext()
+
+export class NoteProvider extends Component {
+  constructor(props) {
+    super(props)
+    this.getContextNotes = () => {
+      return this.state.contextNotes
+    }
+    this.addContextNote = newNote => {
+      const { contextNotes } = this.state
+      contextNotes.push(newNote)
+      this.setState({ contextNotes })
+    }
+    this.updateContextNote = (note, id) => {
+      const { contextNotes } = this.state
+      const noteIndex = contextNotes.findIndex(item => item.id === id)
+      contextNotes[noteIndex].title = note.title
+      contextNotes[noteIndex].content = note.content
+      this.setState({ contextNote })
+    }
+    this.deleteContextNote = id => {
+      const { contextNotes: oldNotes } = this.state
+      const contextNotes = oldNotes.filter(note => note.id !== id)
+      this.setState({ contextNotes })
+    }
+    this.state = {
+      getContextNotes: this.getContextNotes,
+      addContextNote: this.addContextNote,
+      updateContextNote: this.updateContextNote,
+      deleteContextNote: this.deleteContextNote,
+      contextNotes: [],
+    }
+  }
+
+  render() {
+    return (
+      <NoteContext.Provider value={this.state}>
+        {this.props.children}
+      </NoteContext.Provider>
+    )
+  }
+}
+```
+
+```jsx fp=Screens/HomeScreen.js
+import React, { useEffect, useState, useContext } from "react"
+import { Text, FlatList, TouchableOpacity } from "react-native"
+
+import { Button } from "native-base"
+import { Layout } from "../Components/Layout"
+import { NoteContent } from "../Components/NoteContent"
+import { NoteContext } from "../Contexts/NoteContext"
+
+const HomeScreen = props => {
+  const { getContextNotes } = useContext(NoteContext)
+  const [notes, setNotes] = useState()
+
+  useEffect(() => {
+    const getData = () => {
+      getContextNotes()
+    }
+    getData()
+  }, [])
+
+  return ();
+}
+```
+
+### Advanced Navigation with React Navigation
+
+- Utilized to move from screen to screen
+- Managing the presentation of a transition
+- Keeping record of navigation history
+
+What is the Stack Navigator?
+
+- The most common and simplest to understand navigation pattern React navigation
+  has to offer
+- New screen will be placed on top of the old screen
+- Screens are represented as a stack
+- Perfect fit for sequence-based apps where users need to be led
+
+What is the Tab Navigator?
+
+- A common navigation style within mobile applications
+- Tabs are commonly at top or bottom of view:
+  - `createBottomTabNavigator`
+  - `createMaterialTopTabNavigator`
+- Routes are lazily initialized
+- Great for screens that are not related
+
+What is the Drawer Navigator?
+
+- A navigation style that pulls out from the side of the screen
+- Drawer navigation is commonly used in Android applications:
+  - Material implementation
+- The UI apps are not on display here
+- Used to maximize screen space
+
+```jsx nu fp=App.js
+import "react-native-gesture-handler"
+import React from "react"
+import { NavigationContainer } from "@react-navigation/native"
+import { createStackNavigator } from "@react-navigation/stack"
+import HomeScreen from "./Screens/HomeScreen"
+import { AddNoteScreen } from "./Screens/AddNoteScreen"
+import { ModifyNoteScreen } from "./Screens/ModifyNoteScreen"
+import { NoteProvider } from "./Contexts/NoteProvider"
+
+const Stack = createStackNavigator();
+
+export default function App() {
+  return (
+    <NoteProvider>
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Home"
+          headerMode="none"
+        >
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="AddNote" component={AddNoteScreen} />
+          <Stack.Screen name="ModifyNote" component={ModifyNoteScreen} />
+        <Stack.Navigator>
+      </NavigationContainer>
+    <NoteProvider>
+  )
+}
+```
+
+### Working with Async Storage to Perform CRUD Operations
+
+What Is Async Storage?
+
+- Key-value storage
+- Unencryped
+- Asynchronous
+- Persistent
 
 ## Working with Multiple APIs with the Cat Facts Application
 
