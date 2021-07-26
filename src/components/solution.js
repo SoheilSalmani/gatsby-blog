@@ -9,6 +9,15 @@ export default function Solution({ label, children }) {
         border-radius: 4px;
         padding: 0.5em 0.5em 0;
 
+        summary {
+          transition: background-color 0.2s linear;
+        }
+
+        summary:hover {
+          background-color: #eee;
+          cursor: pointer;
+        }
+
         &[open] {
           padding: 0.5em;
         }
@@ -28,7 +37,7 @@ export default function Solution({ label, children }) {
       >
         Solution
       </summary>
-      {children}
+      <div className="content">{children}</div>
     </details>
   )
 }
