@@ -1,12 +1,247 @@
 ---
 title: Kubernetes and Docker - An Enterprise Guide
 resourceId: "9781839213403"
-stoppedAt: TODO
+stoppedAt: Working with Docker Data
 ---
 
 ## Docker and Container Fundamentals
 
 ### Docker and Container Essentials
+
+#### Understanding the need for containerization
+
+##### Introducing Docker
+
+Containers are not a new technology; they have been used in various forms for
+years. What Docker did was make them accessible to the average developer.
+
+Docker brought an abstraction layer to the masses. It was easy to use and didn't
+require a clean PC for every application before creating a package, thus
+offering a solution for dependency issues, but most attractive of all, it was
+_free_. Docker became a standard for many projects on GitHub, where teams would
+often create a Docker container and distribute the Docker image or
+**Dockerfile** to team members, providing a standard testing or development
+environment.
+
+#### Understanding Docker
+
+##### Containers are ephemeral
+
+Whatever is in the base container image is all that will be included each time
+the container is initially started. Any changes that you make inside a container
+are short-lived.
+
+If you needed to add permanent files to the existing image, you would need to
+rebuild the image with the files included or you could mount a Docker volume in
+your container.
+
+Any changes made to a running container will be written to a temporary layer,
+called the **container layer**, which is a directory on the local host
+filesystem. The Docker storage driver is in charge of handling requests that use
+the container layer. This location will store any changes in the container's
+filesystem so that when you added the HTML pages to the container, they will be
+stored on the local host. The container layer is tied to the container ID of the
+running image and it will remain on the host system until the container is
+removed from Docker, either by using the CLI or by running a Docker prune job.
+
+If a container is ephemeral and the image cannot be written to, how can you
+modify data in the container? Docker uses image layering to create multiple
+linked layers that appear as a single filesystem.
+
+##### Docker images
+
+At a high level, a Docker image is a collection of image layers, each with a
+JSON file that contains metadata for the layer. These are all combined to create
+the running application that you interact with when a container image is
+started.
+
+##### Image layers
+
+<Figure src="/media/docker-image-layers.png" alt="TODO">
+  Docker image layers.
+</Figure>
+
+The image layers cannot be written to since they are in a read-only state, but
+the temporary container layer is in a writeable state. Any data that you add to
+the container is stored in this layer and will be retained as long as the
+container is running.
+
+To deal with multiple layers efficiently, Docker implements copy-on-write, which
+means that if a file already exists, it will not be created. However, if a file
+is required that does not exist in the current image, it will be written. In the
+container world, if a file exists in a lower layer, the layers above it do not
+need to include it.
+
+There will be times where you'll need to "replace" a file that is in a lower
+layer. The copy-on-write system knows how to deal with these issues. Since
+images read from the top down, the container uses only the highest layer file.
+Furthermore, the container layer is the topmost layer.
+
+##### Persistent data
+
+When you store data in the container image layer, the base image does not
+change. When the container is removed from the host, the container layer is also
+removed. If the same image is used to start a new container, a new container
+image layer is also created. So, the container is ephemeral, but by adding a
+Docker volume to the container, you can store data outside of the container,
+thus gaining data persistency.
+
+##### Accessing services running in containers
+
+Unlike a physical machine or a virtual machine, containers do not connect to a
+network directly. When a container needs to send or receive traffic, it goes
+through the Docker host system using a bridged **NAT network** connection. This
+means that when you run a container and you want to receive incoming traffic
+requests, you need to expose the ports for each of the containers that you wish
+to receive traffic on. On a Linux-based system, `iptables` has rules to forward
+traffic to the Docker daemon, which will service the assigned ports for each
+container.
+
+#### Installing Docker
+
+**Important Note:** Images that are created using one architecture cannot run on
+a different architecture. This means that you cannot create an image based on
+x86 hardware and expect that same image to run on your Raspberry Pi running an
+ARM processor. It's also important to note that while you can run a Linux
+container on a Windows machine, you cannot run a Windows container on a Linux
+machine.
+
+##### Preparing to install Docker
+
+Before we start the installation, we need to consider what storage driver to
+use. The storage driver is what provides the union filesystem, which manage the
+layers of the container and how the writeable layer of the container is
+accessed.
+
+In most installations, you won't need to change the default storage driver since
+a default option will be selected. If you are running a Linux kernel that is at
+least version 4.0 or above, your Docker installation will use the `overlay2`
+storage driver; earlier kernels will install the `AUFS` storage driver.
+
+For reference, along with the `overlay2` and `AUFS` drivers, Docker supports the
+`devicemapper`, `btrfs`, `zfs`, and `vfs` storage drivers. However, these are
+rarely used in new systems.
+
+##### Granting Docker permissions
+
+In a default installation, Docker requires root access, so you will need to run
+all Docker commands as root. Rather than using `sudo` with every Docker command,
+you can add your user account to the `docker` group:
+
+```shell
+sudo groupadd docker
+sudo usermod -aG docker $USER
+```
+
+To add the new membership to your account, you need to log off from the system
+and log back on, which will update your groups.
+
+```shell
+docker run hello-world
+```
+
+#### Using the Docker CLI
+
+Get help:
+
+```shell
+docker help
+```
+
+Run a container:
+
+```shell
+docker run bitnami/nginx:latest
+```
+
+Detached mode (detached container): `-d`. When you run a detached container, you
+will only see the container ID, instead of the interactive, or attached, screen.
+
+By default, containers will be given a random name once they are started. Give a
+name to a container: `--name`.
+
+```shell
+docker run --name nginx-test -d bitnami/nginx:latest
+```
+
+List all running containers:
+
+```shell
+docker ps
+```
+
+List all running and stopped containers:
+
+```shell
+docker ps -a
+```
+
+Stop a running container:
+
+```shell
+docker stop <container>
+```
+
+Start a stopped container with all of the options that it was originally started
+with, including any networks or volumes that were assigned:
+
+```shell
+docker start <container>
+```
+
+Attach to a running container:
+
+```shell
+docker attach <container>
+```
+
+When an attachment is made to a container, you are attached to the running
+process. All keyboard commands will act in the same way as if you were at a
+physical server that was running NGINX in an interactive shell. This means that
+when the user used <Kbd>Ctrl + C</Kbd> to return to a prompt, they stopped the
+running NGINX process.
+
+If the container was run with `-i` and `-t`, you can detach from a container and
+leave it running using the <Kbd>Ctrl + P</Kbd> and <Kbd>Ctrl + Q</Kbd> key
+sequence.
+
+A better option when it comes to interacting with a running container is the
+`exec` command. Rather than attach to the container, you can use the
+`docker exec` command to execute a process in the container. You need to supply
+the container name and the process you want to execute in the image.
+
+The option `-it` tells `exec` to run in an interactive TTY session.
+
+**Note:** Since we are not attached to the container, <Kbd>Ctrl + C</Kbd> will
+not stop any process from running.
+
+Retrieve logs from a container:
+
+```shell
+docker logs <container>
+```
+
+**Note:** It doesn't matter if it's currently running or stopped.
+
+Options:
+
+- `-f` or `--follow`: Follow the log output.
+- `--tail xx`: Show log output starting from the end of the file and retrieve
+  `xx` lines.
+- `--until xxx`: Show log output before the `xxx` timestamp. `xxx` can be a
+  timestamp; for example, `2020-02-23T18:35:13`. `xxx` can be a relative time;
+  for example, `60m`.
+- `--since xxx`: Show log output after the `xxx` timestamp.
+
+Once you name a container, the assigned name cannot be used to start a different
+container unless you remove it using the `docker rm` command.
+
+```shell
+docker rm <container>
+```
+
+Adding the `-v` option to the `docker rm` command will remove any volumes that
+were attached to the container.
 
 ### Working with Docker Data
 

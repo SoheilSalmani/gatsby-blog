@@ -1,0 +1,166 @@
+---
+title: Spark in Action
+resourceId: "9781617295522"
+stoppedAt: What can you do with Spark?
+---
+
+## The theory crippled by awesome examples
+
+### So, what is Spark, anyway?
+
+#### The big picture: What Spark is and what it does
+
+##### What is Spark?
+
+<Figure src="/media/app-os-hardware.png" alt="App, OS, and Hardware">
+  When you write applications, you use services offered by the operating system,
+  which abstracts you from the hardware.
+</Figure>
+
+With the need for more computing power came an increased need for distributed
+computing. With the advent of distributed computing, a distributed application
+had to incorporate those distribution functions.
+
+<Figure
+  src="/media/distributed-computing.png"
+  alt="Distributed data-oriented applications"
+>
+  One way to write distributed data-oriented applications is to embed all
+  controls at the application level, using libraries or other artifacts. As a
+  result, the applications become fatter and more difficult to maintain.
+</Figure>
+
+<Figure
+  src="/media/spark-offers-services-to-applications.png"
+  alt="Spark offers services to applications"
+>
+  Apache Spark simplifies the development of analytics-oriented applications by
+  offering services to applications, just as an operating system does.
+</Figure>
+
+##### The four pillars of mana
+
+4 pillars of Spark: Spark SQL, Spark Streaming, Spark MLlib (for machine
+learning), and GraphX sitting on top of Spark Core.
+
+<Figure
+  src="/media/spark-app-os-hardware.png"
+  alt="Spark, application, operating system, and hardware"
+>
+  Your application, as well as other applications, are talking to Spark’s four
+  pillars—SQL, streaming, machine learning, and graphs—via a unified API. Spark
+  shields you from the operating system and the hardware constraints: you will
+  not have to worry about where your application is running or if it has the
+  right data. Spark will take care of that. However, your application can still
+  access the operating system or hardware if it needs to.
+</Figure>
+
+Of course, the cluster(s) where Spark is running may not be used exclusively by
+your application, but your work will use the following:
+
+- **Spark SQL** to run data operations, like traditional SQL jobs in an RDBMS.
+  Spark SQL offers APIs and SQL to manipulate your data. Spark SQL is a
+  cornerstone of Spark.
+- **Spark Streaming**, and specifically Spark structured streaming, to analyze
+  streaming data. Spark’s unified API will help you process your data in a
+  similar way, whether it is streamed data or batch data.
+- **Spark MLlib** for machine learning and recent extensions in deep learning.
+- **GraphX** to exploit graph data structures.
+
+#### How can you use Spark?
+
+##### Spark in a data processing/engineering scenario
+
+Spark is a perfect tool for data engineers. The process includes four steps, and after each step, the data lands in a *zone*:
+
+1. *Ingesting data*—Spark can ingest data from a variety of sources. If you can’t find a supported format, you can build your
+own data sources. I call data at this stage *raw data*. You can also find this zone
+named the *staging*, *landing*, *bronze*, or even *swamp zone*.
+2. *Improving data quality (DQ)*—Before processing your data, you may want to check
+the quality of the data itself. An example of DQ is to ensure that all birth dates are
+in the past. As part of this process, you can also elect to obfuscate some data: if you
+are processing Social Security numbers (SSNs) in a health-care environment, you
+can make sure that the SSNs are not accessible to developers or nonauthorized
+personnel. After your data is refined, I call this stage the *pure data* zone. You may
+also find this zone called the *refinery*, *silver*, *pond*, *sandbox*, or *exploration zone*.
+3. *Transforming data*—The next step is to process your data. You can join it with
+other datasets, apply custom functions, perform aggregations, implement
+machine learning, and more. The goal of this step is to get *rich data*, the fruit of
+your analytics work. Most of the chapters discuss transformation. This zone may
+also be called the *production*, *gold*, *refined*, *lagoon*, or *operationalization zone*.
+4. *Loading and publishing*—As in an ETL process,5 you can finish by loading the
+data into a data warehouse, using a business intelligence (BI) tool, calling APIs,
+or saving the data in a file. The result is actionable data for your enterprise.
+
+<Figure src="/media/spark-data-processing-scenario.png" alt="TODO">
+Spark in a typical data processing scenario. The first step is ingesting the data. At this
+stage, the data is raw; you may next want to apply some data quality (DQ). You are now ready to
+transform your data. Once you have transformed your data, it is richer. It is time to publish or share
+it so people in your organization can perform actions on it and make decisions based on it.
+</Figure>
+
+##### Spark in a data science scenario
+
+Data scientists have a slightly different approach than software engineers or data engineers,
+as data scientists focus on the transformation part, in an interactive manner.
+For this purpose, data scientists use different tools, such as notebooks. Names of notebooks
+include Jupyter, Zeppelin, IBM Watson Studio, and Databricks Runtime.
+
+How data scientists work will definitely matter to you, as data science projects will
+consume enterprise data, and therefore you may end up delivering data to the data
+scientists, off-loading their work (such as machine learning models) into enterprise
+data stores, or industrializing their findings.
+
+<Figure src="/media/data-scientist-using-spark.png" alt="TODO">
+Sequence diagram for a data scientist using Spark: the user “talks” to the notebook, which calls
+Spark when needed. Spark directly handles ingestion. Each square represents a step, and each arrow represents
+a sequence. The diagram should be read chronologically, starting from the top.
+</Figure>
+
+In the use case described in the figure, the data is loaded in Spark, and then the user
+will play with it, apply transformations, and display part of the data. Displaying the data
+is not the end of the process. The user will be able to continue in an interactive manner,
+as in a physical notebook, where you write recipes, take notes, and so on. At the end, the
+notebook user can save the data to files or databases, or produce (interactive) reports.
+
+#### What can you do with Spark?
+
+### Architecture and flow
+
+### The majestic role of the dataframe
+
+### Fundamentally lazy
+
+### Building a simple app for deployment
+
+### Deploying your simple app
+
+## Ingestion
+
+### Ingestion from files
+
+### Ingestion from databases
+
+### Advanced ingestion: finding data sources and building your own
+
+### Ingestion through structured streaming
+
+## Transforming your data
+
+### Working with SQL
+
+### Transforming your data
+
+### Transforming entire documents
+
+### Extending transformations with user-defined functions
+
+### Aggregating your data
+
+## Going further
+
+### Cache and checkpoint: Enhancing Spark's performances
+
+### Exporting data and building full data pipelines
+
+### Exploring deployment constraints: Understanding the ecosystem

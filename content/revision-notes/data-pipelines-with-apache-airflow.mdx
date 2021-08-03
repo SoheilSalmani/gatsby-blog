@@ -1,0 +1,472 @@
+---
+title: Data Pipelines with Apache Airflow
+resourceId: "9781617296901"
+stoppedAt: Anatomy of an Airflow DAG
+---
+
+## Getting started
+
+### Meet Apache Airflow
+
+#### Introducing data pipelines
+
+Data pipelines generally consist of several tasks or actions that need to be
+executed to achieve the desired result. For example, say we want to build a
+small weather dashboard that tells us what the weather will be like in the
+coming week. To implement this live weather dashboard, we need to perform
+something like the following steps:
+
+1. Fetch weather forecast data from a weather API.
+2. Clean or otherwise transform the fetched data (e.g., converting temperatures
+   from Fahrenheit to Celsius or vice versa), so that the data suits our
+   purpose.
+3. Push the transformed data to the weather dashboard.
+
+As such, we need to make sure that this implicit task order is also enforced
+when running this data process.
+
+##### Data pipelines as graphs
+
+One way to make dependencies between tasks more explicit is to draw the data
+pipeline as a _directed graph_.
+
+<Figure src="/media/weather-data-pipeline-graph.png" alt="TODO">
+  Graph representation of the data pipeline for the weather dashboard. Nodes
+  represent tasks and directed edges represent dependencies between tasks (with
+  an edge pointing from task A to task B, indicating that task A needs to be run
+  before task B).
+</Figure>
+
+This type of graph is typically called a _directed acyclic graph (DAG)_, as the
+graph contains directed edges and does not contain any loops or cycles
+(acyclic). This acyclic property is extremely important, as it prevents us from
+running into circular dependencies between tasks (where task A depends on task B
+and vice versa). This logical inconsistency leads to a deadlock type of
+situation, in which neither task 2 nor 3 can run, preventing us from executing
+the graph.
+
+The acyclic property of DAGs is used by Airflow (and many other workflow
+managers) to efficiently resolve and execute these graphs of tasks.
+
+##### Executing a pipeline graph
+
+A nice property of this DAG representation is that it provides a relatively
+straightforward algorithm that we can use for running the pipeline.
+Conceptually, this algorithm consists of the following steps:
+
+1. For each open (= uncompleted) task in the graph, do the following: – For each
+   edge pointing toward the task, check if the “upstream” task on the other end
+   of the edge has been completed. – If all upstream tasks have been completed,
+   add the task under consideration to a queue of tasks to be executed.
+2. Execute the tasks in the execution queue, marking them completed once they
+   finish performing their work.
+3. Jump back to step 1 and repeat until all tasks in the graph have been
+   completed.
+
+##### Pipeline graphs vs. sequential scripts
+
+To build a pipeline for training the ML model, we need to implement something
+like the following steps:
+
+1. Prepare the sales data by doing the following:
+   - Fetching the sales data from the source system
+   - Cleaning/transforming the sales data to fit requirements
+2. Prepare the weather data by doing the following:
+   - Fetching the weather forecast data from an API
+   - Cleaning/transforming the weather data to fit requirements
+3. Combine the sales and weather data sets to create the combined data set that
+   can be used as input for creating a predictive ML model.
+4. Train the ML model using the combined data set.
+5. Deploy the ML model so that it can be used by the business.
+
+<Figure src="/media/umbrella-company-data-pipeline.png" alt="TODO">
+  Overview of the umbrella demand use case, in which historical weather and
+  sales data are used to train a model that predicts future sales demands
+  depending on weather forecasts.
+</Figure>
+
+One important difference from our previous example is that the first steps of
+this pipeline are in fact independent of each other, as they involve two
+separate data sets. This is clearly illustrated by the two separate branches in
+the graph representation of the pipeline, which can be executed in parallel if
+we apply our graph execution algorithm, making better use of available resources
+and potentially decreasing the running time of a pipeline compared to executing
+the tasks sequentially.
+
+Another useful property of the graph-based representation is that it clearly
+separates pipelines into small incremental tasks rather than having one
+monolithic script or process that does all the work. Although having a single
+monolithic script may not initially seem like that much of a problem, it can
+introduce some inefficiencies when tasks in the pipeline fail, as we would have
+to rerun the entire script. In contrast, in the graph representation, we need
+only to rerun any failing tasks (and any downstream dependencies).
+
+##### Running pipeline using workflow managers
+
+The challenge of running graphs of dependent tasks is hardly a new problem in
+computing. Over the years, many so-called “workflow management” solutions have
+been developed to tackle this problem, which generally allow you to define and
+execute graphs of tasks as workflows or pipelines.
+
+Although each of these workflow managers has its own strengths and weaknesses,
+they all provide similar core functionality that allows you to define and run
+pipelines containing multiple tasks with dependencies.
+
+One of the key differences between these tools is how they define their
+workflows. For example, tools such as Oozie use static (XML) files to define
+workflows, which provides legible workflows but limited flexibility. Other
+solutions such as Luigi and Airflow allow you to define workflows as code, which
+provides greater flexibility but can be more challenging to read and test
+(depending on the coding skills of the person implementing the workflow).
+
+Other key differences lie in the extent of features provided by the workflow
+manager. For example, tools such as Make and Luigi do not provide built-in
+support for scheduling workflows, meaning that you’ll need an extra tool like
+Cron if you want to run your workflow on a recurring schedule. Other tools may
+provide extra functionality such as scheduling, monitoring, user-friendly web
+interfaces, and so on built into the platform, meaning that you don’t have to
+stitch together multiple tools yourself to get these features.
+
+All in all, picking the right workflow management solution for your needs will
+require some careful consideration of the key features of the different
+solutions and how they fit your requirements.
+
+#### Introducing Airflow
+
+##### Defining pipelines flexibly in (Python) code
+
+In Airflow, you define your DAGs using Python code in DAG files, which are
+essentially Python scripts that describe the structure of the corresponding DAG.
+
+One advantage of defining Airflow DAGs in Python code is that this programmatic
+approach provides you with a lot of flexibility for building DAGs. For example,
+as we will see later in this book, you can use Python code to dynamically
+generate optional tasks depending on certain conditions or even generate entire
+DAGs based on external metadata or configuration files. This flexibility gives a
+great deal of customization in how you build your pipelines, allowing you to fit
+Airflow to your needs for building arbitrarily complex pipelines.
+
+<Figure src="/media/airflow-dag-file.png" alt="TODO">
+  Airflow pipelines are defined as DAGs using Python code in DAG files. Each DAG
+  file typically defines one DAG, which describes the different tasks and their
+  dependencies. Besides this, the DAG also defines a schedule interval that
+  determines when the DAG is executed by Airflow.
+</Figure>
+
+##### Scheduling and executing pipelines
+
+Airflow allows you to define a schedule interval for each DAG, which determines
+exactly when your pipeline is run by Airflow. This way, you can tell Airflow to
+execute your DAG every hour, every day, every week, and so on, or even use more
+complicated schedule intervals based on Cron-like expressions.
+
+At a high level, Airflow is organized into three main components:
+
+- _The Airflow scheduler_—Parses DAGs, checks their schedule interval, and (if
+  the DAGs’ schedule has passed) starts scheduling the DAGs’ tasks for execution
+  by passing them to the Airflow workers.
+- _The Airflow workers_—Pick up tasks that are scheduled for execution and
+  execute them. As such, the workers are responsible for actually “doing the
+  work.”
+- _The Airflow webserver_—Visualizes the DAGs parsed by the scheduler and
+  provides the main interface for users to monitor DAG runs and their results.
+
+<Figure src="/media/airflow-scheduler-workers-webserver.png" alt="TODO">
+  Overview of the main components involved in Airflow (e.g., the Airflow
+  webserver, scheduler, and workers).
+</Figure>
+
+<Figure src="/media/airflow-process-involved.png" alt="TODO">
+  Schematic overview of the process involved in developing and executing
+  pipelines as DAGs using Airflow.
+</Figure>
+
+Once tasks have been queued for execution, they are picked up by a pool of
+Airflow workers that execute tasks in parallel and track their results. These
+results are communicated to Airflow’s metastore so that users can track the
+progress of tasks and view their logs using the Airflow web interface (provided
+by the Airflow webserver).
+
+##### Monitoring and handling failures
+
+<Figure src="/media/airflow-main-page.png" alt="TODO">
+  The main page of Airflow’s web interface, showing an overview of the available
+  DAGs and their recent results.
+</Figure>
+
+<Figure src="/media/airflow-graph-view.png" alt="TODO">
+  The graph view in Airflow’s web interface, showing an overview of the tasks in
+  an individual DAG and the dependencies between these tasks.
+</Figure>
+
+<Figure src="/media/airflow-tree-view.png" alt="TODO">
+  Airflow’s tree view, showing the results of multiple runs of the umbrella
+  sales model DAG (most recent + historical runs). The columns show the status
+  of one execution of the DAG and the rows show the status of all executions of
+  a single task. Colors (which you can see in the e-book version) indicate the
+  result of the corresponding task. Users can also click on the task “squares”
+  for more details about a given task instance, or to reset the state of a task
+  so that it can be rerun by Airflow, if desired.
+</Figure>
+
+By default, Airflow can handle failures in tasks by retrying them a couple of
+times (optionally with some wait time in between), which can help tasks recover
+from any intermittent failures. If retries don’t help, Airflow will record the
+task as being failed, optionally notifying you about the failure if configured
+to do so. Debugging task failures is pretty straightforward, as the tree view
+allows you to see which tasks failed and dig into their logs. The same view also
+enables you to clear the results of individual tasks to rerun them (together
+with any tasks that depend on that task), allowing you to easily rerun any tasks
+after you make changes to their code.
+
+##### Incremental loading and backfilling
+
+This property of Airflow’s schedule intervals is invaluable for implementing
+efficient data pipelines, as it allows you to build incremental data pipelines.
+In these incremental pipelines, each DAG run processes only data for the
+corresponding time slot (the data’s _delta_) instead of having to reprocess the
+entire data set every time.
+
+Schedule intervals become even more powerful when combined with the concept of
+_backfilling_, which allows you to execute a new DAG for historical schedule
+intervals that occurred in the past. This feature allows you to easily create
+(or _backfill_) new data sets with historical data simply by running your DAG
+for these past schedule intervals.Moreover, by clearing the results of past
+runs, you can also use this Airflow feature to easily rerun any historical tasks
+if you make changes to your task code, allowing you to easily reprocess an
+entire data set when needed.
+
+#### When to use Airflow
+
+##### Reasons to choose Airflow
+
+Several key features that make Airflow ideal for implementing batch-oriented
+data pipelines:
+
+- The ability to implement pipelines using Python code allows you to create
+  arbitrarily complex pipelines using anything you can dream up in Python.
+- The Python foundation of Airflow makes it easy to extend and add integrations
+  with many different systems. In fact, the Airflow community has already
+  developed a rich collection of extensions that allow Airflow to integrate with
+  many different types of databases, cloud services, and so on.
+- Rich scheduling semantics allow you to run your pipelines at regular intervals
+  and build efficient pipelines that use incremental processing to avoid
+  expensive recomputation of existing results.
+- Features such as backfilling enable you to easily (re)process historical data,
+  allowing you to recompute any derived data sets after making changes to your
+  code.
+- Airflow’s rich web interface provides an easy view for monitoring the results
+  of your pipeline runs and debugging any failures that may have occurred.
+
+An additional advantage of Airflow is that it is open source, which guarantees
+that you can build your work on Airflow without getting stuck with any vendor
+lock-in.
+
+##### Reasons not to choose Airflow
+
+Some use cases that are not a good fit for Airflow include the following:
+
+- Handling streaming pipelines, as Airflow is primarily designed to run
+  recurring or batch-oriented tasks, rather than streaming workloads.
+- Implementing highly dynamic pipelines, in which tasks are added/removed
+  between every pipeline run. Although Airflow can implement this kind of
+  dynamic behavior, the web interface will only show tasks that are still
+  defined in the most recent version of the DAG. As such, Airflow favors
+  pipelines that do not change in structure every time they run.
+- Teams with little or no (Python) programming experience, as implementing DAGs
+  in Python can be daunting with little Python experience. In such teams, using
+  a workflow manager with a graphical interface (such as Azure Data Factory) or
+  a static workflow definition may make more sense.
+- Similarly, Python code in DAGs can quickly become complex for larger use
+  cases. As such, implementing and maintaining Airflow DAGs require proper
+  engineering rigor to keep things maintainable in the long run.
+
+Also, Airflow is primarily a workflow/pipeline management platform and does not
+(currently) include more extensive features such as maintaining data lineages,
+data versioning, and so on. Should you require these features, you’ll probably
+need to look at combining Airflow with other specialized tools that provide
+those capabilities.
+
+### Anatomy of an Airflow DAG
+
+#### Collecting data from numerous sources
+
+#### Writing your first Airflow DAG
+
+#### Running a DAG in Airflow
+
+#### Running at regular intervals
+
+#### Handling failing tasks
+
+### Scheduling in Airflow
+
+#### An example: Processing user events
+
+#### Running at regular intervals
+
+#### Processing data incrementally
+
+#### Understanding Airflow's execution dates
+
+#### Using backfilling to fill in past gaps
+
+#### Best practices for designing tasks
+
+### Templating tasks using the Airflow context
+
+#### Inspecting data for processing with Airflow
+
+#### Task context and Jinja templating
+
+#### Hooking up other systems
+
+### Defining dependencies between tasks
+
+#### Basic dependencies
+
+#### Branching
+
+#### Conditional tasks
+
+#### More about trigger rules
+
+#### Sharing data between tasks
+
+#### Chaining Python tasks with the Taskflow API
+
+## Beyong the basics
+
+### Triggering workflows
+
+#### Polling conditions with sensors
+
+#### Triggering other DAGs
+
+#### Starting workflows with REST/CLI
+
+### Communicating with external systems
+
+#### Connecting to cloud services
+
+#### Moving data from between systems
+
+### Building custom components
+
+#### Starting with a PythonOperator
+
+#### Building a custom hook
+
+#### Building a custom operator
+
+#### Building custom sensors
+
+#### Packaging your components
+
+### Testing
+
+#### Getting started with testing
+
+#### Working with DAGs and task context in tests
+
+#### Using tests from development
+
+#### Emulate production environments with Whirl
+
+#### Create DTAP environments
+
+### Running tasks in containers
+
+#### Challenges of many different operators
+
+#### Introducing containers
+
+#### Containers and Airflow
+
+#### Running tasks in Docker
+
+#### Running tasks in Kubernetes
+
+### Airflow in practice
+
+#### Best practices
+
+#### Writing clean DAGs
+
+#### Designing reproducible tasks
+
+#### Handling data efficiently
+
+#### Managing your resources
+
+### Operating Airflow in production
+
+#### Airflow architectures
+
+#### Installing each executor
+
+#### Capturing logs of all Airflow processes
+
+#### Visualizing and monitoring Airflow metrics
+
+#### How to get notified of a failing task
+
+### Securing Airflow
+
+#### Securing the Airflow web interface
+
+#### Encrypting data at rest
+
+#### Connecting with an LDAP service
+
+#### Encrypting traffic to the webserver
+
+#### Fetching credentials from secret management
+
+### Project: Finding the fastest way to get around NYC
+
+#### Understanding the data
+
+#### Extracting the data
+
+#### Applying similar transformations to data
+
+#### Structuring a data pipeline
+
+#### Developing idempotent data pipelines
+
+## In the clouds
+
+### Airflow in the clouds
+
+#### Designing (cloud) deployment strategies
+
+#### Cloud-specific operators and hooks
+
+#### Managed services
+
+#### Choosing a deployment strategy
+
+### Airflow on AWS
+
+#### Deploying Airflow in AWS
+
+#### AWS-specific hooks and operators
+
+#### Use case: Serverless movie ranking with AWS Athena
+
+### Airflow on Azure
+
+#### Deploying Airflow in Azure
+
+#### Azure-specific hooks/operators
+
+#### Example: Serverless movie ranking with Azure
+
+### Airflow in GCP
+
+#### Deploying Airflow in GCP
+
+#### GCP-specific hooks and operators
+
+#### Use case: Serverless movie ranking on GCP

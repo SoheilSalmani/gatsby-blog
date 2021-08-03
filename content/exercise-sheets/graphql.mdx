@@ -1,0 +1,773 @@
+---
+title: GraphQL
+relatedResources:
+  - https://frontendmasters.com/courses/server-graphql-nodejs/
+tags:
+  - graphql
+---
+
+## Server-Side GraphQL in Node.js
+
+1. Create a GraphQL server to display personal information (e-mail, URL of your
+   avatar, list of friends) about you. Use a single `.js` file named `demo.js`.
+
+   <Solution>
+
+   ```shell
+   npm install graphql apollo-server
+   ```
+
+   ```js nu fp=demo.js
+   const { ApolloServer, gql } = require("apollo-server")
+
+   const typeDefs = gql`
+     type User {
+       email: String!
+       avatar: String
+       friends: [User]!
+     }
+
+     type Query {
+       me: User!
+     }
+   `
+
+   const resolvers = {
+     Query: {
+       me() {
+         return {
+           email: "soheil@salmani.me",
+           avatar: "https://soheil.salmani.me/static/avatar.png",
+           friends: [],
+         }
+       },
+     },
+   }
+
+   const server = new ApolloServer({ typeDefs, resolvers })
+
+   server.listen(4000).then(({ url }) => {
+     console.log(`🚀 Server ready at ${url}`)
+   })
+   ```
+
+   </Solution>
+
+2. Create a simple GraphQL server to query a database (a JSON file) about pets
+   (use a type query named `pets`). First, make sure that the `id` value of each
+   animal is `0` and the `createdAt` value is `123456789`.
+
+   <Solution>
+
+   ```shell
+   yarn add graphql apollo-server lowdb lodash
+   ```
+
+   ```js nu fp=src/db/pet.js
+   const createPetModel = db => {
+     return {
+       findMany(filter) {
+         return db.chain.get("pets").filter(filter).value()
+       },
+       findOne(id) {
+         return db.chain.get("pets").find({ id }).value()
+       },
+     }
+   }
+
+   export default createPetModel
+   ```
+
+   ```js nu fp=src/db/user.js
+   const createUserModel = db => {
+     return {
+       findOne(id) {
+         return db.chain.get("users").find({ id }).value()
+       },
+     }
+   }
+
+   export default createUserModel
+   ```
+
+   ```json nu fp=src/db/db.json
+   {
+     "users": [
+       {
+         "id": "DEVELOPER007",
+         "username": "soheil_salmani"
+       }
+     ],
+     "pets": [
+       {
+         "id": "CAT001",
+         "name": "Aspirine",
+         "type": "CAT",
+         "img": "https://soheil.salmani.me/static/aspirine.png",
+         "createdAt": 1627552218325
+       },
+       {
+         "id": "FISH001",
+         "name": "Cloclo",
+         "type": "FISH",
+         "img": "https://soheil.salmani.me/static/cloclo.png",
+         "createdAt": 1627552218325
+       }
+     ]
+   }
+   ```
+
+   ```js nu fp=src/db/index.js
+   import lodash from "lodash"
+   import { Low, JSONFile } from "lowdb"
+   import { join } from "path"
+
+   import createPetModel from "./pet.js"
+   import createUserModel from "./user.js"
+
+   const file = join("src/db/db.json")
+   const adapter = new JSONFile(file)
+   const db = new Low(adapter)
+   await db.read()
+   db.chain = lodash.chain(db.data)
+
+   export const models = {
+     Pet: createPetModel(db),
+     User: createUserModel(db),
+   }
+   export default db
+   ```
+
+   ```js nu fp=src/schema.js
+   import { gql } from "apollo-server"
+
+   const typeDefs = gql`
+     type User {
+       id: ID!
+       username: ID!
+     }
+
+     type Pet {
+       id: ID!
+       type: String!
+       createdAt: Int!
+       name: String!
+       img: String
+     }
+
+     type Query {
+       pets: [Pet]!
+     }
+   `
+
+   export default typeDefs
+   ```
+
+   ```js nu fp=src/resolvers.js
+   const resolvers = {
+     Query: {
+       pets(_, _, { models }) {
+         return models.Pet.findMany()
+       },
+     },
+     Pet: {
+       id() {
+         return 0
+       },
+       createdAt() {
+         return 123456789
+       },
+     },
+   }
+
+   export default resolvers
+   ```
+
+   ```js nu fp=src/server.js
+   import { ApolloServer } from "apollo-server"
+
+   import db, { models } from "./db/index.js"
+   import resolvers from "./resolvers.js"
+   import typeDefs from "./schema.js"
+
+   const server = new ApolloServer({
+     typeDefs,
+     resolvers,
+     context() {
+       return { models, db }
+     },
+   })
+
+   server.listen().then(({ url }) => {
+     console.log(`🚀 Server ready at ${url}`)
+   })
+   ```
+
+   </Solution>
+
+3. Add the possibility to filter pets by `type` and `name`. Use an input type.
+
+    <Solution>
+
+   ```js fp=src/schema.js hl=6..9,12
+   ...
+
+   const typeDefs = gql`
+     ...
+
+     input PetsInput {
+       name: String
+       type: String
+     }
+
+     type Query {
+       pets(input: PetsInput): [Pet]!
+     }
+   `
+
+   ...
+   ```
+
+   ```js fp=src/resolvers.js hl=3..5
+   const resolvers = {
+     Query: {
+       pets(_, { input }, { models }) {
+         return models.Pet.findMany(input)
+       },
+     },
+   }
+
+   export default resolvers
+   ```
+
+    </Solution>
+
+4. Add the possibility to get a pet and user by ID. Define a type query called
+   `pet`, and another called a `user`. Remove the resolvers of the `id` and
+   `createdAt` fields of `Pet`.
+
+   <Solution>
+
+   ```js fp=src/schema.js hl=8..9
+   ...
+
+   const typeDefs = gql`
+     ...
+
+     type Query {
+       pets(input: PetsInput): [Pet]!
+       pet(id: ID!): Pet
+       user(id: ID!): User
+     }
+   `
+
+   ...
+   ```
+
+   ```js fp=src/resolvers.js hl=4..9
+   const resolvers = {
+     Query: {
+       ...
+       pet(_, { id }, { models }) {
+         return models.Pet.findOne(id)
+       },
+       user(_, { id }, { models }) {
+         return models.User.findOne(id)
+       }
+     },
+   }
+
+   export default resolvers
+   ```
+
+    </Solution>
+
+5. Query all cat names.
+
+   <Solution>
+
+   ```graphql nu
+   {
+     pets(input: { type: "CAT" }) {
+       name
+     }
+   }
+   ```
+
+   </Solution>
+
+6. In the `demo.js` file, create a type for shoes and make it possible to query
+   them. It must be possible to filter them by `size` or `brand`, and to create
+   new ones.
+
+   <Solution>
+
+   ```js nu hl=2,11..24,28,31..33,36..39,43..45,54..59
+   import { ApolloServer, gql } from "apollo-server"
+   import lodash from "lodash"
+
+   const typeDefs = gql`
+     type User {
+       email: String!
+       avatar: String
+       friends: [User]!
+     }
+
+     type Shoe {
+       brand: String!
+       size: Int!
+     }
+
+     input ShoesInput {
+       brand: String
+       size: Int
+     }
+
+     input NewShoeInput {
+       brand: String!
+       size: Int!
+     }
+
+     type Query {
+       me: User!
+       shoes(input: ShoesInput): [Shoe]!
+     }
+
+     type Mutation {
+       newShoe(input: NewShoeInput!): Shoe!
+     }
+   `
+
+   let shoes = [
+     { brand: "nike", size: 12 },
+     { brand: "adidas", size: 14 },
+   ]
+
+   const resolvers = {
+     Query: {
+       shoes(_, { input }) {
+         return lodash.filter(shoes, input)
+       },
+       me() {
+         return {
+           email: "soheil@salmani.me",
+           avatar: "https://soheil.salmani.me/static/avatar.png",
+           friends: [],
+         }
+       },
+     },
+     Mutation: {
+       newShoe(_, { input }) {
+         shoes.push(input)
+         return input
+       },
+     },
+   }
+
+   const server = new ApolloServer({
+     typeDefs,
+     resolvers,
+   })
+
+   server.listen(4000).then(() => console.log("on port 4000"))
+   ```
+
+   </Solution>
+
+7. Add the possibility to create new users and new pets.
+
+   <Solution>
+
+   ```js fp=src/schema.js
+   ...
+
+   const typeDefs = gql`
+     ...
+
+     input NewPetInput {
+       name: String!
+       type: String!
+       img: String
+     }
+
+     input NewUserInput {
+       username: String!
+     }
+
+     ...
+
+     type Mutation {
+       newPet(input: NewPetInput!): Pet!
+       newUser(input: NewUserInput!): User!
+     }
+   `
+
+   ...
+   ```
+
+   ```js fp=src/db/pet.js hl=1,6..10
+   import { nanoid } from "nanoid"
+
+   const createPetModel = db => {
+     return {
+       ...
+       async create(pet) {
+         const newPet = { id: nanoid(), createdAt: Date.now(), ...pet }
+         db.data.pets.push(newPet)
+         await db.write()
+         return newPet
+       },
+     }
+   }
+
+   export default createPetModel
+   ```
+
+   ```js fp=src/db/user.js hl=1,6..10
+   import { nanoid } from "nanoid"
+
+   const createUserModel = db => {
+     return {
+       ...
+       async create(user) {
+         const newUser = { id: nanoid(), ...user }
+         db.data.users.push(newUser)
+         await db.write()
+         return newUser
+       },
+     }
+   }
+
+   export default createUserModel
+   ```
+
+   ```js hl=3..12
+   const resolvers = {
+     ...
+     Mutation: {
+       async newPet(_, { input }, { models }) {
+         const pet = await models.Pet.create(input)
+         return pet
+       },
+       async newUser(_, { input }, { models }) {
+         const user = await models.User.create(input)
+         return user
+       }
+     }
+   }
+
+   export default resolvers
+   ```
+
+   </Solution>
+
+8. Use an enum for the `brand` field in `demo.js`.
+
+   <Solution>
+
+   ```js fp=demo.js hl=6..11,14,19,24,38..41
+   ...
+
+   const typeDefs = gql`
+     enum ShoeType {
+       NIKE
+       JORDAN
+       ADIDAS
+       TIMBERLAND
+     }
+
+     ...
+
+     type Shoe {
+       brand: ShoeType!
+       size: Int!
+     }
+
+     input ShoesInput {
+       brand: ShoeType
+       size: Int
+     }
+
+     input NewShoeInput {
+       brand: ShoeType!
+       size: Int!
+     }
+
+     type Query {
+       me: User!
+       shoes(input: ShoesInput): [Shoe]!
+     }
+
+     type Mutation {
+       newShoe(input: NewShoeInput!): Shoe!
+     }
+   `
+
+   let shoes = [
+     { brand: "NIKE", size: 12 },
+     { brand: "ADIDAS", size: 14 },
+   ]
+
+   ...
+   ```
+
+   </Solution>
+
+9. Use an enum for the `type` field for pets.
+
+   <Solution>
+
+   ```js fp=src/schema.js hl=6..10,14,22,27
+   ...
+
+   const typeDefs = gql`
+     enum PetType {
+       CAT
+       DOG
+       FISH
+     }
+
+     ...
+
+     type Pet {
+       id: ID!
+       type: PetType!
+       createdAt: String!
+       name: String!
+       img: String
+     }
+
+     input PetsInput {
+       name: String
+       type: PetType
+     }
+
+     input NewPetInput {
+       name: String!
+       type: PetType!
+       img: String
+     }
+
+     ...
+   `
+
+   ...
+   ```
+
+   </Solution>
+
+10. Use an interface to define multiple type of shoes: `Sneaker` and `Boot`. Add
+    additional fields for each type of shoes.
+
+    <Solution>
+
+    ```js fp=demo.js hl=6..9,11..15,17..21,26..29,33..38
+    ...
+
+    const typeDefs = gql`
+      ...
+
+      interface Shoe {
+        brand: ShoeType!
+        size: Int!
+      }
+
+      type Sneaker implements Shoe {
+        brand: ShoeType!
+        size: Int!
+        sport: String!
+      }
+
+      type Boot implements Shoe {
+        brand: ShoeType!
+        size: Int!
+        hasGrip: Boolean!
+      }
+
+      ...
+    `
+
+    let shoes = [
+      { brand: "NIKE", size: 12, sport: "basketball" },
+      { brand: "TIMBERLAND", size: 14, hasGrip: true },
+    ]
+
+    const resolvers = {
+      ...
+      Shoe: {
+        __resolveType(shoe) {
+          if (shoe.sport) return "Sneaker"
+          return "Boot"
+        }
+      }
+    }
+
+    ...
+    ```
+
+    </Solution>
+
+11. Query the additional fields for each new type.
+
+    <Solution>
+
+    ```graphql
+    {
+      __typename
+      shoes {
+        __typename
+        brand
+        size
+        ... on Sneaker {
+          sport
+          __typename
+        }
+        ... on Boot {
+          hasGrip
+          __typename
+        }
+      }
+    }
+    ```
+
+    </Solution>
+
+12. Define a new type for hats, and a union type named `Garment`. Then, define a
+    type query named `garments` in order to query all fields of each garment.
+    Write that query, and execute it.
+
+    <Solution>
+
+    ```js fp=demo.js hl=6,8..10,16,22..25,30..32,35..41
+    ...
+
+    const typeDefs = gql`
+      ...
+
+      union Garment = Hat | Sneaker | Boot
+
+      type Hat {
+        color: String!
+      }
+
+      ...
+
+      type Query {
+        ...
+        garments: [Garment!]!
+      }
+    `
+
+    ...
+
+    let hats = [
+      { color: "black" },
+      { color: "red" },
+    ]
+
+    const resolvers = {
+      Query: {
+        ...
+        garments() {
+          return [...shoes, ...hats]
+        }
+      },
+      ...
+      Garment: {
+        __resolveType(garment) {
+          if (garment.color) return "Hat"
+          if (garment.sport) return "Sneaker"
+          return "Boot"
+        }
+      }
+    }
+
+    ...
+    ```
+
+    ```graphql
+    query {
+      garments {
+        __typename
+        ... on Hat {
+          color
+        }
+        ... on Sneaker {
+          brand
+          size
+          sport
+        }
+        ... on Boot {
+          brand
+          size
+          hasGrip
+        }
+      }
+    }
+    ```
+
+    </Solution>
+
+13. Build a relationship between users and pets. Empty all data in
+    `src/db/db.json`, and create new data using mutations.
+
+    <Solution>
+
+    ```js fp=schema.js hl=9,18,25
+    ...
+
+    const typeDefs = gql`
+      ...
+
+      type User {
+        id: ID!
+        username: String!
+        pets: [Pet]!
+      }
+
+      type Pet {
+        id: ID!
+        type: PetType!
+        createdAt: String!
+        name: String!
+        img: String
+        owner: User!
+      }
+
+      input NewPetInput {
+        name: String!
+        type: PetType!
+        img: String
+        ownerId: ID!
+      }
+
+      ...
+    `
+
+    ...
+    ```
+
+    ```js hl=8..16
+    const resolvers = {
+      Query: {
+        ...
+      },
+      Mutation: {
+        ...
+      },
+      Pet: {
+        owner(pet, _, { models }) {
+          return models.User.findOne(pet.ownerId)
+        },
+      },
+      User: {
+        pets(user, _, { models }) {
+          return models.Pet.findMany({ ownerId: user.id })
+        },
+      }
+    }
+
+    ...
+    ```
+
+    </Solution>

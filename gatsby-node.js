@@ -30,7 +30,7 @@ exports.onCreateNode = ({ node, getNode, actions }) => {
         name: `type`,
         value: `RevisionNote`,
       })
-    } else if (fileNode.sourceInstanceName === "exercises") {
+    } else if (fileNode.sourceInstanceName === "exercise-sheets") {
       createNodeField({
         node,
         name: `type`,

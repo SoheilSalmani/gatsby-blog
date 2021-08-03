@@ -1,0 +1,223 @@
+---
+title: Data Engineering with Python
+resourceId: "9781839214189"
+stoppedAt: Building Our Data Engineering Infrastructure
+---
+
+## Building Data Pipelines – Extract Transform, and Load
+
+### What is Data Engineering?
+
+#### What Data Engineers Do
+
+Data engineering is part of the big data ecosystem and is closely linked to data
+science. Data engineers work in the background and do not get the same level of
+attention as data scientists, but they are critical to the process of data
+science. The roles and responsibilities of a data engineer vary depending on an
+organization's level of data maturity and staffing levels; however, there are
+some tasks, such as the extracting, loading, and transforming of data, that are
+foundational to the role of a data engineer.
+
+At the lowest level, data engineering involves the movement of data from one
+system or format to another system or format. Using more common terms, data
+engineers query data from a source (extract), they perform some modifications to
+the data (transform), and then they put that data in a location where users can
+access it and know that it is production quality (load). The terms **extract**,
+**transform**, and **load** will be used a lot throughout this book and will
+often be abbreviated to **ETL**. This definition of data engineering is broad
+and simplistic.
+
+##### Required skills and knowledge to be a data engineer
+
+At the start of a data pipeline, data engineers need to know how to extract data
+from files in different formats or different types of databases. This means data
+engineers need to know several languages used to perform many different tasks,
+such as SQL and Python.
+
+During the transformation phase of the data pipeline, data engineers need to be
+familiar with data modeling and structures. They will also need to understand
+the business and what knowledge and insight they are hoping to extract from the
+data because this will impact the design of the data models.
+
+The loading of data into the data warehouse means there needs to be a data
+warehouse with a schema to hold the data. This is also usually the
+responsibility of the data engineer. Data engineers will need to know the basics
+of data warehouse design, as well as the types of databases used in their
+construction.
+
+Lastly, the entire infrastructure that the data pipeline runs on could be the
+responsibility of the data engineer. They need to know how to manage Linux
+servers, as well as how to install and configure software such as Apache Airflow
+or NiFi. As organizations move to the cloud, the data engineer now needs to be
+familiar with spinning up the infrastructure on the cloud platform used by the
+organization – Amazon, Google Cloud Platform, or Azure.
+
+**Information:** Data engineering is the development, operation, and maintenance
+of data infrastructure, either on-premises or in the cloud (or hybrid or
+multi-cloud), comprising databases and pipelines to extract, transform, and load
+data.
+
+#### Data engineering tools
+
+Data engineering is part of the overall big data ecosystem and has to account
+for the three Vs of big data:
+
+- **Volume:** The volume of data has grown substantially. Moving a thousand
+  records from a database requires different tools and techniques than moving
+  millions of rows or handling millions of transactions a minute.
+- **Variety:** Data engineers need tools that handle a variety of data formats
+  in different locations (databases, APIs, files).
+- **Velocity:** The velocity of data is always increasing. Tracking the activity
+  of millions of users on a social network or the purchases of users all over
+  the world requires data engineers to operate often in near real time.
+
+##### Programming languages
+
+The lingua franca of data engineering is **SQL**. Whether you use low-code tools
+or a specific programming language, there is almost no way to get around knowing
+SQL. A strong foundation in SQL allows the data engineer to optimize queries for
+speed and can assist in data transformations. SQL is so prevalent in data
+engineering that data lakes and non-SQL databases have tools to allow the data
+engineer to query them in SQL.
+
+A large number of open source data engineering tools use **Java** and **Scala**
+(Apache projects). Java is a popular, mainstream, object-oriented programming
+language. While debatable, Java is slowly being replaced by other languages that
+run on the **Java Virtual Machine (JVM)**. Scala is one of these languages.
+Other languages that run on the JVM include **Clojure** and **Groovy**. In the
+next chapter, you will be introduced to **Apache NiFi**. NiFi allows you to
+develop custom processers in Java, Clojure, Groovy, and **Jython**. While Java
+is an object-oriented language, there has been a movement toward functional
+programming languages, of which Clojure and Scala are members.
+
+##### Databases
+
+In most production systems, data will be stored in **relational databases**.
+Most proprietary solutions will use either **Oracle** or **Microsoft SQL
+Server**, while open source solutions tend to use **MySQL** or **PostgreSQL**.
+
+The most common databases used in data warehousing are **Amazon Redshift**,
+**Google BigQuery**, **Apache Cassandra**, and other NoSQL databases, such as
+**Elasticsearch**. Amazon Redshift, Google BigQuery, and Cassandra deviate from
+the traditional rows of relational databases and store data in a columnar
+format.
+
+Columnar databases are better suited for fast queries – therefore making them
+well-suited for data warehouses. All three of the columnar databases can be
+queried using SQL – although Cassandra uses the Cassandra Query Language, it is
+similar.
+
+In contrast to columnar databases, there are document, or NoSQL, databases, such
+as Elasticsearch. Elasticsearch is actually a search engine based on **Apache
+Lucene**. It is similar to **Apache Solr** but is more user-friendly.
+Elasticsearch is open source, but it does have proprietary components – most
+notably, the X-Pack plugins for machine learning, graphs, security, and
+alerting/monitoring. Elasticsearch uses the Elastic Query **DSL (Domain-Specific
+Language)**. It is not SQL, but rather a JSON query. Elasticsearch stores data
+as documents, and while it has parent-child documents, it is non-relational
+(like the columnar databases).
+
+##### Data processing engines
+
+Data processing engines allow data engineers to transform data whether it is in
+batches or streams. These engines allow the parallel execution of transformation
+tasks. The most popular engine is **Apache Spark**. Apache Spark allows data
+engineers to write transformations in Python, Java, and Scala.
+
+Apache Spark works with Python DataFrames, making it an ideal tool for Python
+programmers. Spark also has **Resilient Distributed Datasets (RDDs)**. RDDs are
+an immutable and distributed collection of objects. You create them mainly by
+loading in an external data source. RDDs allow fast and distributed processing.
+The tasks in an RDD are run on different nodes within the cluster. Unlike
+DataFrames, they do not try to guess the schema in your data.
+
+Other popular process engines include **Apache Storm**, which utilizes spouts to
+read data and bolts to perform transformations. By connecting them, you build a
+processing pipeline. **Apache Flink** and **Samza** are more modern stream and
+batch processing frameworks that allow you to process unbounded streams. An
+unbounded stream is data that comes in with no known end – a temperature sensor,
+for example, is an unbounded stream. It is constantly reporting temperatures.
+Flink and Samza are excellent choices if you are using Apache Kafka to stream
+data from a system.
+
+##### Data pipelines
+
+Combining a transactional database, a programming language, a processing engine,
+and a data warehouse results in a pipeline. For example, if you select all the
+records of widget sales from the database, run it through Spark to reduce the
+data to widgets and counts, then dump the result to the data warehouse, you have
+a pipeline. But this pipeline is not very useful if you have to execute manually
+every time you want it to run. Data pipelines need a scheduler to allow them to
+run at specified intervals. The simplest way to accomplish this is by using
+**crontab**. Schedule a cron job for your Python file and sit back and watch it
+run every X number of hours.
+
+Managing all the pipelines in crontab becomes difficult fast. How do you keep
+track of pipelines' successes and failures? How do you know what ran and what
+didn't? How do you handle backpressure – if one task runs faster than the next,
+how do you hold data back, so it doesn't overwhelm the task? As your pipelines
+become more advanced, you will quickly outgrow crontab and will need a better
+framework.
+
+###### Apache Airflow
+
+The most popular framework for building data engineering pipelines in Python is
+**Apache Airflow**. Airflow is a workflow management platform built by Airbnb.
+Airflow is made up of a web server, a scheduler, a metastore, a queueing system,
+and executors. You can run Airflow as a single instance, or you can break it up
+into a cluster with many executor nodes – this is most likely how you would run
+it in production. Airflow uses **Directed Acyclic Graphs (DAGs)**.
+
+A DAG is Python code that specifies tasks. A graph is a series of nodes
+connected by a relationship or dependency. In Airflow, they are directed because
+they flow in a direction with each task coming after its dependency.
+
+###### Apache NiFi
+
+Apache NiFi is another framework for building data engineering pipelines, and it
+too utilizes DAGs. Apache NiFi was built by the National Security Agency and is
+used at several federal agencies. Apache NiFi is easier to set up and is useful
+for new data engineers. The GUI is excellent and while you can use Jython,
+Clojure, Scala, or Groovy to write processors, you can accomplish a lot with a
+simple configuration of existing processors.
+
+Apache NiFi also allows clustering and the remote execution of pipelines. It has
+a built-in scheduler and provides the backpressure and monitoring of pipelines.
+Furthermore, Apache NiFi has version control using the NiFi Registry and can be
+used to collect data on the edge using MiNiFi.
+
+Another Python-based tool for data engineering pipelines is Luigi – developed by
+Spotify. Luigi also uses a graph structure and allows you to connect tasks. It
+has a GUI much like Airflow.
+
+### Building Our Data Engineering Infrastructure
+
+### Reading and Writing Files
+
+### Working with Databases
+
+### Cleaning, Transforming, and Enriching Data
+
+### Building a 311 Data Pipeline
+
+## Deploying Data Pipelines in Production
+
+### Features of a Production Pipeline
+
+### Version Control with the NiFi Registry
+
+### Monitoring Data Pipelines
+
+### Deploying Data Pipelines
+
+### Building a Production Data Pipeline
+
+## Beyond Batch – Building Real-Time Data Pipelines
+
+### Building a Kafka Cluster
+
+### Streaming Data with Apache Kafka
+
+### Data Processing with Apache Spark
+
+### Real-Time Edge Data with MiNiFi, Kafka, and Spark

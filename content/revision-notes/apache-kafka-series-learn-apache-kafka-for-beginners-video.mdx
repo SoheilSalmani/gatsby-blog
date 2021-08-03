@@ -1,0 +1,299 @@
+---
+title: Apache Kafka Series - Learn Apache Kafka for Beginners [Video]
+resourceId: "9781789342604"
+stoppedAt: Kafka Theory
+---
+
+## Kafka Introduction
+
+### Apache Kafka in Five Minutes
+
+<Figure
+  src="/media/one-source-system-one-target-system.png"
+  alt="One source system linked to one target system."
+>
+  How companies start: one source system and one target system. Simple at first.
+</Figure>
+
+<Figure
+  src="/media/multiple-source-systems-multiple-target-systems.png"
+  alt="Multiple source systems linked to multiple target systems."
+>
+  After a while... multiple source systems linked to multiple target systems.
+  Very complicated!
+</Figure>
+
+Problems organisations are facing with the previous architecture:
+
+- If you have **4 source systems**, and **6 target systems**, you need to write
+  **24 integrations**!
+- Each integration comes with difficulties around
+  - Protocol - how the data is transported (TCP, HTTP, REST, FTP, JDBC...)
+  - Data format - how the data is parsed (Binary, CSV, JSON, Avro...)
+  - Data schema & evolution - how the data is shaped and may change
+- Each source system will have an **increased load** from the connections
+
+<Figure
+  src="/media/apache-kafka-between-source-and-target-systems.png"
+  alt="Apache Kafka sits between source systems and target systems."
+>
+  Why Apache Kafka: Decoupling of data streams and systems.
+</Figure>
+
+<Figure
+  src="/media/apache-kafka-with-examples-of-source-and-target-systems.png"
+  alt="Sources: website events, pricing data financial transactions and user interactions. Targets: database, analytics, email system and audit."
+>
+  Apache Kafka with examples of source and target systems.
+</Figure>
+
+Why Apache Kafka:
+
+- Created by LinkedIn, now Open Source Project mainly maintained by Confluent
+- Distributed, resilient architecture, fault tolerant
+- Horizontal scalability:
+  - Can scale to 100s of brokers
+  - Can scale to millions of messages per second
+- High performance (latency of less than 10ms) - real time
+- Used by the 2000+ firms, 35% of the Fortune 500:
+  - Airbnb
+  - Netflix
+  - Walmart
+  - LinkedIn
+  - Uber
+
+Apache Kafka use cases:
+
+- Messaging System
+- Activity Tracking
+- Gather metrics from many different locations
+- Application Logs gathering
+- Stream processing (with the Kafka Streams API or Spark for example)
+- De-coupling of system dependencies
+- Integration with Spark, Flink, Storm, Hadoop, and many other Big Data
+  technologies
+
+For example...
+
+- **Netflix** uses Kafka to apply recommendations in real-time while you're
+  watching TV shows.
+- **Uber** uses Kafka to gather user, taxi and trip data in real-time to compute
+  and forecast demand, and compute surge pricing in real-time.
+- **LinkedIn** uses Kafka to prevent spam, collect user interactions to make
+  better connection recommendations in real time.
+
+Remember that Kafka is only used as a transportation mechanism!
+
+## Fundamentals
+
+### Kafka Theory
+
+#### Topics, Partitions, and Offsets
+
+**Topics:** a particular stream of data.
+
+* Similar to a table in a database (without all the constraints).
+* You can have as many topics as you want.
+* A topic is identified by its *name*.
+
+Topics are split in *partitions*:
+
+* Each partition is ordered.
+* Each message within a partition gets an incremental id, called *offset*.
+* Offset only have a meaning for a specific partition. E.g. offset 3 in partition 0 doesn't represent the same data as offset 3 in parition 1.
+* Order is guaranteed only within a partition (not across partitions).
+* Data is kept only for a limited time (default is one week).
+* Once the data is written to a partition, *it can't be changed* (immutability).
+* Data is assigned randomly to a partition unless a key is provided.
+
+<Figure src="/media/kafka-topics-partitions-offsets.png" alt="TODO">
+Topics, partitions and offsets.
+</Figure>
+
+##### Topic example: truck_gps
+
+<Figure src="/media/topic-example-truck-gps.png" alt="TODO">
+A topic example to track the position of all trucks. 
+</Figure>
+
+* Say you have a fleet of trucks, each truck reports its GPS position to Kafka.
+* You can have a topic `truck_gps` that contains the position of all trucks.
+* Each truck will send a message to Kafka every 20 seconds, each message will contain the truck ID and the truck position (latitude and longitude).
+* We choose to create that topic with 10 partitions (arbitrary number).
+
+#### Brokers and Topics
+
+Brokers:
+
+* A Kafka cluster is composed of multiple brokers (servers).
+* Each broker is identified with its ID (integer).
+* Each broker contains certain topic partitions.
+* After connecting to any broker (called a bootstrap broker), you will be connected to the entire cluster.
+* A good number to get started is 3 brokers, but some big clusters have over 100 brokers.
+
+<Figure src="/media/brokers-and-topics.png" alt="TODO">
+Brokers and topics.
+</Figure>
+
+#### Topic Replication
+
+Topic replication factor:
+
+* Topics should have a replication factor > 1 (usually between 2 and 3).
+* This way if a broker is down, another broker can serve the data.
+
+<Figure src="/media/kafka-topic-replication-example.png" alt="TODO">
+Topic replication example with Kafka.
+</Figure>
+
+Concept of Leader for a Partition:
+
+* At any time only one broker can be a leader for given partition.
+* Only that leader can receive and serve data for a partition.
+* The other brokers will synchronize the data.
+* Therefore each partition has one leader and multiple ISR (in-sync replica).
+
+#### Producer and Message Keys
+
+Producers:
+
+* Producers write data to topics (which is made of partitions).
+* Producers automatically know to which broker and partition to write to.
+* In case of Broker failures, Producers will automatically recover.
+* Producers can choose to receive acknowledgement of data writes:
+    * `acks=0`: Producer won't wait for acknowledgment (possible data loss),
+    * `acks=1`: Producer will wait for leader acknowledgment (limited data loss),
+    * `acks=all`: Leader + replicas acknowledgment (no data loss).
+
+<Figure src="/media/kafka-producer.png" alt="TODO">
+A Kafka producer with 3 brokers.
+</Figure>
+
+Producers: Message keys.
+
+* Producers can choose to send a **key** with the message (string, number, etc.).
+* If `key=null`, data is sent round robin (broker 101 then 102 then 103...).
+* If a key is sent, then all messages for that key will always go to the same partition.
+* A key is basically sent if you need message ordering for a specific field (ex: `truck_id`).
+
+<Figure src="/media/message-keys-truck-ids.png" alt="TODO">
+The truck IDs as message keys in Kafka.
+</Figure>
+
+#### Consumers and Consumer Groups
+
+Consumers:
+
+* Consumers read data from a topic (identified by name).
+* Consumers know which broker to read from.
+* In case of broker failures, consumers know how to recover.
+* Data is read in order **within each partitions**.
+
+<Figure src="/media/kafka-consumers-reading-data.png" alt="TODO">
+Consumers reading data in Kafka.
+</Figure>
+
+Consumer Groups:
+
+* Consumers read data in consumer groups.
+* Each consumer within a group reads from exclusive partitions.
+* If you have more consumers than partitions, some consumers will be inactive.
+
+**Note:** Consumers will automatically use a GroupCoordinator and a ConsumerCoordinator to assign a consumer to a partition.
+
+<Figure src="/media/kafka-consumer-groups.png" alt="TODO">
+Consumers groups in Kafka.
+</Figure>
+
+<Figure src="/media/kafka-inactive-consumer.png" alt="TODO">
+Inactive consumer in Kafka.
+</Figure>
+
+#### Consumer Offsets and Delivery Semantics
+
+Consumer Offsets:
+
+* Kafka stores the offsets at which a consumer group has been reading.
+* The offsets committed live in a Kafka topic named `__consumer_offsets`.
+* When a consumer in a group has processed data received from Kafka, it should be committing the offsets.
+* If a consumer dies, it will be able to read back from where it left off thanks to the committed consumer offsets!
+
+Delivery semantics for consumers:
+
+* Consumer choose when to commit offsets.
+* There are 3 delivery semantics:
+  * *At most once:*
+    * Offsets are committed as soon as the message is received.
+    * If the processing goes wrong, the message will be lost (it won't be read again).
+  * *At least once:*
+    * Offsets are committed after the message is processed.
+    * If the processing goes wrong, the message will be read again.
+    * This can result in duplicate processing of messages. Make sure your processing is *idempotent* (i.e. processing again the messages won't impact your systems).
+  * *Exactly once:*
+    * Can be achieved for Kafka &rArr; Kafka workflows using Kafka Streams API.
+    * For Kafka &rArr; External System workflows, use an *idempotent* consumer.
+
+#### Kafka Broker Discovery
+
+* Every Kafka broker is also called a "bootstrap server".
+* That means that **you only need to connect to one broker**, and you will be connected to the entire cluster.
+* Each broker knows about all brokers, topics and partitions (metadata).
+
+<Figure src="/media/how-kafka-broker-discovery-works.png" alt="TODO">
+How Kafka broker discovery works.
+</Figure>
+
+#### Zookeeper
+
+* Zookeeper manages brokers (keeps a list of them).
+* Zookeeper helps in performing leader election for partitions.
+* Zookeeper sends notifications to Kafka in case of changes (e.g. new topic, broker dies, broker comes up, delete topics, etc.).
+* **Kafka can't work without Zookeeper.**
+* Zookeeper by design operates with an odd number of servers (3, 5, 7...).
+* Zookeeper has a leader (handle writes) the rest of the servers are followers (handle reads).
+
+<Figure src="/media/kafka-zookeeper-servers.png" alt="TODO">
+Zookeeper servers in Kafka.
+</Figure>
+
+#### Kafka Guarantees
+
+* Messages are appended to a topic-partition in the order they are sent.
+* Consumers read messages in the order stored in a topic-partition.
+* With a replication factor of N, producers and consumers can tolerate up to N-1 brokers being down.
+* This is why a replication factor of 3 is a good idea:
+  * Allows for one broker to be taken down for maintenance,
+  * Allows for another broker to be taken down unexpectedly.
+* As long as the number of partitions remains constant for a topic (no new partitions), the same key will always go to the same partition.
+
+#### Theory Roundup
+
+<Figure src="/media/kafka-theory-round-up.png" alt="TODO">
+Kafka theory round-up.
+</Figure>
+
+### Starting Kafka
+
+### Command Line Interface (CLI) 101
+
+### Kafka Java Programming 101
+
+## Kafka Real-World Project
+
+### Kafka Twitter Producer and Advanced Configurations
+
+### Kafka Elasticsearch Consumer and Advanced Configurations
+
+### Kafka Ecosystem and Real-World Architectures
+
+### Kafka Extended APIs for Developers
+
+### Real World Insights and Case Studies (Big Data / Fast Data)
+
+### Kafka in the Enterprise for Admins
+
+## Advanced & Annexes
+
+### Advanced Topics Configurations
+
+### Annexes

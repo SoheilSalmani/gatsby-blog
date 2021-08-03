@@ -14,8 +14,8 @@ module.exports = {
     {
       resolve: `gatsby-source-filesystem`,
       options: {
-        name: `exercises`,
-        path: `content/exercises`,
+        name: `exercise-sheets`,
+        path: `content/exercise-sheets`,
       },
     },
     {

@@ -1,0 +1,339 @@
+---
+title: Computer Networks, Global Edition
+resourceId: "9781292374017"
+stoppedAt: Types of Computer Networks
+---
+
+## Introduction
+
+### Uses of Computer Networks
+
+The old model of a single computer serving all of the organization’s
+computational needs has been replaced by one in which a large number of separate
+but interconnected computers do the job. These systems are called **computer
+networks**.
+
+Throughout the book, we will use the term "computer network" to mean a
+collection of interconnected, autonomous computing devices. Two computers are
+said to be interconnected if they can exchange information. Interconnection can
+take place over a variety of transmission media including copper wire, fiber
+optic cable, and radio waves (e.g., microwave, infrared, communication
+satellites).
+
+#### Access to Information
+
+Much information on the Internet is accessed using a client-server model, where
+a client explicitly requests information from a server that hosts that
+information.
+
+<Figure src="/media/two-clients-one-server.png" alt="TODO">
+  A network with two clients and one server.
+</Figure>
+
+The **client-server model** is widely used and forms the basis of much network
+usage. The most popular realization is that of a **Web application**, where a
+server generates Web pages based on its database in response to client requests
+that may update the database.
+
+If we look at the client-server model, to a first approximation we see that two
+processes (running programs) are involved, one on the client machine and one on
+the server machine. Communication takes the form of the client process sending a
+message over the network to the server process. The client process then waits
+for a reply message. When the server process gets the request, it performs the
+requested work or looks up the requested data and sends back a reply.
+
+<Figure src="/media/client-server-model.png" alt="TODO">
+  The client-server model involves requests and replies.
+</Figure>
+
+Another popular model for accessing information is **peer-to-peer**
+communication. In this form, individuals who form a loose group can communicate
+with others in the group. Every person can, in principle, communicate with one
+or more other people; there is no fixed division into clients and servers.
+
+<Figure src="/media/peer-to-peer-system.png" alt="TODO">
+  In a peer-to-peer system, there are no fixed clients and servers.
+</Figure>
+
+Many peer-to-peer systems, such as BitTorrent, do not have a central database of
+content. Instead, each user maintains a local database of content, as well as a
+list of other members of the system. A new user can then go to any existing
+member to see what he has and get the names of other members to inspect for more
+content and more names. This lookup process can be repeated indefinitely to
+build up a large local database of what is out there.
+
+#### Person-to-Person Communication
+
+Many Internet users now rely on some form of **instant messaging** to
+communicate with other people on the Internet. This facility, derived from the
+UNIX _talk_ program in use since around 1970, allows two people to type messages
+at each other in real time.
+
+There are also multi-person messaging services too (Twitter).
+
+The Internet can be used by applications to carry audio (e.g., Internet radio
+stations, streaming music services) and video (e.g., Netflix, YouTube).
+
+In the long run, the use of networks to enhance human-to-human communication may
+prove more important than any of the others. It may become hugely important to
+people who are geographically challenged, giving them the same access to
+services as people living in the middle of a big city.
+
+Between person-to-person communications and accessing information are **social
+network** applications. In these applications, the flow of information is driven
+by the relationships that people declare between each other. One of the most
+popular social networking sites is Facebook. It lets people create and update
+their personal profiles and shares the updates with other people who they have
+declared to be their friends. Other social networking applications can make
+introductions via friends of friends, send news messages to friends, such as
+Twitter above, and much more.
+
+Even more loosely, groups of people can work together to create content. A
+**wiki**, for example, is a collaborative Web site that the members of a
+community edit. The most famous wiki is the **Wikipedia**, an encyclopedia
+anyone can read or edit, but there are thousands of other wikis.
+
+#### Electronic Commerce
+
+Online shopping is already popular; users can browse the online catalogs of
+thousands of companies and have products shipped right to their doorsteps. After
+the customer buys a product electronically but cannot figure out how to use it,
+online technical support may be consulted.
+
+Another area in which e-commerce is widely used is access to financial
+institutions. Many people already pay their bills, manage their bank accounts,
+and even handle their investments electronically. Financial technology or
+"fintech" applications allow users to conduct a wide variety of financial
+transactions online, including transferring money between bank accounts, or even
+between friends.
+
+Online auctions of second-hand goods have become a massive industry. Unlike
+traditional e-commerce, which follows the client-server model, online auctions
+are peer-to-peer in the sense that consumers can act as both buyers and sellers,
+although there is a central server that holds the database of products for sale.
+
+Some forms of e-commerce:
+
+- **B2C** (_Business-to-consumer_). Example: Ordering books online.
+- **B2B** (_Business-to-business_). Example: Car manufacturer ordering tires
+  from a supplier.
+- **G2C** (_Governement-to-consumer_). Example: Government distributing tax
+  forms electronically.
+- **C2C** (_Consumer-to-consumer_). Auctioning second-hand products online.
+- **P2P** (_Peer-to-peer_). Music of file sharing; Skype.
+
+#### Entertainment
+
+Our fourth category is entertainment. This has made huge strides in the home in
+recent years, with the distribution of music, radio and television programs, and
+movies over the Internet beginning to rival that of traditional mechanisms.
+Users can find, buy, and download MP3 songs and high-definition movies and add
+them to their personal collection. TV shows now reach many homes via **IPTV (IP
+Television)** systems that are based on IP technology instead of cable TV or
+radio transmissions. Media streaming applications let users tune to Internet
+radio stations or watch recent episodes of their favorite TV shows or movies.
+Naturally, all of this content can be moved around your house between different
+devices, displays, and speakers, usually via a wireless network.
+
+Soon, it may be possible to search for any movie or television program ever
+made, in any country, and have it be displayed on your screen instantly. New
+films may become interactive, where the user is occasionally prompted for the
+story direction (should Macbeth murder the king or just bide his time?) with
+alternative scenarios provided for all cases. Live television may also become
+interactive, with the audience participating in quiz shows, choosing among
+contestants, and so on.
+
+Another form of entertainment is game playing. Already we have multi-person
+real-time simulation games, like hide-and-seek in a virtual dungeon, and flight
+simulators with the players on one team trying to shoot down the players on the
+opposing team. Virtual worlds provide a persistent setting in which thousands of
+users can experience a shared reality with three-dimensional graphics.
+
+#### The Internet of Things
+
+**Ubiquitous computing** entails computing that is embedded in everyday life as
+in the vision of Mark Weiser (1991). Many homes are already wired with security
+systems that include door and window sensors. Also, there are many more sensors
+that can be folded into a smart home monitor, such as energy consumption. Smart
+electricity, gas, and water meters report usage over the network. This
+functionality saves the company money as there is then no need to send people to
+read the meters. Smoke detectors can call the fire department instead of just
+making a big noise (which has little value if no one is home). Smart
+refrigerators could order more milk when it is almost gone. As the cost of
+sensing and communication drops, more and more measurement and reporting will be
+done with networks. This ongoing revolution, often referred to as the **IoT
+(Internet of Things)**, is poised to connect just about every electronic device
+we purchase to the Internet.
+
+Increasingly, consumer electronic devices are networked. For example, some
+high-end cameras already have a wireless network capability and use it to send
+photos to a nearby display for viewing. Professional sports photographers can
+also send their photos to their editors in real-time, first wirelessly to an
+access point then over the Internet. Devices such as televisions that plug into
+the wall can use **power-line networks** to send information throughout the
+house over the wires that carry electricity. It may not be very surprising to
+have these objects on the network, but objects that we do not think of as
+computers may sense and communicate information too. For example, your shower
+may record water usage, give you visual feedback while you lather up, and report
+to a home environmental monitoring application when you are done to help save on
+your water bill.
+
+### Types of Computer Networks
+
+#### Broadband Access Networks
+
+Internet access provides home users with **connectivity** to remote computers.
+
+Today, broadband access networks are proliferating. In many parts of the
+world, broadband access is delivered to homes through copper (e.g., telephone
+lines), coaxial cable (e.g., cable), or optical fiber. The speeds of broadband Internet
+access continue to increase as well, with many broadband access providers in developed
+countries delivering a gigabit per second to individual homes. In some
+parts of the world, particularly in developing regions, the predominant mode of Internet
+access is mobile.
+
+#### Mobile and Wireless Access Networks
+
+
+
+### Network Technology, from Local to Global
+
+### Examples of Networks
+
+### Network Protocols
+
+### Reference Models
+
+### Standardization
+
+### Policy, Legal, and Social Issues
+
+### Metric Units
+
+## The Physical Layer
+
+### Guided Transmission Media
+
+### Wireless Transmission
+
+### Using the Spectrum for Transmission
+
+### From Waveforms to Bits
+
+### The Public Switched Telephone Network
+
+### Cellular Networks
+
+### Cable Networks
+
+### Communication Satellites
+
+### Comparing Different Access Networks
+
+### Policy at the Physical Layer
+
+## The Data Link Layer
+
+### Data Link Layer Design Issues
+
+### Error Detection and Correction
+
+### Elementary Data Link Protocols
+
+### Improving Efficiency
+
+### Data Link Protocols in Practice
+
+## The Medium Access Control Sublayer
+
+### The Channel Allocation Problem
+
+### Multiple Access Protocols
+
+### Ethernet
+
+### Wireless LANs
+
+### Bluetooth
+
+### DOCSIS
+
+### Data Link Layer Switching
+
+## The Network Layer
+
+### Network Layer Design Issues
+
+### Routing Algorithms in a Single Network
+
+### Traffic Management at the Network Layer
+
+### Quality of Service and Application QoE
+
+### Internetworking
+
+### Software-Defined Networking
+
+### The Network Layer in the Internet
+
+### Policy at the Network Layer
+
+## The Transport Layer
+
+### The Transport Service
+
+### Elements of Transport Protocols
+
+### Congestion Control
+
+### The Internet Transport Protocols: UDP
+
+### The Internet Transport Protocols: TCP
+
+### Transport Protocols and Congestion Control
+
+### Performance Issues
+
+## The Application Layer
+
+### The Domain Name System (DNS)
+
+### Electronic Mail
+
+### The World Wide Web
+
+### Streaming Audio and Video
+
+### Content Delivery
+
+## Network Security
+
+### Fundamentals of Network Security
+
+### The Core Ingredients of an Attack
+
+### Firewalls and Intrusion Detection Systems
+
+### Cryptography
+
+### Symmetric-Key Algorithms
+
+### Public-Key Algorithms
+
+### Digital Signatures
+
+### Management of Public Keys
+
+### Authentication Protocols
+
+### Communication Security
+
+### Email Security
+
+### Web Security
+
+### Social Issues
+
+## Reading List and Bibliography
+
+### Suggestions for Further Reading

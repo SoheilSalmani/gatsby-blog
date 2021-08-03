@@ -1,5 +1,6 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
+import _ from "lodash"
 import Highlight, { defaultProps } from "prism-react-renderer"
 import theme from "prism-react-renderer/themes/nightOwl"
 import React from "react"
@@ -32,15 +33,15 @@ const LineNumber = styled.div`
   text-align: right;
   padding-left: 0.5rem;
   background-color: ${({ lineNumber, highlightedLines }) =>
-    highlightedLines.includes((lineNumber + 1).toString())
+    highlightedLines.includes(lineNumber + 1)
       ? "rgba(199, 146, 234, 0.25)"
       : "transparent"};
   color: ${({ lineNumber, highlightedLines }) =>
-    highlightedLines.includes((lineNumber + 1).toString())
+    highlightedLines.includes(lineNumber + 1)
       ? "rgba(255, 255, 255, 0.5)"
       : "rgba(255, 255, 255, 0.3)"};
   border-left: ${({ lineNumber, highlightedLines }) =>
-    highlightedLines.includes((lineNumber + 1).toString())
+    highlightedLines.includes(lineNumber + 1)
       ? "5px solid rgb(199, 146, 234)"
       : "5px solid rgb(1, 22, 39)"};
 `
@@ -52,18 +53,26 @@ const LineContent = styled.div`
   padding-left: ${({ isNumbered }) => (isNumbered ? "1rem" : "0.5rem")};
   padding-right: ${({ isNumbered }) => (isNumbered ? "1rem" : "0.5rem")};
   background-color: ${({ lineNumber, highlightedLines }) =>
-    highlightedLines.includes((lineNumber + 1).toString())
+    highlightedLines.includes(lineNumber + 1)
       ? "rgba(199, 146, 234, 0.25)"
       : "transparent"};
   border-left: ${({ lineNumber, highlightedLines, isNumbered }) =>
-    highlightedLines.includes((lineNumber + 1).toString()) && !isNumbered
+    highlightedLines.includes(lineNumber + 1) && !isNumbered
       ? "5px solid rgb(199, 146, 234)"
       : "5px solid transparent"};
 `
 
 export default function CodeBlock({ children, className, hl = "", nu, fp }) {
   const language = className.replace(/language-/, "")
-  const highlightedLines = hl.split(",")
+  let highlightedLines = hl.split(",")
+  highlightedLines = highlightedLines.map(section => {
+    const range = section.split("..")
+    if (range.length > 1) {
+      return _.range(Number(range[0]), Number(range[1]) + 1)
+    }
+    return Number(section)
+  })
+  highlightedLines = highlightedLines.flat()
 
   return (
     <Highlight

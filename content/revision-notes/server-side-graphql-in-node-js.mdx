@@ -1,7 +1,6 @@
 ---
 title: Server-Side GraphQL in Node.js
 resourceId: https://frontendmasters.com/courses/server-graphql-nodejs/
-stoppedAt: TODO
 ---
 
 ## Introduction
@@ -70,7 +69,7 @@ Basic parts:
 npm install graphql apollo-server
 ```
 
-```js
+```js nu fp=demo.js
 const { ApolloServer, gql } = require("apollo-server")
 
 const typeDefs = gql`
@@ -90,7 +89,7 @@ const resolvers = {
     me() {
       return {
         email: "soheil@salmani.me",
-        avatar: "http://soheil.salmani.me/static/avatar.png",
+        avatar: "https://soheil.salmani.me/static/avatar.png",
         friends: [],
       }
     },
@@ -141,16 +140,16 @@ Type with a field, and a Resolver for that field.
 ### Query Types Solution
 
 ```shell
-yarn add graphql apollo-server lowdb
+yarn add graphql apollo-server lowdb lodash
 ```
 
-```js fp=src/schema.js
+```js fp=src/schema.js nu
 import { gql } from "apollo-server"
 
 const typeDefs = gql`
   type User {
     id: ID!
-    username: ID!
+    username: String!
   }
 
   type Pet {
@@ -169,7 +168,7 @@ const typeDefs = gql`
 export default typeDefs
 ```
 
-```js fp=src/resolvers.js
+```js fp=src/resolvers.js nu
 const resolvers = {
   Query: {
     pets(_, __, ctx) {
@@ -186,7 +185,7 @@ const resolvers = {
 export default resolvers
 ```
 
-```js fp=src/server.js
+```js fp=src/server.js nu
 import { ApolloServer } from "apollo-server"
 import db, { models } from "./db/index.js"
 import typeDefs from "./schema.js"
@@ -205,40 +204,38 @@ server.listen().then(({ url }) => {
 })
 ```
 
-```js fp=src/db/pet.js
-import _ from lodash
-
+```js fp=src/db/pet.js nu
 const createPetModel = db => {
   return {
     findMany(filter) {
-      return _.filter(db.data.pet, filter)
+      return db.chain.get("pets").filter(filter).value()
     },
-    findOne(filter) {
-      return _.filter(db.data.pet, filter)
-    }
+    findOne(id) {
+      return db.chain.get("pets").find({ id }).value()
+    },
   }
 }
 
 export default createPetModel
 ```
 
-```js fp=src/db/user.js
-import _ from lodash
-
+```js fp=src/db/user.js nu
 const createUserModel = db => {
   return {
-    findMany(filter) {
-      return _.filter(db.data.user, filter)
-    }
+    findOne(id) {
+      return db.chain.get("users").find({ id }).value()
+    },
   }
 }
 
 export default createUserModel
 ```
 
-```js fp=src/db/index.js
-import { join } from "path"
+```js fp=src/db/index.js nu
+import lodash from "lodash"
 import { Low, JSONFile } from "lowdb"
+import { join } from "path"
+
 import createPetModel from "./pet.js"
 import createUserModel from "./user.js"
 
@@ -246,6 +243,7 @@ const file = join("src/db/db.json")
 const adapter = new JSONFile(file)
 const db = new Low(adapter)
 await db.read()
+db.chain = lodash.chain(db.data)
 
 export const models = {
   Pet: createPetModel(db),
@@ -254,13 +252,30 @@ export const models = {
 export default db
 ```
 
-```json fp=src/db/db.json
+```json fp=src/db/db.json nu
 {
-  "user": {
-    "id": "jBWMVGjm50l6LGwepDoty",
-    "username": "frontendmaster"
-  },
-  "pet": []
+  "users": [
+    {
+      "id": "DEVELOPER007",
+      "username": "soheil_salmani"
+    }
+  ],
+  "pets": [
+    {
+      "id": "CAT001",
+      "name": "Aspirine",
+      "type": "CAT",
+      "img": "https://soheil.salmani.me/static/aspirine.png",
+      "createdAt": 1627552218325
+    },
+    {
+      "id": "FISH001",
+      "name": "Cloclo",
+      "type": "FISH",
+      "img": "https://soheil.salmani.me/static/cloclo.png",
+      "createdAt": 1627552218325
+    }
+  ]
 }
 ```
 
@@ -276,7 +291,7 @@ Arguments:
 - Can be added to any field
 - Either have to be Scalars or Input Types
 
-```js fp=src/schema.js
+```js fp=src/schema.js hl=5
 const typeDefs = gql`
   ...
 
@@ -286,8 +301,8 @@ const typeDefs = gql`
 `
 ```
 
-```js fp=src/resolvers.js
-module.exports = {
+```js fp=src/resolvers.js hl=3
+const resolvers = {
   Query: {
     pets(_, { type }, ctx) {
       ...
@@ -295,6 +310,8 @@ module.exports = {
   },
   ...
 }
+
+export default resolvers
 ```
 
 ### Input Types
@@ -304,19 +321,19 @@ Input Type:
 - Just like Types, but used for Arguments.
 - All field value types must be other Input Types or Scalars
 
-```js fp=src/schema.js
+```js fp=src/schema.js hl=6,7,8,9,12
 ...
 
 const typeDefs = gql`
   ...
 
-  input PetInput {
+  input PetsInput {
     name: String
     type: String
   }
 
   type Query {
-    pets(input: PetInput): [Pet]!
+    pets(input: PetsInput): [Pet]!
   }
 `
 
@@ -325,38 +342,35 @@ const typeDefs = gql`
 
 ### Arguments & Input Types Solution
 
-```js fp=src/schema.js
+```js fp=src/schema.js hl=8
 ...
 
 const typeDefs = gql`
   ...
 
-  input PetInput {
-    name: String
-    type: String
-  }
-
   type Query {
-    pets(input: PetInput): [Pet]!
-    pet(input: PetInput): Pet
+    pets(input: PetsInput): [Pet]!
+    pet(id: ID!): Pet
   }
 `
 
 ...
 ```
 
-```js fp=src/resolvers.js
-module.exports = {
+```js fp=src/resolvers.js hl=3..8
+const resolvers = {
   Query: {
     pets(_, { input }, ctx) {
       return ctx.models.Pet.findMany(input)
     },
-    pet(_, { input }, ctx) {
-      return ctx.models.Pet.findOne(input)
+    pet(_, { id }, ctx) {
+      return ctx.models.Pet.findOne(id)
     }
   },
   ...
 }
+
+export default resolvers
 ```
 
 ```graphql
@@ -383,15 +397,30 @@ Creating Mutations:
 - Add arguments for Mutation fields
 - Create Resolvers for Mutation fields
 
-```js fp=src/schema.js
+```js fp=demo.js nu hl=6..19,23,26..28,33..38,47..51
 ...
 
 const typeDefs = gql`
   ...
 
+  type Shoe {
+    brand: String!
+    size: Int!
+  }
+
+  input ShoesInput {
+    brand: String
+    size: Int
+  }
+
   input NewShoeInput {
     brand: String!
     size: Int!
+  }
+
+  type Query {
+    me: User!
+    shoes(input: ShoesInput): [Shoe]!
   }
 
   type Mutation {
@@ -399,13 +428,21 @@ const typeDefs = gql`
   }
 `
 
-...
-```
-
-```js fp=src/resolvers.js
-module.exports = {
+const resolvers = {
   Query: {
-    ...
+    shoes(_, { input }) {
+      return [
+        { brand: "NIKE", size: 12 },
+        { brand: "ADIDAS", size: 14 }
+      ].filter(shoe => shoe.brand === input.brand)
+    },
+    me() {
+      return {
+        email: "soheil@salmani.me",
+        avatar: "https://soheil.salmani.me/static/avatar.png",
+        friends: [],
+      }
+    },
   },
   Mutation: {
     newShoe(_, { input }) {
@@ -413,6 +450,8 @@ module.exports = {
     }
   }
 }
+
+...
 ```
 
 ```graphql
@@ -432,21 +471,20 @@ Return values for Mutation fields:
 
 ### Mutation Solution
 
-```js fp=src/db/pet.js
-import _ from "lodash"
-import nanoid from "nanoid"
+```shell
+npm install nanoid
+```
+
+```js fp=src/db/pet.js hl=1,6..10
+import { nanoid } from "nanoid"
 
 const createPetModel = db => {
   return {
-    findMany(filter) {
-      return _.filter(db.data.pet, filter)
-    },
-    findOne(filter) {
-      return _.filter(db.data.pet, filter)
-    },
-    create(pet) {
+    ...
+    async create(pet) {
       const newPet = { id: nanoid(), createdAt: Date.now(), ...pet }
-      db.data.pet.push(newPet).write()
+      db.data.pets.push(newPet)
+      await db.write()
       return newPet
     },
   }
@@ -466,6 +504,8 @@ const typeDefs = gql`
     type: String!
   }
 
+  ...
+
   type Mutation {
     newPet(input: NewPetInput!): Pet!
   }
@@ -474,18 +514,20 @@ const typeDefs = gql`
 ...
 ```
 
-```js fp=src/resolvers.js
-module.exports = {
+```js fp=src/resolvers.js hl=5..10
+const resolvers = {
   Query: {
     ...
   },
   Mutation: {
-    newPet(_, { input }, ctx) {
-      const pet = ctx.models.Pet.create(input)
+    async newPet(_, { input }, ctx) {
+      const pet = await ctx.models.Pet.create(input)
       return pet
     }
   }
 }
+
+export default resolvers
 ```
 
 ## Advanced SDL
@@ -496,7 +538,7 @@ module.exports = {
 enum field must resolve to one of the values in the Enum. Great for limiting a
 field to only a few different options.
 
-```js fp=src/schema.js
+```js fp=demo.js hl=6..11,14,19,24
 ...
 
 const typeDefs = gql`
@@ -507,11 +549,6 @@ const typeDefs = gql`
     JORDAN
     ADIDAS
     TIMBERLAND
-  }
-
-  input NewShoeInput {
-    brand: ShoeType!
-    size: Int!
   }
 
   type Shoe {
@@ -527,6 +564,11 @@ const typeDefs = gql`
   input NewShoeInput {
     brand: ShoeType!
     size: Int!
+  }
+
+  type Query {
+    me: User!
+    shoes(input: ShoesInput): [Shoe]!
   }
 
   type Mutation {
@@ -552,7 +594,7 @@ mutation {
 used as foundations for explicit Types. Great for when you have Types that share
 common fields, but differ slightly.
 
-```js fp=src/schema.js
+```js fp=demo.js hl=6..21,30..31,39..44
 ...
 
 const typeDefs = gql`
@@ -578,11 +620,7 @@ const typeDefs = gql`
   ...
 `
 
-...
-```
-
-```js fp=src/resolvers.js
-module.exports = {
+const resolvers = {
   Query: {
     shoes(_, { input }) {
       return [
@@ -593,9 +631,7 @@ module.exports = {
     ...
   },
   Mutation: {
-    newShoe(_, { input }) {
-      return input
-    }
+    ...
   },
   Shoe: {
     __resolverType(shoe) {
@@ -604,11 +640,15 @@ module.exports = {
     }
   }
 }
+
+...
 ```
 
 ```graphql
 {
+  __typename
   shoes {
+    __typename
     brand
     size
     ... on Sneaker {
@@ -629,7 +669,7 @@ module.exports = {
 Types. Useful when you need to access more than one disjoint Type from one
 Query, like a search.
 
-```js fp=src/schema.js
+```js fp=demo.js hl=4,11..16
 ...
 
 const typeDefs = gql`
@@ -638,18 +678,8 @@ const typeDefs = gql`
   ...
 `
 
-...
-```
-
-```js fp=src/resolvers.js
-module.exports = {
+const resolvers = {
   ...
-  Shoe: {
-    __resolverType(shoe) {
-      if (shoe.sport) return "Sneaker"
-      return "Boot"
-    }
-  },
   Footwear: {
     __resolverType(shoe) {
       if (shoe.sport) return "Sneaker"
@@ -657,6 +687,8 @@ module.exports = {
     }
   }
 }
+
+...
 ```
 
 ### Relationships
@@ -673,7 +705,7 @@ Adding Relationships:
 - Add a Type as a field value on another Type
 - Create resolvers for those fields on the Type
 
-```js fp=src/schema.js
+```js fp=demo.js hl=9,15,21,28 nu
 ...
 
 const typeDefs = gql`
@@ -691,17 +723,33 @@ const typeDefs = gql`
     user: User!
   }
 
+  type Sneaker implements Shoe {
+    brand: ShoeType!
+    size: Int!
+    user: User!
+    sport: String!
+  }
+
+  type Boot implements Shoe {
+    brand: ShoeType!
+    size: Int!
+    user: User!
+    hasGrip: Boolean!
+  }
+
   ...
 `
 
 ...
 ```
 
-```js fp=src/resolvers.js
+### Relationships Demo
+
+```js fp=demo.js hl=1..11,16,27,36..45 nu
 const user = {
   id: 1,
-  email: "yoda@masters.com",
-  avatar: "http://yoda.png",
+  email: "soheil@salmani.me",
+  avatar: "https://soheil.salmani.me/static/avatar.png",
   shoes: []
 }
 
@@ -710,7 +758,7 @@ const shoes = [
   { brand: "TIMBERLAND", size: 14, hasGrip: true,  user: 1 }
 ]
 
-module.exports = {
+const resolvers = {
   Query: {
     shoes(_, { input }) {
       return shoes
@@ -734,12 +782,12 @@ module.exports = {
     }
   },
   Sneakers: {
-    user(shoes) {
+    user(shoe) {
       return user
     }
   },
   Boot: {
-    user(shoes) {
+    user(shoe) {
       return user
     }
   }
@@ -747,3 +795,80 @@ module.exports = {
 ```
 
 ### Relationships Solution: Adding Fields on Types
+
+```js fp=src/schema.js hl=7,16
+...
+
+const typeDefs = gql`
+  type User {
+    id: ID!
+    username: String!
+    pets: [Pet]!
+  }
+
+  type Pet {
+    id: ID!
+    type: String!
+    createdAt: Int!
+    name: String!
+    img: String
+    owner: User!
+  }
+
+  ...
+`
+
+...
+```
+
+```json fp=src/db/db.json hl=13,21
+{
+  "user": {
+    "id": "DEVELOPER007",
+    "username": "soheil_salmani"
+  },
+  "pets": [
+    {
+      "id": "CAT001",
+      "name": "Aspirine",
+      "type": "CAT",
+      "img": "https://soheil.salmani.me/static/aspirine.png",
+      "createdAt": 1627552218325,
+      "user": "DEVELOPER007"
+    },
+    {
+      "id": "FISH001",
+      "name": "Cloclo",
+      "type": "FISH",
+      "img": "https://soheil.salmani.me/static/cloclo.png",
+      "createdAt": 1627552218325,
+      "user": "DEVELOPER007"
+    }
+  ]
+}
+```
+
+### Relationships Solution: Adding Resolvers
+
+```js fp=src/resolvers.js hl=8..17
+const resolvers = {
+  Query: {
+    ...
+  },
+  Mutation: {
+    ...
+  },
+  Pet: {
+    owner(_, __, ctx) {
+      return ctx.models.User.findOne()
+    }
+  },
+  User: {
+    pets(_, __, ctx) {
+      return ctx.models.Pet.findMay()
+    }
+  }
+}
+
+export default resolvers
+```

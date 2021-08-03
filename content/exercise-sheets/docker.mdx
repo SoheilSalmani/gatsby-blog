@@ -1,0 +1,289 @@
+---
+title: Docker
+relatedResources: ["9781839213403"]
+tags: ["Docker", "DevOps"]
+---
+
+1. A single Docker image can be used on any Docker host, regardless of the
+   architecture used.
+
+   - A. True
+   - B. False
+
+   <Solution>
+     (B) False. A container that is based on one architecture cannot be run on a
+     different architecture. For example, an image created using the x86
+     architecture will not run on an ARM-based architecture.
+   </Solution>
+
+2. What does Docker use to merge multiple image layers into a single filesystem?
+
+   - A. Merged filesystem
+   - B. NTFS filesystem
+   - C. EXT4 filesystem
+   - D. Union filesystem
+
+   <Solution>
+     (D) Union filesystem. Docker uses the Union filesystem to manage multiple
+     image layers. The layers are read from top to bottom to provide the
+     appearance of a single filesystem.
+   </Solution>
+
+3. What is the most commonly used Docker storage driver when using a Kernel that
+   is above version 4.0?
+
+   - A. AUFS
+   - B. ZFS
+   - C. VFS
+   - D. Overlay2
+
+   <Solution>
+     (D) Overlay2. A system running a kernel that's version 4.0 or above will
+     use the Overlay2 storage driver.
+   </Solution>
+
+4. When you edit a container's filesystem interactively, what layer are the
+   changes written to?
+
+   - A. Operating system layer
+   - B. Bottom-most layer
+   - C. Container layer
+   - D. Ephemeral layer
+
+   <Solution>
+     (C) Container layer. Any changes that are made to a running container's
+     filesystem are stored in the topmost layer, called the container layer.
+   </Solution>
+
+5. Assuming the image contains the required binaries, what Docker command allows
+   you to gain access to a container's bash prompt?
+
+   - A. `docker shell -it <container> /bin/bash`
+   - B. `docker run -it <container> /bin/bash`
+   - C. `docker exec -it <container> /bin/bash`
+   - D. `docker spawn -it <container> /bin/bash`
+
+   <Solution>
+
+   (C) `docker exec -it <container> /bin/bash`. The `docker exec` command is
+   used to execute a process in a container. Using the `-it` option tells the
+   `exec` command to use an interactive terminal for its execution. The process
+   you want to execute is the last parameter, and since we want to gain access
+   to the container's Bash shell, we are executing `/bin/bash`.
+
+   </Solution>
+
+6. When a container is stopped, the Docker daemon will delete all traces of the
+   container.
+
+   - A. True
+   - B. False
+
+   <Solution>
+
+   (B) False. When you stop a running container, the daemon will only stop the
+   running image. The container layer will remain on the host's filesystem. If
+   you want to delete the container, you must remove the container from the
+   daemon using the `docker rm` command.
+
+   </Solution>
+
+7. What command will show you a list of all containers, including any stopped
+   containers?
+
+   - A. `docker ps -all`
+   - B. `docker ps -a`
+   - C. `docker ps -list`
+   - D. `docker list all`
+
+   <Solution>
+
+   (B) `docker ps -a`. To view a list of all containers that are running and
+   have been stopped, use the `docker ps -a` command. If you use `-all` or
+   `-list`, the daemon will interpret the option as `-l`, which will only list
+   the latest containers. Listing the latest containers will exclude containers
+   that have been stopped for a longer period of time.
+
+   </Solution>
+
+8. Add a user account to the `docker` group.
+
+   <Solution>
+
+   ```shell
+   sudo groupadd docker
+   sudo usermod -aG docker $USER
+   ```
+
+   </Solution>
+
+9. Run the `hello-world` container.
+
+   <Solution>
+
+   ```shell
+   docker run hello-world
+   ```
+
+   </Solution>
+
+10. Get help from the `docker` CLI.
+
+    <Solution>
+
+    ```shell
+    docker help
+    ```
+
+    </Solution>
+
+11. Run an NGINX container in an interactive TTY session.
+
+    <Solution>
+
+    ```shell
+    docker run -it bitnami/nginx:latest
+    ```
+
+    </Solution>
+
+12. Same but in detached mode.
+
+    <Solution>
+
+    ```shell
+    docker run -dit bitnami/nginx:latest
+    ```
+
+    </Solution>
+
+13. Same but name the container `nginx-test`.
+
+    <Solution>
+
+    ```shell
+    docker run -dit --name nginx-test bitnami/nginx:latest
+    ```
+
+    </Solution>
+
+14. List all running containers.
+
+    <Solution>
+
+    ```shell
+    docker ps
+    ```
+
+    </Solution>
+
+15. List all running and stopped containers.
+
+    <Solution>
+
+    ```shell
+    docker ps -a
+    ```
+
+    </Solution>
+
+16. Stop a running container.
+
+    <Solution>
+
+    ```shell
+    docker stop nginx-test
+    ```
+
+    </Solution>
+
+17. Start the stopped container with all of the options that it was originally
+    started with, including any networks or volumes that were assigned.
+
+    <Solution>
+
+    ```shell
+    docker start nginx-test
+    ```
+
+    </Solution>
+
+18. Attach to the running NGINX container.
+
+    <Solution>
+
+    ```shell
+    docker attach nginx-test
+    ```
+
+    </Solution>
+
+19. Detach from that container without stopping the container.
+
+    <Solution>
+      You can detach from a container and leave it running using the{" "}
+      <Kbd>Ctrl + P</Kbd> and <Kbd>Ctrl + Q</Kbd> key sequence.
+    </Solution>
+
+20. Retreive logs from a container.
+
+    <Solution>
+
+    ```shell
+    docker logs nginx-test
+    ```
+
+    </Solution>
+
+21. Follow the log output of a container.
+
+    <Solution>
+
+    ```shell
+    docker logs -f nginx-test
+    docker logs --follow nginx-test
+    ```
+
+    </Solution>
+
+22. Show the 10 last lines of the log output.
+
+    <Solution>
+
+    ```shell
+    docker logs --tail 10 nginx-test
+    ```
+
+    </Solution>
+
+23. Show the log output before a timestamp, and before a relative time.
+
+    <Solution>
+
+    ```shell
+    docker logs --until 2020-02-23T18:35:13 nginx-test
+    docker logs --until 60m nginx-test
+    ```
+
+    </Solution>
+
+24. Show the log output after a timestamp, and after a relative time.
+
+    <Solution>
+
+    ```shell
+    docker logs --since 2020-02-23T18:35:13 nginx-test
+    docker logs --since 60m nginx-test
+    ```
+
+    </Solution>
+
+25. Remove a container with its attached volumes.
+
+    <Solution>
+
+    ```shell
+    docker rm -v nginx-test
+    ```
+
+    </Solution>
