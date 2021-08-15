@@ -1,0 +1,124 @@
+---
+title: Docker in Action
+resourceId: "9781617294761"
+stoppedAt: What problems does Docker solve?
+---
+
+## Welcome to Docker
+
+### What is Docker?
+
+#### "Hello, World"
+
+```shell
+docker run dockerinaction/hello_world
+```
+
+<Figure src="/media/what-happens-after-docker-run.png">
+
+What happens after running `docker run`.
+
+</Figure>
+
+The second part specifies the program that you want Docker to run in a
+container. In this example, that program is `dockerinaction/hello_world`. This
+is called the _image_ (or _repository_) _name_.
+
+Understand that the running state of a container is directly tied to the state
+of a single running program inside the container. If a program is running, the
+container is running. If the program is stopped, the container is stopped.
+Restarting a container will run the program again.
+
+When you use `docker run` the second time, it creates a second container from
+the same repository. This means that if you repeatedly use `docker run` and
+create a bunch of containers, you’ll need to get a list of the containers you’ve
+created and maybe at some point destroy them.
+
+#### Running software in containers for isolation
+
+Docker uses Linux namespaces and cgroups, which have been part of Linux
+since 2007. Docker doesn’t provide the container technology, but it specifically
+makes it simpler to use.
+
+<Figure src="/media/process-running-simplified-computer.png">
+  A basic computer stack running two programs that were started from the command
+  line.
+</Figure>
+
+Notice that the command-line interface, or CLI, runs in what is called _user
+space memory_, just like other programs that run on top of the operating system.
+
+<Figure src="/media/docker-running-three-containers.png">
+  Docker running three containers on a basic Linux computer system.
+</Figure>
+
+It shows three running containers. Each is running as a child process of the
+Docker engine, wrapped with a container, and the delegate process is running in
+its own memory subspace of the user space. Programs running inside a container
+can access only their own memory and resources as scoped by the container.
+
+Docker builds containers using 10 major system features:
+
+- _PID namespace_—Process identifiers and capabilities
+- _UTS namespace_—Host and domain name
+- _MNT namespace_—Filesystem access and structure
+- _IPC namespace_—Process communication over shared memory
+- _NET namespace_—Network access and structure
+- _USR namespace_—User names and identifiers
+- _`chroot` syscall_—Controls the location of the filesystem root
+- _cgroups_—Resource protection
+- _CAP drop_—Operating system feature restrictions
+- _Security modules_—Mandatory access controls
+
+Docker uses those to build containers at runtime, but it uses another set of
+technologies to package and ship containers.
+
+#### Shipping containers
+
+Docker completes the traditional container metaphor by including a way to
+package and distribute software. The component that fills the shipping container
+role is called an _image_.
+
+Docker image is a bundled snapshot of all the files that should be available to
+a program running inside a container. You can create as many containers from an
+image as you want. But when you do, containers that were started from the same
+image don’t share changes to their filesystem. When you distribute software with
+Docker, you distribute these images, and the receiving computers create
+containers from them. Images are the shippable units in the Docker ecosystem.
+
+Docker provides a set of infrastructure components that simplify distributing
+Docker images. These components are registries and indexes. You can use publicly
+available infrastructure provided by Docker Inc., other hosting companies, or
+your own _registries_ and _indexes_.
+
+### What problems does Docker solve?
+
+## Process isolation and environment-independent computing
+
+### Running software in containers
+
+### Software installation simplified
+
+### Working with storage and volumes
+
+### Single-host networking
+
+### Limiting rist with resource controls
+
+## Packaging software for distribution
+
+### Packaging software in images
+
+### Building images automatically with Dockerfiles
+
+### Public and private software distribution
+
+### Image pipelines
+
+## Higher-level abstractions and orchestration
+
+### Services with Docker and Compose
+
+### First-class configuration abstractions
+
+### Orchestrating services on a cluster of Docker hosts with Swarm

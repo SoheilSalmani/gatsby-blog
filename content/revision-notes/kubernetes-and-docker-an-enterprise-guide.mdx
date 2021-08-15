@@ -1,7 +1,7 @@
 ---
 title: Kubernetes and Docker - An Enterprise Guide
 resourceId: "9781839213403"
-stoppedAt: Working with Docker Data
+stoppedAt: Installing Calico
 ---
 
 ## Docker and Container Fundamentals
@@ -245,11 +245,866 @@ were attached to the container.
 
 ### Working with Docker Data
 
+#### Why you need persistent data
+
+Docker includes the ability to add persistent data to a container using two
+methods:
+
+- Docker volumes
+- Docker bind mounts
+
+There is also a third option that offers storage using the host's RAM, called
+**tmpfs**. This type of mount is not persistent through container restarts,
+Docker restarts, or host reboots. It is only used as a location to temporarily
+store data in high-speed RAM and is truly ephemeral.
+
+#### Docker volumes
+
+Docker volumes are the preferred option to add persistent data to a container. A
+volume is nothing more than a directory on the local host that is mapped to the
+container using a volume mount. When you create a volume, a new directory is
+created on the host filesystem, commonly under
+`/var/lib/docker/volumes/<volume ID>/`.
+
+To maintain information between restarts, Docker stores key metadata in various
+databases on the host using Boltdb, which is a fast database written in Go
+that's used to store persistent key values. There are two Boltdb databases that
+you may come across when browsing the `/var/lib/docker` folder:
+
+- `/var/lib/docker/volumes/metadata.db`: Maintains metadata for Docker volumes,
+  such as the name, driver, labels, and options.
+- `/var/lib/docker/network/files/local-kv.db`: Maintains metadata for Docker
+  networks.
+
+When you create a Docker volume, you can provide options such as a name or
+label. This information is stored in the `metadata.db` database to maintain
+volume persistence.
+
+Every Docker volume has a directory in the `/var/lib/docker/volumes` directory.
+In each volume folder, there is a directory called `_data` that contains the
+actual data for the container.
+
+##### Creating a volume using the CLI
+
+To manage Docker volumes:
+
+```shell
+docker volume <option>
+```
+
+Options:
+
+- `create`: Creates a new volume that can be mounted in a container.
+- `inspect`: Lists details of the volume, including the creation date, driver,
+  labels, host mountpoint, name, options, and scope.
+- `ls`: Lists all Docker volumes.
+- `prune`: Deletes all unused Docker volumes.
+- `rm`: Deletes a volume, or multiple volumes, by name.
+
+To create a new volume:
+
+```shell
+docker volume create <optional-volume-name>
+```
+
+If you did not provide the optional volume name, Docker will assign a volume ID
+as the name. Creating a volume without providing a volume name is known as an
+anonymous volume.
+
+You can verify that the directory was created for your volume by looking in
+`/var/lib/docker/volumes`. You will find a directory with the name of the volume
+that was returned by the `create` command.
+
+##### Mounting a volume in a container
+
+When mounting a volume in a container, you need to provide one of two options to
+the `docker run` command. The two options you can use to mount volumes are
+`--mount` or `-v`. If you are running a standard container, you can use either
+option, but `-v` is the most commonly used option.
+
+The `-e` option, which is used to set an environment variable:
+
+```shell
+docker run --name mysql-01 -v pv-mysql-data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=my-password -d mysql
+```
+
+##### Mounting a volume in multiple containers
+
+One unique characteristic of Docker volumes is that multiple containers can
+access the same volume. While this sounds like an easy solution to provide a
+single location to shared data, you need to keep in mind that not every
+application plays nicely when multiple processes access the same data (example:
+databases!). Use-case: launching four NGINX servers that will serve the data
+contained in a Docker volume.
+
+```shell
+docker run --name webserver01 -v webdata:/opt/web/data -d bitnami/nginx:latest
+docker run --name webserver02 -v webdata:/opt/web/data -d bitnami/nginx:latest
+docker run --name webserver03 -v webdata:/opt/web/data -d bitnami/nginx:latest
+docker run --name webserver04 -v webdata:/opt/web/data -d bitnami/nginx:latest
+```
+
+##### Listing Docker volumes
+
+To list Docker volumes:
+
+```shell
+docker volume ls
+```
+
+##### Cleaning up volumes
+
+The simplest way to delete a volume that's no longer required is to use the `-v`
+option when you remove the container from Docker:
+
+```shell
+docker rm -v mysql
+```
+
+To delete a Docker volume:
+
+```shell
+docker volume rm <volume> ...
+```
+
+If you attempt to delete any volume that is currently in use by a running
+container, or assigned to a stopped container, you will receive an error.
+
+To delete unused volumes (i.e. not used by a running/stopped container):
+
+```shell
+docker volume prune
+```
+
+#### Docker bind mounts
+
+A bind mount differs from a volume mount in one main area: it is _not_ managed
+by Docker.
+
+A bind mount can be created automatically by Docker when a container starts. It
+does not "manage" the mount.
+
+Since Docker does not manage the bind mounts, they cannot be deleted using a
+Docker command. Docker does not track the location of bind mounts in a list. If
+you create bind mounts in different areas of the filesystem on the host, you
+need to track the location of each one to remove once you no longer need the
+data manually.
+
+Since the directory is on the filesystem, you may run into permission issues
+when trying to access a directory.
+
+You can bind any existing directory or create a new directory either by
+pre-creating the directory or letting Docker create the directory on container
+startup.
+
+A bind mount can be beneficial when you need to share something on the host
+system with a running container. Docker volumes cannot provide the same solution
+since they are all located in a directory on the host and cannot be pointed to
+an existing directory.
+
+```shell
+docker run -d -v /apps/testapp:/bin/testapp ubuntu:latest
+```
+
+**Important:** Someone running a shell in a container could easily delete or
+edit a file, or multiple files, making the host's system unstable.
+
+#### Docker tmpfs mounts
+
+Docker allows you to use the host's RAM as a temporary storage location for
+container data. This type of mount will not persist data but for the right
+workload, it can be a very useful storage location. tmpfs offers a few unique
+advantages that are not available in volumes or bind mounts:
+
+- The size can be pre-defined to limit the amount of RAM that is consumed for
+  storage.
+- Offers very fast data access.
+
+Limitations:
+
+- They are only available on Linux; Windows is not supported.
+- A single tmpfs can only be mounted to one container.
+
+##### Using a tmpfs mount in a container
+
+A container can be started with a tmpfs mount by adding either `--mount` or
+using the `--tmpfs` option. In general, you should use the `--mount` option by
+default since `--tmpfs` does not allow for any customizations on the mount. If
+you use `--tmpfs`, you will not be able to set a size limit, or any file mode
+security. Since this type of mount will use an expensive resource, namely the
+host's RAM, you will want to create a size for your mount. Due to these
+limitations, we highly suggest that you do not use `--tmpfs` to create your
+tmpfs mounts.
+
+```shell
+docker run --mount type=tmpfs,target=/opt/html,tmpfs-mode=1770,tmpfs-size=1000000 --name nginx-test -d bitnami/nginx:latest
+```
+
+Mount options:
+
+- `type`: Specifies `tmpfs` as the mount type. Other options include `volume` or
+  `bind`.
+- `target`: Target mount point in the container. We are mounting the tmpfs at
+  `/opt/html`.
+- `tmpfs-mode`: This option allows you to set security on the mount in octal
+  format. Defaults to `1777`.
+- `tmpfs-size`: Sets the size of the tmpfs volume. The value is in bytes, but
+  you can specify it using bytes or (m) for megabytes. Defaults to 1/2 the RAM
+  of the host.
+
+tmpfs mounts will not appear in the volume list (`docker volume ls`) since they
+are not "true" volumes.
+
+If you want to verify the tmpfs mount in the container, you can look at the
+`docker inspect` command's output from the container and look for the `"Mounts"`
+section.
+
+You can also verify the mount inside the running container by executing a Linux
+`df` command when using the `docker exec` command.
+
+```shell
+docker exec nginx-test df -h
+```
+
+RAM is not consumed until data is stored in the container, so you need to be
+very careful with tmpfs volumes or you may run out of RAM on your host and may
+crash your system.
+
 ### Understanding Docker Networking
+
+#### Exploring Docker networking
+
+##### A quick TCP/IP port refresher
+
+As you may know, when you configure IP on a system, you assign a unique IP
+address to each network adapter in the system. When an incoming or outgoing
+connection is made, the request includes the IP address and a port between `1`
+and `65535`. You may not always see the port in the request since many
+applications will automatically include it in the default request, based on the
+protocol being used.
+
+This combination of the IP address and the port is called a socket, represented
+as `<IP address>:<port>` (that is, `192.168.1.1:443`). A socket is required for
+communication that occurs in both directions. When you request a web page, your
+computer will make an outgoing request using a port that is randomly selected
+from between `49152` and `65535`.
+
+<Figure src="/media/socket-example.png">Socket example.</Figure>
+
+##### Binding a port to a service
+
+On the server side, where you may be running a server such as NGINX to host a
+website, you must bind a socket to the web server process. The bound IP address
+can be a single IP, or it can be bound to all the IP addresses by using an
+address of `0.0.0.0`, which binds the port to all the available IP addresses on
+the server.
+
+How you expose a container using ports differs based on the Docker networking
+driver you are using for the container.
+
+##### Docker networking drivers
+
+The networking system for Docker is modular. A base Docker installation includes
+a few network drivers and if you require a specialized networking driver, there
+are options available from other vendors.
+
+By default, you have the option of using five networking options:
+
+- **Bridge:** This is the most commonly used driver on a standalone Docker host
+  system. It is the default driver that will be used if you do not specify
+  another option when you start a container.
+- **Host:** If you wanted your containers to access the host network directly,
+  you would use the host driver. This removes the need for your containers to go
+  through a connection controlled by Docker.
+
+  A container using the host network driver will not get an IP address and does
+  not require exposing ports to allow incoming traffic.
+
+- **Overlay:** A overlay network is used by Docker to connect multiple Docker
+  servers together. It provides a communication path between hosts and
+  containers that is not dependent on the underlying network infrastructure.
+- **Macvlan:** The Macvlan is useful for an application that requires a direct
+  connection to the network. It allows you to assign a MAC address to a
+  container, which allows the container to bypass Docker networking. Even though
+  it is bypassing Docker networking stack, the Docker daemon is still used to
+  route packets to the correct container, based on the MAC address.
+- **None:** You may need to disable the network for a container that needs to be
+  used locally or may contain sensitive information. If you set the container
+  network to none, it will not have **any** network access.
+
+##### The default bridge network
+
+A bridge network only provides networking to containers running on the same
+Docker host. Unless you are running multiple Docker hosts by using Docker Swarm,
+you will usually use a bridged network with your Docker containers.
+
+When you install Docker, it will create what's known as the default Docker
+bridge network. By supplying the default bridge for all installations, Docker
+has made using a network in a container very simple. Many users simply start
+using Docker with the default networking settings and options, thereby starting
+up containers without knowing the limitations and potential security risks of
+the default bridge.
+
+Since the default bridge maintains backward compatibility, many of the bridge
+features had to be limited. Due to these limitations, the default bridge is
+considered to be inferior compared to a user-defined bridge:
+
+- When a container is started **without** a network specified, it will use the
+  default bridge. This means that multiple containers will be able to
+  communicate by default, without any consideration being given to the
+  workloads.
+
+  _Consider:_ If you are running multiple containers and you want to isolate
+  some containers from others, you may inadvertently allow communications
+  between containers since they are using the default bridge.
+
+- The default bridge limits communications between containers to IP addresses
+  only. Containers connected to user-defined bridges can communicate using
+  container names or IP addresses. Containers that use a user-defined bridge can
+  communicate using IP addresses or host names.
+
+  _Consider:_ When you start up a container, the IP address may be different
+  from the last time you ran the image. If you wanted to configure an
+  application that has multiple containers that interact, you can use the
+  container names, which will remain constant through restarts. If you were
+  using the default bridge, you may need to change the configuration files due
+  the containers starting with a different IP address.
+
+- Containers that use the default bridge need to be stopped before you can move
+  them to a different network. However, on a container using a user-defined
+  switch, you can change the network without restarting the container.
+
+  _Consider:_ Depending on your workloads, you may not be able to stop a running
+  container without an agreed maintenance window. While a networking change
+  would still require a change request in most companies, it can be done without
+  stopping the container if you are using a user-defined bridge. This will limit
+  any potential impact to the application and offers a quick failback if
+  something is misconfigured on the new network bridge.
+
+- Using a single default bridge limits networking options for all containers.
+  Since all the containers are on a single network, all networking settings are
+  the same for all containers.
+
+  _Consider:_ You may have a requirement for some containers to run jumbo
+  frames, while other containers will use a standard MTU size. If you only used
+  the single default bridge, you can only set one MTU size. However, you could
+  create a user-defined bridge that sets the MTU to 9000 and another that keeps
+  the default MTU size of 1500.
+
+In a production environment running Docker, you should **always** create a new
+user-defined bridge.
+
+##### Viewing the available networks
+
+To view all the existing networks on a Docker host:
+
+```shell
+docker network ls
+```
+
+Only the three default networks options are available by default: `bridge`,
+`host` and `none`.
+
+##### Retrieving details on a network
+
+You can look at the details of each network on the host using:
+
+```shell
+docker network inspect <network-name>
+```
+
+#### Creating user-defined bridge networks
+
+When you create a new user-defined network, you can supply most of the standard
+IP options that you would use when creating a new network outside of Docker. You
+can set options for the subnet, IP range, and gateway.
+
+You only need to provide the desired network name for the new network and Docker
+will create the new network:
+
+```shell
+docker network create frontend
+```
+
+Since we did not specify any options other than the network name, Docker will
+assign a non-overlapping IP range to the network.
+
+If you wanted to create a second network called backend that used the
+`192.168.10.0/24` subnet using a gateway of `192.168.10.1`, you just need to add
+`--subnet` and `--gateway` to the `docker network create` command:
+
+```shell
+docker network create backend --subnet=192.168.10.0/24 --gateway=192.168.10.1
+```
+
+When you create a new network, like we did for the backend network example,
+Docker binds a new IP on the host equal to the gateway address we used in the
+`create` command.
+
+##### Connecting a container to a user-defined network
+
+Connect a container to a specific network when starting the container:
+
+```shell
+docker run --network frontend --name nginx1 -d bitnami/nginx:latest
+```
+
+##### Changing the network on a running container
+
+```shell
+docker network connect backend nginx1
+docker network disconnect frontend nginx1
+```
+
+You can attach a container to more than one network.
+
+##### Removing a network
+
+Delete a user-defined network:
+
+```shell
+docker network rm frontend
+```
+
+Delete all unused network:
+
+```shell
+docker network prune
+```
+
+##### Running a container without networking
+
+Start a container without an attached network:
+
+```shell
+docker run --network none --name nginx1 -d bitnami/nginx:latest
+```
+
+##### Exposing ports using a host network
+
+Since the container will start up directly on the host network, bypassing
+Docker's network stack completely, you do not need to expose any ports for the
+container.
+
+```shell
+docker run --network host --name nginx -d bitnami/nginx/latest
+docker ps
+```
+
+Since the `docker ps` command did not list the ports that are in use, you can
+see where you may start to lose track of the assigned ports if your host is
+running multiple containers when using the `host network` option. This is why we
+suggest limiting use of the `host network` option, unless you are running a
+single container or a container that requires host networking.
+
+##### Exposing ports using a bridge network
+
+When you expose a port in Docker, you need to supply the incoming (Docker host)
+port and the destination (the container) port using the
+`incoming port:destination` port syntax.
+
+If you only supply a port for the destination, a TCP connection will be assumed.
+You may need to expose UDP ports for a container, and to expose the port as a
+UDP port, just add `/udp` to the destination port assignment. So, your syntax
+would become `incoming port:destination port/udp`.
+
+```shell
+docker run -p 8080:8080 -p 8443:8443 --name nginx -d bitnami/nginx:latest
+docker ps
+```
+
+Any incoming request to the Docker host on `8080` and `8443`, on any interface
+(`0.0.0.0`), will be forwarded to the container.
+
+The main takeaway is that the incoming port on the host must be unique to avoid
+port conflicts:
+
+```shell
+docker run -p 8080:8080 -p 8443:8443 --name nginx2 -d bitnami/nginx:latest
+docker run -p 8081:8080 -p 8444:8443 --name nginx2 -d bitnami/nginx:latest
+```
 
 ## Creating Kubernetes Development Clusters, Understanding objects, and Exposing Services
 
 ### Deploying Kubernetes using KinD
+
+#### Introducing Kubernetes components and objects
+
+Kubernetes components:
+
+- Control Plane:
+  - API-Server: Frontend of the control plane that accepts requests from
+    clients.
+  - `kube-scheduler`: Assigns workloads to nodes.
+  - `etcd`: Database that contains all cluster data.
+  - `kube-controller-manager`: Watches for node health, pod replicas, endpoints,
+    service accounts, and tokens.
+- Node:
+  - `kubelet`: The agent that runs a pod based on instructions from the control
+    plane.
+  - `kube-proxy`: Creates and deletes network rules for pod communication.
+  - Container runtime: Component responsible for running a container.
+
+Kubernetes objects:
+
+- Container: A single immutable image that contains everything needed to run an
+  application.
+- Pod: The smallest object that Kubernetes can control. A pod holds a container,
+  or multiple containers. All containers in a pod are scheduled on the same
+  server in a shared context (that is, each container in a pod can address other
+  pods using `127.0.0.1`).
+- Deployment: Used to deploy an application to a cluster based on a desired
+  state, including the number of pods and rolling update configuration.
+- Storage Class: Defines storage providers and presents them to the cluster.
+- Persistent Volume (PV): Provides a storage target that can be claimed by a
+  Persistent Volume Request.
+- Persistent Volume Claim (PVC): Connects (claims) a Persistent Volume so that
+  it can be used inside a pod.
+- Container Network Interface (CNI): Provides the network connection for pods.
+  Common CNI examples include Flannel and Calico.
+- Container Storage Interface (CSI): Provides the connection between pods and
+  storage systems.
+
+##### Interacting with a cluster
+
+To test our KinD installation, we will interact with the cluster using the
+`kubectl` executable.
+
+Basic `kubectl` commands:
+
+- `kubectl get <object>`: Retrieves a list of the requested object. Example:
+  `kubectl get nodes`.
+- `kubectl create -f <manifest-name>`: Creates the objects in the `include`
+  manifest that is provided. `create` can only create the initial objects; it
+  cannot update the objects.
+- `kubectl apply - f <manifest-name>`: Deploys the objects in the `include`
+  manifest that is provided. Unlike the `create` option, the `apply` command can
+  update objects, as well as create objects.
+- `kubectl patch <object-type> <object-name> -p {patching options}`: Patches the
+  supplied `object-type` with the options provided.
+
+#### Using development clusters
+
+Over the years, various tools have been created to install development
+Kubernetes clusters, allowing admins and developers to perform testing on a
+local system. Many of these tools worked for basic Kubernetes tests, but they
+often had limitations that made them less than ideal for quick, advanced
+scenarios.
+
+Some of the most common solutions available are as follows:
+
+- Docker Desktop
+- minikube
+- kubeadm
+
+One of the newest options for creating development clusters is a project from a
+**Kubernetes in Docker (KinD)** Kubernetes SIG.
+
+Using a single host, KinD allows you to create multiple clusters, and each
+cluster can have multiple control plane and worker nodes. The ability to run
+multiple nodes allows advanced testing that would have required more resources
+using another solution.
+
+##### Working with a base KinD Kubernetes cluster
+
+At a high level, you can think of a KinD cluster as consisting of a **single**
+Docker container that runs a control plane node and a worker node to create a
+Kubernetes cluster. To make the deployment easy and robust, KinD bundles every
+Kubernetes object into a single image, known as a node image. This node image
+contains all the required Kubernetes components to create a single-node cluster,
+or a multi-node cluster.
+
+In addition to standard Kubernetes components, both KinD nodes have an
+additional component that is not part of most standard installations: Kindnet.
+Kindnet is the included, default CNI when you install a base KinD cluster. While
+Kindnet is the default CNI, you have the option to disable it and use an
+alternative, such as Calico.
+
+To show the complete cluster and all the components that are running, we can run
+the `kubectl get pods --all-namespaces` command. This will list all the running
+components for the cluster.
+
+In addition to the base cluster components, you may notice a running pod in a
+namespace called `local-path-storage`, along with a pod named
+`local-path-provisioner`. This pod is running one of the add-ons that KinD
+includes, providing the cluster with the ability to auto-provision
+`PersistentVolumeClaims`.
+
+Most production clusters running Kubernetes will provide persistent storage to
+developers. Usually, the storage will be backed by storage systems based on
+block storage, S3, or NFS. Aside from NFS, most home labs rarely have the
+resources to run a full-featured storage system. `local-path-provisioner`
+removes this limitation from users by providing all the functions to your KinD
+cluster that an expensive storage solution would provide.
+
+The `CSIdrivers`, `CSInodes`, and `StorageClass` objects are used by the cluster
+to provide access to the backend storage system. Once installed and configured,
+pods consume the storage using the `PersistentVolumes` and
+`PersistentVolumeClaims` objects. Storage objects are important to understand,
+but when they were first released, they were difficult for most people to test
+since they aren't included in most Kubernetes development offerings.
+
+KinD recognized this limitation and chose to bundle a project from Rancher
+called `local-path-provisioner`, which is based on the Kubernetes local
+persistent volumes.
+
+Rancher's project provides the following to KinD:
+
+- Auto-creation of `PersistentVolumes` when a PVC request is created.
+- A default `StorageClass` named standard.
+
+When the auto-provisioner sees a `PersistentVolumeClaim` request hit the API
+server, a PersistentVolume will be created and the pod's PVC will be bound to
+the newly created PVC.
+
+`local-path-provisioner` adds a feature to KinD clusters that greatly expands
+the potential test scenarios that you can run. Without the ability to
+auto-provision persistent disks, it would be a challenge to test many pre-built
+deployments that require persistent disks.
+
+With the help of Rancher, KinD provides you with a solution so that you can
+experiment with dynamic volumes, storage classes, and other storage tests that
+would otherwise be impossible to run outside a data center.
+
+##### Understanding the node image
+
+The node image is what provides KinD the magic to run Kubernetes inside a Docker
+container. This is an impressive accomplishment since Docker relies on a
+`systemd` running system and other components that are not included in most
+container images.
+
+KinD starts off with a base image, which is an image the team has developed that
+contains everything required for Docker, Kubernetes, and `systemd`.
+
+##### KinD and Docker networking
+
+Since KinD uses Docker as the container engine to run the cluster nodes, all
+clusters are limited to the same network constraints that a standard Docker
+container is.
+
+Along with the Docker networking considerations, we must consider the Kubernetes
+**Container Network Interface (CNI)** as well. Officially, the KinD team has
+limited the networking options to only two CNIs: Kindnet and Calico. Kindnet is
+the only CNI they will support but you do have the option to disable the default
+Kindnet installation, which will create a cluster without a CNI installed. After
+the cluster has been deployed, you can deploy a CNI manifest such as Calico.
+
+<Figure src="host-and-kind.png">
+  Host cannot communicate with KinD directly.
+</Figure>
+
+<Figure src="host-and-kind-nginx.png">
+  Host communicates with KinD via an Ingress controller.
+</Figure>
+
+On the host, you make a request for a web server that has an Ingress rule in
+your Kubernetes cluster:
+
+1. The request looks at the IP address that was requested (in this case, the
+   local IP address).
+2. The Docker container running our Kubernetes node is listening on the IP
+   address for ports 80 and 443, so the request is accepted and sent to the
+   running container.
+3. The NGINX pod in your Kubernetes cluster has been configured to use the host
+   ports 80 and 443, so the traffic is forwarded to the pod.
+4. The user receives the requested web page from the web server via the NGINX
+   Ingress controller.
+
+#### Installing KinD
+
+##### Installing KinD = prerequisited
+
+Install `kubectl`.
+
+##### Installing the KinD binary
+
+Install KinD.
+
+#### Creating a KinD cluster
+
+Create a quick single-node cluster:
+
+```shell
+kind create cluster
+```
+
+This will quickly create a cluster with all the Kubernetes components in a
+single Docker container by using a cluster name of `kind`. It will also assign
+the Docker container a name of `kind-control-plane`.
+
+To assign a cluster name:
+
+```shell
+kind create cluster --name <cluster-name>
+```
+
+The `create` command will create the cluster and modify the `kubectl` config
+file. KinD will add the new cluster to your current `kubectl` config file, and
+it will set the new cluster as the default context.
+
+Listing the nodes:
+
+```shell
+kubectl get nodes
+```
+
+##### Deleting a cluster
+
+Delete a cluster:
+
+```shell
+kind delete cluster [-name <cluster-name>]
+```
+
+The `delete` command will quickly delete the cluster, including any entries in
+your `kubeconfig` file.
+
+##### Creating a cluster config file
+
+When creating a multi-node cluster, such as a two-node cluster with custom
+options, we need to create a cluster config file.
+
+Setting values in this file allows you to customize the KinD cluster, including
+the number of nodes, API options, and more.
+
+```yaml nu fp=cluster01-kind.yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  apiServerAddress: "0.0.0.0"
+  disableDefaultCNI: true
+kubeadmConfigPatches:
+  - |
+    apiVersion: kubeadm.k8s.io/v1beta2
+    kind: ClusterConfiguration
+    metadata:
+      name: config
+    networking:
+      serviceSubnet: "10.96.0.1/12"
+      podSubnet: "192.168.0.0/16"
+nodes:
+  - role: control-plane
+  - role: worker
+    extraPortMappings:
+      - containerPort: 80
+        hostPort: 80
+      - containerPort: 443
+        hostPort: 443
+    extraMounts:
+      - hostPath: /usr/src
+        containerPath: /usr/src
+```
+
+Config options:
+
+- `apiServerAddress`: This tells the installation what IP address the API server
+  will listen on. By default, it will use `127.0.0.1`, but since we plan to use
+  the cluster from other networked machines, we have selected to listen on all
+  IP addresses.
+- `disableDefaultCNI`: This setting will enable or diable the Kindnet
+  installation. The default value is `false`, but since we want to use Calico as
+  our CNI, we are setting it to true.
+- `kubeadmConfigPatches`: This section allows you to set values for certain
+  settings during the installation. For our control plane, we are setting the
+  CIDRs for `ServiceSubnet` and `podSubnet`.
+- `nodes`: This section is where you define your nodes. For our cluster, we will
+  create a single control plane node and a single worker node.
+- `role: control-plane`: This creates a control plane in our cluster, which is a
+  single node. We can set options that are specific to the control plane in this
+  section.
+- `kubeadmConfigPatches`: This allows you to set options for the control plane.
+- `role: worker`: This section will create our worker node.
+- `extraPortMappings`: This setting will create extra port mappings for our
+  worker node. It will tell Docker to bind port 80 and 443 to our worker node
+  container.
+- `extraMounts`: This section tells Docker to create extra mounts between the
+  host and the container. We're setting this value to allow a container to use
+  files from the host located at `/usr/src`.
+
+##### Multi-node cluster configuration
+
+If you only wanted a multi-node cluster without any extra options, you could
+create a simple configuration file that lists the number and node types you want
+in the cluster.
+
+```yaml nu
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+  - role: control-plane
+  - role: control-plane
+  - role: worker
+  - role: worker
+  - role: worker
+```
+
+KinD has considered this, and if you do deploy multiple control plane nodes, the
+installation will create an additional container running a HAProxy load
+balancer.
+
+Each control plane node and the HAProxy container are running on unique ports.
+
+When a command is executed using `kubectl`, it is sent to directly to the
+HAProxy server. The HAProxy container knows how to route traffic between the
+three control plane nodes.
+
+**Note:** The included HAProxy image is not configurable. It is only provided to
+handle the control plane and to load balance the API servers. Due to this
+limitation, if you needed to use a load balancer for the worker nodes, you will
+need to provide your own.
+
+An example use case for this would be if you wanted to use an Ingress controller
+on multiple worker nodes. You would need a load balancer in front of the worker
+nodes to accept incoming 80 and 443 requests that would forward the traffic to
+each node running NGINX.
+
+##### Customizing the control plane and Kubelet options
+
+KinD uses the same configuration that you would use for a kubeadm installation.
+As an example, if you wanted to integrate a cluster with an OIDC provider, you
+could add the required options to the configuration patch section:
+
+```yaml nu
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+kubeadmConfigPatches:
+  - |
+    kind: ClusterConfiguration
+    metadata:
+      name: config
+    apiServer:
+      extraArgs:
+        oidc-issuer-url: "https://oidc.testdomain.com/auth/idp/k8sIdp"
+        oidc-client-id: "kubernetes"
+        oidc-username-claim: sub
+        oidc-client-id: kubernetes
+        oidc-ca-file: /etc/oidc/ca.crt
+nodes:
+  - role: control-plane
+  - role: control-plane
+  - role: control-plane
+  - role: worker
+  - role: worker
+  - role: worker
+```
+
+##### Creating a custom KinD cluster
+
+```shell
+kind create cluster --name cluster01 --config cluster01-kind.yaml
+```
+
+The final step in the deployment creates or edits an existing Kubernetes config
+file. In either case, the installer creates a new context with the name
+`kind-<cluster name>` and sets it as the default context.
+
+While it may appear that the cluster installation procedure has completed its
+tasks, the cluster **is not** ready yet. Some of the tasks take a few minutes to
+fully initialize and since we disabled the default CNI to use Calico, we still
+need to deploy Calico to provide cluster networking.
+
+##### Installing Calico
 
 ### Kubernetes Bootcamp
 

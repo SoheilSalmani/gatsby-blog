@@ -1,0 +1,198 @@
+---
+title: AWS Certified Developer - Associate Guide
+resourceId: "9781789617313"
+stoppedAt: Core AWS Services
+---
+
+## Overview of AWS Certified Developer - Associate Certification
+
+<Figure src="/media/aws-certification-paths.png">
+  AWS certification paths.
+</Figure>
+
+## Understanding the Fundamentals of Amazon Web Services
+
+### Accessing AWS Services
+
+Users can access AWS services in multiple ways:
+
+- **AWS Management Console:** This is a simple to use, browser-based graphical
+  user interface that customers can use to manage their AWS resources.
+- The **AWS Command-Line Interface (CLI):** This is mostly used by system
+  administrators to perform day-to-day administration activities. There are
+  individual sets of commands available for each AWS service.
+- **AWS Software Development Kits (SDKs):** AWS helps the user reduce the
+  complexity of coding by providing SDKs for a number of programming languages,
+  including Android, iOS, Java, Python, PHP, .NET, Node.js, Go, and Ruby. These
+  SDKs can be used to create custom applications to meet specific organizational
+  needs.
+- **Query APIs:** AWS provides a number of HTTP endpoints. These endpoints can
+  be used to send HTTP requests, such as GET and PUT, in order to acquire the
+  present status and any other information for various AWS resources.
+
+### An overview of AWS
+
+#### Regions and AZs
+
+Each region is a collection of at least two or more **availability zones
+(AZs)**. The regions are independent and isolated from each other in order to
+keep them safe from catastrophic events.
+
+Each AZ is separated based on a metropolitan area within a region, but they are
+internally connected to each other through dedicated low-latency networks within
+the same region to provide failover architecture.
+
+#### What are SaaS, PaaS, and IaaS?
+
+- **IaaS:** This is when a service provider offers virtualized hardware or
+  computing infrastructure as a service.
+- **PaaS:** PaaS is a type of cloud service in which a service provider offers
+  application platforms and tools over the cloud, usually to enable application
+  development. In this service model, the underlying hardware and software is
+  hosted on the service provider's infrastructure.
+- **SaaS:** In the SaaS model, the service provider offers software or
+  applications as services. Such services are hosted by the providers and the
+  end customer simply consumes this SaaS without worrying about the underlying
+  hosting platform, infrastructure, and maintenance.
+
+<Figure src="/media/iaas-paas-saas.png">
+  Stack and responsibility separation between the cloud service provider and the
+  customer for IaaS, PaaS, and SaaS.
+</Figure>
+
+#### Understanding virtualization
+
+Virtualization is a process of virtually segregating physical hardware resources
+into a set of virtual resources that can independently work as a computing
+resource and provide customized and dedicated CPU, RAM, or storage. Each server
+and its resources are created in an isolated environment. Each isolated
+environment is abstracted from the physical OS and underlying hardware
+configuration. Such resources are called VMs or instances.
+
+Virtualization is achieved by using virtualization software that maintains the
+abstract and virtual layers on top of physical hardware.
+
+#### Virtualization types based on virtualization software
+
+- **Class 1 type:** This is also known as the bare-metal virtualization type. A
+  very thin (that is, of a small size) virtualization software called a
+  hypervisor is installed directly on the physical server. Class 1 hypervisors
+  are faster than class 2 hypervisors. Some examples of class 1 hypervisors are
+  Xen, Hyper-V, KVM (Kernel-based virtual machine), and vSphere. The AWS cloud
+  uses a customized Xen hypervisor and KVM.
+- **Class 2 type:** This is also called a hosted hypervisor. These types of
+  hypervisors are installed above the base OS, such as Windows or Linux.
+  Examples of class 2 hypervisors include VMware workstation, VirtualBox, and
+  virtual PC.
+
+#### Virtualization types based on virtualization methods
+
+- **OS-level virtualization:** In this type of virtualization, host machines and
+  VMs have the same OS with the same patch level.
+- **Software virtualization (hypervisor):** This method of virtualization can be
+  split into three categories, as follows:
+  - **Binary translation:** In this virtualization, sensitive instructions from
+    VMs are replaced by hypervisor calls.
+  - **Para Virtualization Mode (PVM):** In this virtualization, the guest OS is
+    modified in order to deliver performance.
+  - **Hardware Assisted Virtual Machine (HVM):** This method of virtualization
+    creates an abstract layer between the host and guest VMs. It uses special
+    CPU instruction sets (that is, Intel-VT and AMD-V) to boost the performance
+    of guest VMs.
+- **Hardware emulation:** This makes it possible to run an unsupported OS, such
+  as running Android on a PC.
+
+### Elasticity versus scalability
+
+- **Scalability:** This means increasing the capacity of an existing instance
+  (that is, scale up) or adding more instances in parallel to an existing
+  instance (that is, scale out). Scalability is essential in order to achieve
+  elasticity:
+  - **Scale up:** Changing the instance type from small to large (that is,
+    changing to more memory or compute) is called scaling up; it is also called
+    **vertical scaling**. It may require stopping the existing and running
+    instance. Usually, scaling up is done in order to get more compute and
+    memory on the same instance. Scaling up is usually recommended for
+    applications that do not support clustering modes easily, such as
+    **Relational Database Management Systems (RDBMS)**. Usually, scaling up is
+    achieved manually and requires downtime.
+  - **Scale out:** Placing one or more new instances in parallel to the existing
+    instance is called **scale out**. It is also referred to as horizontal
+    scaling. It offers good performance and availability as instances can be
+    placed across multiple AZs. By having individual resources, such as an NIC
+    and disk controller, for each instance, much better performance can be
+    achieved compared to scaling up. Usually, scaling out is suggested for
+    clustering-enabled applications, such as stateless web servers, big data,
+    and NoSQL. Scaling out generally does not require any downtime.
+- **Elasticity:** In the cloud infrastructure, elasticity can be defined as the
+  ability to automatically provision additional resources to meet high demand
+  and reduce the extended number of resources when the demand lowers.
+
+### Creating a new AWS account
+
+#### Root user versus non-root user
+
+Root accounts should not be used for day-to-day activities. It is highly
+recommended that you create appropriate **Identity and Access Management (IAM)**
+users for day-to-day activities, such as database administration, system
+administration, and more.
+
+### Deleting an AWS account
+
+AWS provides you with an option to delete or close an AWS account. Be very
+careful if you're just checking the interface, as all AWS resources and data are
+wiped out when the account is closed. Once the account is closed, there is no
+mechanism to undo or get the data back. It is highly recommended that you back
+up important data to a secure and safe place before closing your AWS account.
+
+### Core AWS Services
+
+## Identity and Access Management (IAM)
+
+## Virtual Private Clouds
+
+## Getting Started with Elastic Compute Cloud (EC2)
+
+## Handling Application Traffic with ELB
+
+## Monitoring with CloudWatch
+
+## Simple Storage Service, Glacier, and CloudFront
+
+## Other AWS Storage Options
+
+## AWS Relational Database Service
+
+## AWS DynamoDB - A NoSQL Database Service
+
+## Amazon Simple Queue Service (SQS)
+
+## Simple Notification Service (SNS)
+
+## AWS Simple Workflow Service (SWS)
+
+## CloudFormation Overview
+
+## Understanding Elastic Beanstalk
+
+## Overview of AWS Lambda
+
+## Key Management Services
+
+## Working with AWS Kinesis
+
+## Working with AWS CodeBuild
+
+## Getting Started with AWS CodeDeploy
+
+## Working with AWS CodePipeline
+
+## CI/CD on AWS
+
+## Serverless Computing
+
+## Amazon Route 53
+
+## ElastiCache Overview
+
+## Mock Tests

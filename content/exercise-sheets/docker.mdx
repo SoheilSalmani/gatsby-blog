@@ -287,3 +287,417 @@ tags: ["Docker", "DevOps"]
     ```
 
     </Solution>
+
+26. Create a new Docker volume named `html-data`.
+
+    <Solution>
+
+    ```shell
+    docker volume create html-data
+    ```
+
+    </Solution>
+
+27. Run a container with the volumed mounted. Also, set a random environment
+    variable at launch.
+
+    <Solution>
+
+    ```shell
+    docker run --name nginx -v html-data:/opt/web/data -e RANDOM_ENV=foo -d bitnami/nginx:latest
+    ```
+
+    </Solution>
+
+28. Inspect There are two Boltdb databases containing metadata for Docker
+    volumes and for Docker networks.
+
+    <Solution>
+
+    ```shell
+    cat /var/lib/docker/volumes/metadata.db
+    ```
+
+    ```shell
+    cat /var/lib/docker/network/files/local-kv.db
+    ```
+
+    </Solution>
+
+29. Mount a volume in multiple containers.
+
+    <Solution>
+
+    ```shell
+    docker run --name webserver01 -v webdata:/opt/web/data -d bitnami/nginx:latest
+    docker run --name webserver02 -v webdata:/opt/web/data -d bitnami/nginx:latest
+    docker run --name webserver03 -v webdata:/opt/web/data -d bitnami/nginx:latest
+    docker run --name webserver04 -v webdata:/opt/web/data -d bitnami/nginx:latest
+    ```
+
+    </Solution>
+
+30. List all Docker volumes.
+
+    <Solution>
+
+    ```shell
+    docker volume ls
+    ```
+
+    </Solution>
+
+31. Delete a container with its associated volume in one command.
+
+    <Solution>
+
+    ```shell
+    docker rm -v webserver04
+    ```
+
+    </Solution>
+
+32. Delete multiple Docker volumes in one command:
+
+    <Solution>
+
+    ```shell
+    docker volume rm webserver01 webserver02 webserver03
+    ```
+
+    </Solution>
+
+33. Delete unused volumes:
+
+    <Solution>
+
+    ```shell
+    docker volume prune
+    ```
+
+    </Solution>
+
+34. Run a container with a created bind mount.
+
+    <Solution>
+
+    ```shell
+    docker run -d -v /home/soheil/Projects/python-project:/bin/python-project ubuntu:latest
+    ```
+
+    </Solution>
+
+35. Run a container with a created bind mount.
+
+    <Solution>
+
+    ```shell
+    docker run -d -v /home/soheil/Desktop/Projects/python-project:/bin/python-project ubuntu:latest
+    ```
+
+    </Solution>
+
+36. Run a container with a created tmpfs mount. The size of the tmpfs volume
+    should be 1MB.
+
+    <Solution>
+
+    ```shell
+    docker run --mount type=tmpfs,target=/opt/html,tmpfs-mode=1770,tmpfs-size=1000000 --name nginx-test -d bitnami/nginx:latest
+    ```
+
+    </Solution>
+
+37. Verify the tmpfs mount in the container (two methods).
+
+    <Solution>
+
+    ```shell
+    docker inspect <container>
+    docker exec nginx-test df -h
+    ```
+
+    </Solution>
+
+38. Which of the following volumes provides persistent storage for containers?
+
+    - A. tmpfs
+    - B. Bind mounts
+    - C. Volumes
+    - D. SAN
+
+    <Solution>
+      (B) Bind mounts and (C) Volumes. Only a Docker volume and bind mount
+      provide persistency to a container. tmpfs volumes are stored in RAM and
+      are not written to disk.
+    </Solution>
+
+39. Docker volumes must be created before they can be mounted.
+
+    - A. True
+    - B. False
+
+    <Solution>
+      (A) True. A volume must be created before it can be used in a container.
+      If a volume is not created before running a container, Docker will create
+      the volume before mounting it to the container.
+    </Solution>
+
+40. You create a tmpfs volume on a host that has 64 GB of RAM. During its
+    creation, you failed to set a size. What size volume will Docker create?
+
+    - A. 1 GB
+    - B. 64 GB
+    - C. 20 GB
+    - D. 32 GB
+
+    <Solution>
+      (D) 32 GB. If a tmpfs size is not specified, Docker will create a volume
+      that is equal to half of the host's RAM.
+    </Solution>
+
+41. Docker volumes are automatically deleted when you remove a container.
+
+    - A. True
+    - B. False
+
+    <Solution>
+
+    (B) False. Stopping or removing an image will not remove a persistent volume
+    by default. To delete a volume, you can add the `-v` option to the
+    `docker rm` command, or you can use the `docker volume rm` command to remove
+    the volume manually.
+
+    </Solution>
+
+42. Which volume type is managed by the Docker daemon?
+
+    - A. Bind volumes
+    - B. Named volumes
+    - C. All volumes
+    - D. None
+
+    <Solution>
+      (B) Named volumes. Only anonymous and named volumes are managed by the
+      Docker daemon.
+    </Solution>
+
+43. How do you delete an unused bind volume?
+
+    - A. There is no need to; Docker will delete it automatically
+    - B. `docker volume prune`
+    - C. `docker volume bind prune`
+    - D. You must manually delete the bind folder
+
+    <Solution>
+      (D) You must manually delete the Bind folder. Since Bind mounts are not
+      managed by Docker, the daemon cannot delete unused volumes. To remove a
+      Bind mount, you need to manually delete the directory that the Bind mount
+      used.
+    </Solution>
+
+44. View all the existing networks on a Docker host.
+
+    <Solution>
+
+    ```shell
+    docker network ls
+    ```
+
+    </Solution>
+
+45. Look at the details of a Docker network on the host.
+
+    <Solution>
+
+    ```shell
+    docker network inspect <network-name>
+    ```
+
+    </Solution>
+
+46. Create a new user-defined network called `frontend`.
+
+    <Solution>
+
+    ```shell
+    docker network create frontend
+    ```
+
+    </Solution>
+
+47. Create a second user-defined netowrk called `backend` which uses the
+    `192.168.10.0/24` subnet using a gateway of `192.168.10.1`.
+
+    <Solution>
+
+    ```shell
+    docker network create backend --subnet=192.168.10.0/24 --gateway=192.168.10.1
+    ```
+
+    </Solution>
+
+48. Connect a container to the `frontend` network when starting the container.
+
+    <Solution>
+
+    ```shell
+    docker run --network frontend --name nginx1 -d bitnami/nginx:latest
+    ```
+
+    </Solution>
+
+49. Change the network from `frontend` to `backend` on the running container.
+
+    <Solution>
+
+    ```shell
+    docker network connect backend nginx1
+    docker network disconnect frontend nginx1
+    ```
+
+    </Solution>
+
+50. Delete a user-defined network.
+
+    <Solution>
+
+    ```shell
+    docker network rm frontend
+    ```
+
+    </Solution>
+
+51. Delete all networks not attached to a container.
+
+    <Solution>
+
+    ```shell
+    docker network prune
+    ```
+
+    </Solution>
+
+52. Start a container without an attached network.
+
+    <Solution>
+
+    ```shell
+    docker run --network none --name nginx1 -d bitnami/nginx:latest
+    ```
+
+    </Solution>
+
+53. Start a container which uses a host network.
+
+    <Solution>
+
+    ```shell
+    docker run --network host --name nginx -d bitnami/nginx/latest
+    ```
+
+    </Solution>
+
+54. Expose ports of a container which uses a bridge network. Expose one port as
+    a UDP port.
+
+    <Solution>
+
+    ```shell
+    docker run -p 8080:8080 -p 8443:8443 -p 3000:3000/udp --name nginx -d bitnami/nginx:latest
+    ```
+
+    </Solution>
+
+55. Since Docker creates a default bridge network, there is no reason to create
+    a custom bridge.
+
+    - A. True
+    - B. False
+
+    <Solution>
+      (B) False. The default bridge assigned by Docker has limitations. It is
+      considered a best practice to create a custom bridge network if you plan
+      to run multiple containers on your host.
+    </Solution>
+
+56. Which of the following is an example of a socket?
+
+    - A. `http:192.168.100.10`
+    - B. `192.168.100.10`
+    - C. `192.168.100.10:80`
+    - D. `https://192.168.100.10`
+
+    <Solution>
+
+    (C) `192.168.100.10:80`. A socket is a combination of an IP address and a
+    port. `192.168.100.10:80` is a socket for a server running a service on port
+    80 with an IP address of `192.168.100.10`.
+
+    </Solution>
+
+57. How would you start a container running a web server on port `8080` named
+    `nginx-web` on a host that already has its host port (`8080`) bound to
+    another container?
+
+    - A. `docker run -d nginx-web bitnami/nginx`
+    - B. `docker run -p 8080:8080 -d nginx-web bitnami/nginx –force`
+    - C. `docker run -p 8081:8080 -d nginx-web bitnami/nginx`
+    - D. Since port `8080` is bound on the host, you cannot run a container on
+      port `8080`
+
+    <Solution>
+
+    (C) `docker run -p 8081:8080 -d nginx-web bitnami/nginx`. Since the host has
+    already bound port `8080` to another service, we cannot start the new
+    container using `8080:8080`. Since each Docker container has its own IP
+    address, we can still use port `8080` for the container, but the incoming
+    host port assignment must use an unused port. The only correct answer is C,
+    since it binds the host's port, `8081`, to the container port running on
+    port `8080`.
+
+    </Solution>
+
+58. You suspect an image may contain malware. You need to run the image safely
+    to look at its contents. What Docker command will mitigate any network
+    impact?
+
+    - A. `docker run -isolate -it badimage bash`
+    - B. `docker run -p 0:0 -it badimage bash`
+    - C. `docker run -it badimage bash`
+    - D. `docker run --network=none -it badimage bash`
+
+    <Solution>
+
+    (D) `docker run --network=none -it badimage bash`. If you start a container
+    without supplying any network options, the container will attempt to run on
+    the default Docker bridge network. To start a container without a network
+    you can set the network to none by running the image with the
+    `–network=none` option.
+
+    </Solution>
+
+59. Once a container is connected to a custom bridge network, you cannot change
+    the connected network.
+
+    - A. True
+    - B. False
+
+    <Solution>
+      (B) False. Being able to change the connected network on the fly is a
+      feature of custom bridge networks.
+    </Solution>
+
+60. What is the highest IP port number you can expose on a container?
+
+    - A. There is no limit
+    - B. 65535
+    - C. 65530
+    - D. 65532
+    - E. 65435
+
+    <Solution>
+
+    (B) `65535`. The valid port range for IP ports is `1-65535`.
+
+    </Solution>

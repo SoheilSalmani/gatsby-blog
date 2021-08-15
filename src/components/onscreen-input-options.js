@@ -1,8 +1,8 @@
 import { css } from "@emotion/react"
 import React from "react"
 
-export default function OnScreenOptions({ opt }) {
-  const options = opt.split(",")
+export default function OnScreenOptions({ children }) {
+  const options = children.split(" | ")
   return (
     <kbd
       css={css`
@@ -21,7 +21,7 @@ export default function OnScreenOptions({ opt }) {
         ))
         .reduce((list, option) => (
           <>
-            {list}&nbsp;|&nbsp;{option}
+            {list} | {option}
           </>
         ))}
     </kbd>

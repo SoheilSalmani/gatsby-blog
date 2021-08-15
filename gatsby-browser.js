@@ -11,7 +11,7 @@ import Solution from "./src/components/solution"
 const components = {
   code: props => <CodeBlock {...props} />,
   inlineCode: props => <InlineCode {...props} />,
-  Screen: props => <OnScreenOptions {...props} />,
+  Scr: props => <OnScreenOptions {...props} />,
   Solution: props => <Solution {...props} />,
   Figure: props => <Figure {...props} />,
   Kbd: props => <KeyboardShortcut {...props} />,

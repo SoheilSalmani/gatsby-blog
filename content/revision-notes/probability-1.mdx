@@ -1,0 +1,98 @@
+---
+title: Probability-1
+resourceId: "9780387722061"
+stoppedAt: Sampling Without Replacement
+---
+
+## Elementary Probability Theory
+
+### Probabilistic Model of an Experiment with a Finite Number of Outcomes
+
+Let us consider an experiment of which all possible results are included in a
+finite number of outcomes $\omega_1,\dots,\omega_N$.
+
+We call $\omega_1,\dots,\omega_N$ _elementary events_, or _sample points_, and
+the finite set
+
+$$
+\Omega = \{\omega_1,\dots,\omega_N\} \, ,
+$$
+
+the (finite) _space of elementary events_ or the _sample space_.
+
+The choice of the space of elementary events is the _first step_ in formulating
+a _probabilistic model_ for an experiment.
+
+**Sampling with Replacement:** This is an experiment in which at each step one
+ball is drawn at random and returned again. The balls are numbered $1,\dots,M$,
+so that each sample of $n$ balls can be presented in the form $(a_1,\dots,a_n)$,
+where $a_i$ is the label of the ball drawn at the $i$th step. It is customary to
+distinguish two cases: _ordered_ samples and _unordered_ samples. To emphasize
+which kind of sample we are considering, we use the notation $(a_1,\dots,a_n)$
+for _ordered_ and $[a_1,\dots,a_n]$ for _unordered_ samples.
+
+Thus for _ordered_ samples _with replacement_ the sample space has the form
+
+$$
+\Omega = \{\omega : \omega=(a_1,\dots,a_n), a_i=1,\dots,M\}
+$$
+
+and the number of (different) outcomes, which in combinatorics are called
+_arrangements_ of $n$ out of $M$ elements _with repetitions_, is
+
+$$
+N(\Omega) = M^n \, .
+$$
+
+If, however, we consider _unordered_ samples _with replacement_ (called in
+combinatorics _combinations_ of $n$ out of $M$ elements _with repetitions_),
+then
+
+$$
+\Omega = \{\omega : \omega=[a_1,\dots,a_n], a_i=1,\dots,M\} \, .
+$$
+
+Clearly the number $N(\Omega)$ of (different) unordered samples is smaller than
+the number of ordered samples. Let us show that in the present case
+
+$$
+N(\Omega) = C^n_{M+n-1} \, ,
+$$
+
+where $C_k^l = k!/[l!(k-l)!]$ is the number of combinations of $k$ elements,
+taken $l$ at a time.
+
+We prove this by induction. Let $N(M,n)$ be the number of outcomes of interest.
+It is clear that when $k \le M$ we have
+
+$$
+N(k,1) = k = C^1_k \, .
+$$
+
+Now suppose that $N(k,n) = C^n_{k+n-1}$ for $k \le M$; we will show that this
+formula continues to hold when $n$ is replaced by $n+1$. For the unordered
+samples $[a_1,\dots,a_{n+1}]$ that we are considering, we may suppose that the
+elements are arranged in nondecreasing order:
+$a_1 \le a_2 \le \cdots \le a_{n+1}$. It is clear that the number of unordered
+samples of size $n+1$ with $a_1 = 1$ is $N(M,n)$, the number with $a_1 = 2$ is
+$N(M-1,n)$, etc. Consequently
+
+$$
+\begin{aligned}
+N(M,n+1) &= N(M,n) + N(M-1,n) + \cdots + N(1,n) \\
+         &= C^n_{M+n-1} + C^n_{M-1+n-1} + \cdots + C^n_n \\
+         &= (C^{n+1}_{M+n}-C^{n+1}_{M+n-1}) + (C^{n+1}_{M-1+n}-C^{n+1}_{M-1+n-1}) + \cdots + (C^{n+1}_{n+2}-C^{n+1}_{n+1}) + C^n_n = C^{n+1}_{M+n} \, ;
+\end{aligned}
+$$
+
+here we have used the easily verified property
+
+$$
+C^{l-1}_k + C^l_k = C^l_{k+1}
+$$
+
+of the _binomial coefficients_ $C^l_k$.
+
+## Mathematical Foundations of Probability Theory
+
+## Convergence of Probability Measures. Central Limit Theorem

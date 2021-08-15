@@ -1,7 +1,7 @@
 ---
 title: Data Pipelines with Apache Airflow
 resourceId: "9781617296901"
-stoppedAt: Anatomy of an Airflow DAG
+stoppedAt: Inspecting the Airflow UI
 ---
 
 ## Getting started
@@ -30,7 +30,7 @@ when running this data process.
 One way to make dependencies between tasks more explicit is to draw the data
 pipeline as a _directed graph_.
 
-<Figure src="/media/weather-data-pipeline-graph.png" alt="TODO">
+<Figure src="/media/weather-data-pipeline-graph.png">
   Graph representation of the data pipeline for the weather dashboard. Nodes
   represent tasks and directed edges represent dependencies between tasks (with
   an edge pointing from task A to task B, indicating that task A needs to be run
@@ -79,7 +79,7 @@ like the following steps:
 4. Train the ML model using the combined data set.
 5. Deploy the ML model so that it can be used by the business.
 
-<Figure src="/media/umbrella-company-data-pipeline.png" alt="TODO">
+<Figure src="/media/umbrella-company-data-pipeline.png">
   Overview of the umbrella demand use case, in which historical weather and
   sales data are used to train a model that predicts future sales demands
   depending on weather forecasts.
@@ -146,7 +146,7 @@ DAGs based on external metadata or configuration files. This flexibility gives a
 great deal of customization in how you build your pipelines, allowing you to fit
 Airflow to your needs for building arbitrarily complex pipelines.
 
-<Figure src="/media/airflow-dag-file.png" alt="TODO">
+<Figure src="/media/airflow-dag-file.png">
   Airflow pipelines are defined as DAGs using Python code in DAG files. Each DAG
   file typically defines one DAG, which describes the different tasks and their
   dependencies. Besides this, the DAG also defines a schedule interval that
@@ -171,12 +171,12 @@ At a high level, Airflow is organized into three main components:
 - _The Airflow webserver_—Visualizes the DAGs parsed by the scheduler and
   provides the main interface for users to monitor DAG runs and their results.
 
-<Figure src="/media/airflow-scheduler-workers-webserver.png" alt="TODO">
+<Figure src="/media/airflow-scheduler-workers-webserver.png">
   Overview of the main components involved in Airflow (e.g., the Airflow
   webserver, scheduler, and workers).
 </Figure>
 
-<Figure src="/media/airflow-process-involved.png" alt="TODO">
+<Figure src="/media/airflow-process-involved.png">
   Schematic overview of the process involved in developing and executing
   pipelines as DAGs using Airflow.
 </Figure>
@@ -189,17 +189,17 @@ by the Airflow webserver).
 
 ##### Monitoring and handling failures
 
-<Figure src="/media/airflow-main-page.png" alt="TODO">
+<Figure src="/media/airflow-main-page.png">
   The main page of Airflow’s web interface, showing an overview of the available
   DAGs and their recent results.
 </Figure>
 
-<Figure src="/media/airflow-graph-view.png" alt="TODO">
+<Figure src="/media/airflow-graph-view.png">
   The graph view in Airflow’s web interface, showing an overview of the tasks in
   an individual DAG and the dependencies between these tasks.
 </Figure>
 
-<Figure src="/media/airflow-tree-view.png" alt="TODO">
+<Figure src="/media/airflow-tree-view.png">
   Airflow’s tree view, showing the results of multiple runs of the umbrella
   sales model DAG (most recent + historical runs). The columns show the status
   of one execution of the DAG and the rows show the status of all executions of
@@ -291,9 +291,177 @@ those capabilities.
 
 #### Collecting data from numerous sources
 
+##### Exploring the data
+
+```shell
+curl -L "https://ll.thespacedevs.com/2.0.0/launch/upcoming"
+```
+
 #### Writing your first Airflow DAG
 
+The nice thing about Airflow is that we can split a large job, which consists of
+one or more steps, into individual “tasks” that together form a DAG. Multiple
+tasks can be run in parallel, and tasks can run different technologies. For
+example, we could first run a Bash script and next run a Python script.
+
+```python nu fp=download_rocket_launches.py
+import json
+import pathlib
+
+import airflow.utils.dates
+import requests
+import requests.exceptions as requests_exceptions
+from airflow import DAG
+from airflow.operators.bash import BashOperator
+from airflow.operators.python import PythonOperator
+
+dag = DAG(
+    dag_id="download_rocket_launches",
+    description="Download rocket pictures of recently launched rockets.",
+    start_date=airflow.utils.dates.days_ago(14),
+    schedule_interval=None,
+)
+
+download_launches = BashOperator(
+    task_id="download_launches",
+    bash_command="curl -o /tmp/launches.json -L 'https://ll.thespacedevs.com/2.0.0/launch/upcoming'",  # noqa: E501
+    dag=dag,
+)
+
+
+def _get_pictures():
+    # Ensure directory exists
+    pathlib.Path("/tmp/images").mkdir(parents=True, exist_ok=True)
+
+    # Download all pictures in launches.json
+    with open("/tmp/launches.json") as f:
+        launches = json.load(f)
+        image_urls = [launch["image"] for launch in launches["results"]]
+        for image_url in image_urls:
+            try:
+                response = requests.get(image_url)
+                image_filename = image_url.split("/")[-1]
+                target_file = f"/tmp/images/{image_filename}"
+                with open(target_file, "wb") as f:
+                    f.write(response.content)
+                print(f"Downloaded {image_url} to {target_file}")
+            except requests_exceptions.MissingSchema:
+                print(f"{image_url} appears to be an invalid URL.")
+            except requests_exceptions.ConnectionError:
+                print(f"Could not connect to {image_url}.")
+
+
+get_pictures = PythonOperator(
+    task_id="get_pictures", python_callable=_get_pictures, dag=dag
+)
+
+notify = BashOperator(
+    task_id="notify",
+    bash_command='echo "There are now $(ls /tmp/images/ | wc -l) images."',
+    dag=dag,
+)
+
+download_launches >> get_pictures >> notify
+```
+
+The DAG class takes two required arguments: `dag_id` and `start_date`.
+
+- `dag_id`: The name of the DAG displayed in the Airflow user interface (UI).
+- `start_date`: The datetime at which the workflow should first start running.
+
+Also note we set `schedule_interval` to `None`. This means the DAG will not run
+automatically. For now, you can trigger it manually from the Airflow UI.
+
+Each operator performs a single unit of work, and multiple operators together
+form a workflow or DAG in Airflow.
+
+The `BashOperator` arguments:
+
+- `task_id`: The name of the task.
+- `bash_command`: The Bash command to execute.
+- `dag`: Reference to the DAG variable.
+
+In Airflow, we can use the _binary right shift operator_ (i.e., “_rshift_”
+[`>>`]) to define dependencies between tasks.
+
+##### Tasks vs. operators
+
+In Airflow, _operators_ have a single piece of responsibility: they exist to
+perform one single piece of work. Some operators perform generic work, such as
+the `BashOperator` (used to run a Bash script) or the `PythonOperator` (used to
+run a Python function); others have more specific use cases, such as the
+`EmailOperator` (used to send an email) or the `SimpleHTTPOperator` (used to
+call an HTTP endpoint).
+
+Tasks in Airflow manage the execution of an operator; they can be thought of as
+a small wrapper or manager around an operator that ensures the operator executes
+correctly. The user can focus on the work to be done by using operators, while
+Airflow ensures correct execution of the work via tasks.
+
+<Figure src="/media/airflow-tasks-vs-operators.png">
+  DAGs and operators are used by Airflow users. Tasks are internal components to
+  manage operator state and display state changes (e.g., started/finished) to
+  the user.
+</Figure>
+
+##### Running arbitrary Python code
+
+The `PythonOperator` in Airflow is responsible for running any Python code. Just
+like the `BashOperator` used before, this and all other operators require a
+`task_id`. The `python_callable` argument points to a callable, typically a
+function.
+
 #### Running a DAG in Airflow
+
+##### Running Airflow in a Python environment
+
+```shell
+pip install apache-airflow
+```
+
+After installing Airflow, start it by initializing the metastore (a database in
+which all Airflow state is stored), creating a user, copying the rocket launch
+DAG into the DAGs directory, and starting the scheduler and webserver:
+
+1. ```shell
+   airflow db init
+   ```
+2. ```shell
+   airflow users create --username admin --password admin --firstname Anonymous --lastname Admin --role Admin --email admin@example.org
+   ```
+3. ```shell
+   cp download_rocket_launches.py ~/airflow/dags/
+   ```
+4. ```shell
+   airflow webserver
+   ```
+5. ```shell
+   airflow scheduler
+   ```
+
+##### Running Airflow in Docker containers
+
+```shell
+docker run \
+    -ti \
+    -p 8080:8080 \
+    -v /path/to/dag/download_rocket_launches.py:/opt/airflow/dags/download_rocket_launches.py \
+    --entrypoint=/bin/bash \
+    --name airflow \
+    apache/airflow:latest \
+    -c '( \
+            airflow db init && \
+            airflow users create --username admin --password admin --firstname Anonymous --lastname Admin --role Admin --email admin@example.org \
+        ); \
+        airflow webserver & \
+        airflow scheduler \
+       '
+```
+
+**Note:** In a production setting, you should run the Airflow webserver,
+scheduler, and metastore in separate containers.
+
+##### Inspecting the Airflow UI
 
 #### Running at regular intervals
 

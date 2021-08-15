@@ -70,8 +70,8 @@ type Internal {
 }
 ```
 
-For example, the node type created by gatsby-transformer-json for authors.json
-will be represented in the GraphQL schema as:
+For example, the node type created by `gatsby-transformer-json` for
+`authors.json` will be represented in the GraphQL schema as:
 
 ```graphql
 type AuthorJson implements Node {
@@ -115,7 +115,7 @@ both Date and String values.
 #### Fixing field types
 
 To ensure that the field will always be of Date type, you can provide explicit
-type definitions to Gatsby with the createTypes action. It accepts type
+type definitions to Gatsby with the `createTypes` action. It accepts type
 definitions in GraphQL Schema Definition Language:
 
 ```js fp=gatsby-node.js
@@ -190,8 +190,8 @@ type Mdx implements Node @childOf(types: ["File", "Markdown"]) {
 }
 ```
 
-The mimeTypes argument takes an array of strings and determines what media types
-the node is a child of:
+The `mimeTypes` argument takes an array of strings and determines what media
+types the node is a child of:
 
 ```graphql
 # Adds `childMdx` as a child of any node type with the `@mimeTypes` set to "text/markdown" or "text/x-markdown"
@@ -218,9 +218,9 @@ and `Date`; GraphQL also knows `ID`, `Int`, `Float`, `Boolean` and `JSON`).
 Fields can however also contain complex object values. To target those fields in
 GraphQL SDL, you can provide a full type definition for the nested type, which
 can be arbitrarily named (as long as the name is unique in the schema). In the
-example project, the frontmatter field on the MarkdownRemark node type is a good
-example. Say you want to ensure that frontmatter.tags will always be an array of
-strings.
+example project, the `frontmatter` field on the `MarkdownRemark` node type is a
+good example. Say you want to ensure that frontmatter`tags` will always be an
+array of strings.
 
 ```graphql
 exports.createSchemaCustomization = ({ actions }) => {
@@ -258,9 +258,9 @@ exports.createSchemaCustomization = ({ actions }) => {
 It is useful to think about your data, and the corresponding GraphQL schema, by
 always starting from the Node types created by source and transformer plugins.
 
-**Note:** The `Frontmatter` type must not implement the Node interface since it
-is not a top-level type created by source or transformer plugins: it has no `id`
-field, and is there to describe the data shape on a nested field.
+**Note:** The `Frontmatter` type must not implement the `Node` interface since
+it is not a top-level type created by source or transformer plugins: it has no
+`id` field, and is there to describe the data shape on a nested field.
 
 #### Gatsby Type Builders
 

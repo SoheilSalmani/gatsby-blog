@@ -1,0 +1,236 @@
+---
+title: Kubernetes in Action
+resourceId: "9781617293726"
+stoppedAt: Introducing container technologies
+---
+
+## Overview
+
+### Introducing Kubernetes
+
+#### Understanding the need for a system like Kubernetes
+
+##### Moving from monolithic apps to microservices
+
+Running a monolithic application usually requires a small number of powerful
+servers that can provide enough resources for running the application. To deal
+with increasing loads on the system, you then either have to vertically scale
+the servers (also known as scaling up) by adding more CPUs, memory, and other
+server components, or scale the whole system horizontally, by setting up
+additional servers and running multiple copies (or replicas) of an application
+(scaling out).
+
+While scaling up usually doesn’t require any changes to the app, it gets
+expensive relatively quickly and in practice always has an upper limit. Scaling
+out, on the other hand, is relatively cheap hardware- wise, but may require big
+changes in the application code and isn’t always possible—certain parts of an
+application are extremely hard or next to impossible to scale horizontally
+(relational databases, for example).
+
+###### Splitting apps into microservices
+
+<Figure src="/media/splitting-apps-into-microservices.png">
+  Components inside a monolithic application vs. standalone microservices.
+</Figure>
+
+###### Scaling microservices
+
+<Figure src="/media/scaling-microservices.png">
+  Each microservice can be scaled individually.
+</Figure>
+
+#### Introducing container technologies
+
+##### Understanding what containers are
+
+###### Isolating components with Linux container technologies
+
+A process running in a container runs inside the host’s operating system, like
+all the other processes (unlike VMs, where processes run in separate operating
+systems). But the process in the container is still isolated from other
+processes. To the process itself, it looks like it’s the only one running on the
+machine and in its operating system.
+
+###### Comparing virtual machines to containers
+
+<Figure src="/media/vms-vs-containers.png">
+  Using VMs to isolate groups of applications vs. isolating individual apps with
+  containers.
+</Figure>
+
+When you run three VMs on a host, you have three completely separate operating
+systems running on and sharing the same bare-metal hardware. Underneath those
+VMs is the host’s OS and a hypervisor, which divides the physical hardware
+resources into smaller sets of virtual resources that can be used by the
+operating system inside each VM. Applications running inside those VMs perform
+system calls to the guest OS’ kernel in the VM, and the kernel then performs x86
+instructions on the host’s physical CPU through the hypervisor.
+
+**Note:** Two types of hypervisors exist. Type 1 hypervisors don’t use a host
+OS, while Type 2 do.
+
+Containers, on the other hand, all perform system calls on the exact same kernel
+running in the host OS. This single kernel is the only one performing x86
+instructions on the host’s CPU. The CPU doesn’t need to do any kind of
+virtualization the way it does with VMs.
+
+<Figure src="/media/vms-vs-containers-2.png">
+  The difference between how apps in VMs use the CPU vs. how they use them in
+  containers.
+</Figure>
+
+###### Introducing the mechanisms that make container isolation possible
+
+Two mechanisms make isolation possible:
+
+- _Linux Namespaces_, makes sure each process sees its own personal view of the
+  system (files, processes, network interfaces, hostname, and so on).
+- _Linux Control Groups (cgroups)_, which limit the amount of resources the
+  process can consume (CPU, memory, network bandwidth, and so on).
+
+###### Isolating processes with Linux namespaces
+
+By default, each Linux system initially has one single namespace. All system
+resources, such as filesystems, process IDs, user IDs, network interfaces, and
+others, belong to the single namespace. But you can create additional namespaces
+and organize resources across them. When running a process, you run it inside
+one of those namespaces. The process will only see resources that are inside the
+same namespace. Well, multiple kinds of namespaces exist, so a process doesn’t
+belong to one namespace, but to one namespace of each kind.
+
+The following kinds of namespaces exist:
+
+- Mount (mnt)
+- Process ID (pid)
+- Network (net)
+- Inter-process communication (ipc)
+- UTS
+- User ID (user)
+
+Each namespace kind is used to isolate a certain group of resources.
+
+##### Introducing the Docker container platform
+
+For example, if you’ve packaged up your application with the files of the whole
+Red Hat Enterprise Linux (RHEL) operating system, the application will believe
+it’s running inside RHEL, both when you run it on your development computer that
+runs Fedora and when you run it on a server running Debian or some other Linux
+distribution. Only the kernel may be different.
+
+A big difference between Docker-based container images and VM images is that
+container images are composed of layers, which can be shared and reused across
+multiple images. This means only certain layers of an image need to be
+downloaded if the other layers were already downloaded previously when running a
+different container image that also contains the same layers.
+
+###### Understanding Docker concepts
+
+Three main concepts in Docker comprise this scenario:
+
+- _Images_—A Docker-based container image is something you package your
+  application and its environment into. It contains the filesystem that will be
+  available to the application and other metadata, such as the path to the
+  executable that should be executed when the image is run.
+- _Registries_—A Docker Registry is a repository that stores your Docker images
+  and facilitates easy sharing of those images between different people and
+  computers. When you build your image, you can either run it on the computer
+  you’ve built it on, or you can _push_ (upload) the image to a registry and
+  then _pull_ (download) it on another computer and run it there. Certain
+  registries are public, allowing anyone to pull images from it, while others
+  are private, only accessible to certain people or machines.
+- _Containers_—A Docker-based container is a regular Linux container created
+  from a Docker-based container image. A running container is a process running
+  on the host running Docker, but it’s completely isolated from both the host
+  and all other processes running on it. The process is also
+  resource-constrained, meaning it can only access and use the amount of
+  resources (CPU, RAM, and so on) that are allocated to it.
+
+###### Building, distributing, and running a Docker image
+
+<Figure src="/media/docker-images-registries-containers.png">
+  Docker images, registries, and containers.
+</Figure>
+
+###### Comparing virtual machines and Docker containers
+
+<Figure src="/media/6-apps-3-vms-docker-containers.png">
+  Running six apps on three VMs vs. running them in Docker containers.
+</Figure>
+
+###### Understanding image layers
+
+Layers don’t only make distribution more efficient, they also help reduce the
+storage footprint of images. Each layer is only stored once. Two containers
+created from two images based on the same base layers can therefore read the
+same files, but if one of them writes over those files, the other one doesn’t
+see those changes. Therefore, even if they share files, they’re still isolated
+from each other. This works because container image layers are read-only. When a
+container is run, a new writable layer is created on top of the layers in the
+image. When the process in the container writes to a file located in one of the
+underlying layers, a copy of the whole file is created in the top-most layer and
+the process writes to the copy.
+
+###### Understanding the portability limitations of container images
+
+All containers running on a host use the host’s Linux kernel.
+
+And it’s not only about the kernel. It should also be clear that a containerized
+app built for a specific hardware architecture can only run on other machines
+that have the same architecture. You can’t containerize an application built for
+the x86 architecture and expect it to run on an ARM-based machine because it
+also runs Docker. You still need a VM for that.
+
+##### Introducing rkt—an alternative to Docker
+
+After the success of Docker, the Open Container Initiative (OCI) was born to create
+open industry standards around container formats and runtime. Docker is part
+of that initiative, as is *rkt* (pronounced “rock-it”), which is another Linux container
+engine.
+
+Like Docker, rkt is a platform for running containers. It puts a strong emphasis on
+security, composability, and conforming to open standards. It uses the OCI container
+image format and can even run regular Docker container images.
+
+This book focuses on using Docker as the container runtime for Kubernetes,
+because it was initially the only one supported by Kubernetes. Recently, Kubernetes
+has also started supporting rkt, as well as others, as the container runtime.
+
+#### Introducing Kubernetes
+
+### First steps with Docker and Kubernetes
+
+## Core concepts
+
+### Pods: running containers in Kubernetes
+
+### Replication and other controllers: deploying managed pods
+
+### Services: enabling clients to discover and talk to pods
+
+### Volumes: attaching disk storage to containers
+
+### ConfigMaps and Secrets: configuring applications
+
+### Accessing pod metadata and other resources from applications
+
+### Deployments: updating applications declaratively
+
+### StatefulSets: deploying replicated stateful applications
+
+## Beyond the basics
+
+### Understanding Kubernetes internals
+
+### Securing the Kubernetes API server
+
+### Securing cluster nodes and the network
+
+### Managing pods' computational resources
+
+### Automatic scaling of pods and cluster nodes
+
+### Advanced scheduling
+
+### Best practices for developing apps
+
+### Extending Kubernetes

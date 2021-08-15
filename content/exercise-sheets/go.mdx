@@ -1,0 +1,384 @@
+---
+title: Go
+relatedResources:
+  - "9781838647940"
+tags: []
+---
+
+1. Write a program which randomly prints a message to the console from a
+   pre-defined list of messages.
+
+   <Solution>
+
+   ```go nu
+   package main
+
+   // Import extra functionality from packages
+   import (
+           "errors"
+           "fmt"
+           "log"
+           "math/rand"
+           "strconv"
+           "time"
+   )
+
+   var helloList = []string{
+           "Hello, world",
+           "Καλημέρα κόσμε",
+           "こんにちは世界",
+           "سلام دنیا‎",
+           "Привет, мир",
+   }
+
+   func main() {
+           // Seed random number generator using the current time
+           rand.Seed(time.Now().UnixNano())
+           // Generate a random number in the range of out list
+           index := rand.Intn(len(helloList))
+           // Call a function and receive multiple return values
+           msg, err := hello(index)
+           // Handle any errors
+           if err != nil {
+                   log.Fatal(err)
+           }
+           // Print our message to the console
+           fmt.Println(msg)
+   }
+
+   func hello(index int) (string, error) {
+           if index < 0 || index > len(helloList)-1 {
+                   // Create an error, convert the int type to a string
+                   return "", errors.New("out of range: " + strconv.Itoa(index))
+           }
+           return helloList[index], nil
+   }
+   ```
+
+   </Solution>
+
+2. Write a program which prints a random number, between 1 and 5, of stars to
+   the console.
+
+   <Solution>
+
+   ```go nu
+   package main
+
+   import (
+           "fmt"
+           "math/rand"
+           "strings"
+           "time"
+   )
+
+   func main() {
+           rand.Seed(time.Now().UnixNano())
+           r := rand.Intn(5) + 1
+           stars := strings.Repeat("*", r)
+           fmt.Println(stars)
+   }
+   ```
+
+   </Solution>
+
+3. Write a program which prints a patient's name, age, and whether they have a
+   peanut allergy.
+
+   <Solution>
+
+   ```go nu
+   package main
+
+   import "fmt"
+
+   func main() {
+           firstName := "Bob"
+           familyName := "Smith"
+           age := 34
+           peanutAllergy := false
+
+           fmt.Println(firstName)
+           fmt.Println(familyName)
+           fmt.Println(age)
+           fmt.Println(peanutAllergy)
+   }
+   ```
+
+   </Solution>
+
+4. Declare a function level variable and a package lavel variable. Use full
+   `var` definitions.
+
+   <Solution>
+
+   ```go nu
+   package main
+
+   import (
+           "fmt"
+   )
+
+   // Package level variable
+   var foo string = "bar"
+
+   func main() {
+           // Function level variable
+           var baz string = "qux"
+
+           fmt.Println(foo, baz)
+   }
+   ```
+
+   </Solution>
+
+5. Declare Multiple Variables at Once with `var`. Use the full definition
+   syntax.
+
+   <Solution>
+
+   ```go nu
+   package main
+
+   import (
+           "fmt"
+           "time"
+   )
+
+   var (
+           Debug       bool      = false
+           LogLevel    string    = "info"
+           startUpTime time.Time = time.Now()
+   )
+
+   func main() {
+           fmt.Println(Debug, LogLevel, startUpTime)
+   }
+   ```
+
+   </Solution>
+
+6. Declare variables where the type or value are skipped.
+
+   <Solution>
+
+   ```go nu
+   package main
+
+   import (
+           "fmt"
+           "time"
+   )
+
+   var (
+           Debug       bool
+           LogLevel    = "info"
+           startUpTime = time.Now()
+   )
+
+   func main() {
+           fmt.Println(Debug, LogLevel, startUpTime)
+   }
+   ```
+
+   </Solution>
+
+7. Write an example where type inference goes wrong.
+
+   <Solution>
+
+   ```go nu
+   package main
+
+   import "math/rand"
+
+   func main() {
+           var seed = 1234456789 // Add int64
+           rand.Seed(seed)
+   }
+   ```
+
+   </Solution>
+
+8. Declare variables using the short variable declaration.
+
+   <Solution>
+
+   ```go nu
+   package main
+
+   import (
+           "fmt"
+           "time"
+   )
+
+   func main() {
+           Debug := false
+           LogLevel := "info"
+           startUpTime := time.Now()
+           fmt.Println(Debug, LogLevel, startUpTime)
+   }
+   ```
+
+   </Solution>
+
+9. Declaring multiple variables using the short variable declaration.
+
+   <Solution>
+
+   ```go nu
+   package main
+
+   import (
+           "fmt"
+           "time"
+   )
+
+   func getConfig() (bool, string, time.Time) {
+           return false, "info", time.Now()
+   }
+
+   func main() {
+           Debug, LogLevel, startUpTime := getConfig()
+           fmt.Println(Debug, LogLevel, startUpTime)
+   }
+   ```
+
+   </Solution>
+
+10. Transform the preceding code using the `var` notation (full definition
+    syntax).
+
+    <Solution>
+
+    ```go nu hl=13..18
+    package main
+
+    import (
+            "fmt"
+            "time"
+    )
+
+    func getConfig() (bool, string, time.Time) {
+            return false, "info", time.Now()
+    }
+
+    func main() {
+            var (
+                    Debug bool
+                    LogLevel string
+                    startUpTime time.Time
+            )
+            Debug, LogLevel, startUpTime = getConfig()
+    }
+    ```
+
+    </Solution>
+
+11. Use `var` to declare multiple variables in one line.
+
+   <Solution>
+   
+   ```go nu
+   package main
+   
+   import (
+           "fmt"
+           "time"
+   )
+   
+   func getConfig() (bool, string, time.Time) {
+           return false, "info", time.Now()
+   }
+   
+   func main() {
+           // Type only
+           var start, middle, end float32
+           fmt.Println(start, middle, end)
+   
+           // Initial value mixed type
+           var name, left, right, top, bottom = "one", 1, 1.5, 2, 2.5
+           fmt.Println(name, left, right, top, bottom)
+   
+           // Works with functions also
+           var Debug, LogLevel, startUpTime = getConfig()
+           fmt.Println(Debug, LogLevel, startUpTime)
+   }
+   ```
+   
+   </Solution>
+
+12. Declare variables with non-English names.
+
+   <Solution>
+   
+   ```go nu
+   package main
+   
+   import (
+           "fmt"
+           "time"
+   )
+   
+   func main() {
+           デバッグ := false
+           日志级别 := "info"
+           ይጀምሩ := time.Now()
+           _A1_Μείγμα := ""
+           fmt.Println(デバッグ, 日志级别, ይጀምሩ, _A1_Μείγμα)
+   }
+   ```
+   
+   </Solution>
+
+13. Change the value of a variable.
+
+   <Solution>
+   
+   ```go nu
+   package main
+   
+   import "fmt"
+   
+   func main() {
+           offset := 5
+           fmt.Println(offset)
+           offset = 10
+           fmt.Println(offset)
+   }
+   ```
+   
+   ```go nu
+   package main
+   
+   import "fmt"
+   
+   var defaultOffset = 10
+   
+   func main() {
+           offset := defaultOffset
+           fmt.Println(offset)
+           offset = offset + defaultOffset
+           fmt.Println(offset)
+   }
+   ```
+   
+   </Solution>
+
+14. Change multiple variables in a one-line statement.
+
+   <Solution>
+   
+   ```go nu
+   package main
+   
+   import "fmt"
+   
+   func main() {
+           query, limit, offset := "bat", 10, 0
+           query, limit, offset = "ball", offset, 20
+           fmt.Println(query, limit, offset)
+   }
+   ```
+   
+   </Solution>

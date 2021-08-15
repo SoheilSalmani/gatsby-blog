@@ -1,0 +1,200 @@
+---
+title: The Java Workshop
+resourceId: "9781838986698"
+stoppedAt: Learn the Basics
+---
+
+## Getting Started
+
+### Writing, Compiling, and Executing Your Hello World Program
+
+Exercise 1:
+
+```java nu fp=src/Main.java
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello World!");
+    }
+}
+```
+
+All programs in Java are called classes. A program might consist of several
+**classes**. For a class to be executable in Java, it must contain a method
+called `main`.
+
+- `static` signifies that there is nothing in the system instantiating the
+  `main` method. Because of the way the Java Virtual Machine works, the `main`
+  method needs to be static, or it will not be possible to execute it.
+- `void` indicates that the `main` method will not be returning anything to any
+  code calling it.
+- `String[] args`: Parameters are passed as a list of strings. In the particular
+  case of the main method, these are strings that could be entered on the
+  **command-line interface (CLI)** when calling the program.
+
+#### Variables and Variable Types
+
+Exercise 2:
+
+```java nu fp=src/Main.java
+public class Main {
+    public static void main(String[] args) {
+        String t = "This is a text";
+        char c = 'A';
+        int i = 53;
+        float f = 23.08f;
+        double d = 1.97;
+        boolean b = true;
+        System.out.println(t);
+        System.out.println(c);
+        System.out.println(i);
+        System.out.println(f);
+        System.out.println(d);
+        System.out.println(b);
+    }
+}
+```
+
+#### Primitive versus Reference Data Types
+
+Some data types are built on top of others.
+
+The eight primitive data types represent **truth levels** (`boolean`),
+**integral numbers** (`byte`, `short`, `int`, and `long`), **floating point
+numbers** (`float` and `double`), and **characters** (`char`).
+
+**Note:** String is not a primitive data type. It is what we call a reference
+data type. A mnemotechnic that could help you remember why it is called
+"reference" is that it is not linking to the actual data, but to the position in
+memory where the data is stored; hence, it is "a reference.".
+
+#### Null
+
+In the same way that primitive data types have a default value, reference data
+types, which could be made of any kind of data, have a common way to express
+that they contain no data. As an example of a reference typed variable, the
+default value for a string that is defined as empty is `null`.
+
+Null is a lot more complex than that, though—it can also be used to determine
+termination. Continuing with the example of the string, when stored in memory,
+it will be made of an array of characters ending with `null`.
+
+```java nu fp=src/Main.java
+public class Main {
+    public static void main(String[] args) {
+        String t;
+        System.out.println(t);
+        t = "Joe ...";
+        System.out.println(t);
+        t = "went fishing";
+        System.out.println(t);
+    }
+}
+```
+
+#### Chars and Strings
+
+```java nu fp=src/Main.java
+public class Main {
+    public static void main(String[] args) {
+        String t = "";
+        System.out.println(t);
+        t = "Joe ...";
+        System.out.println(t);
+        t = "went fishing";
+        System.out.println(t);
+    }
+}
+```
+
+#### Doing Some Math
+
+```java nu fp=src/Main.java
+public class Main {
+    public static void main(String[] args) {
+        float f = 51.49f;
+        System.out.println(f);
+        int i = Math.round(f);
+        System.out.println(i);
+    }
+}
+```
+
+`Math.round()` and `System.out.println()` are examples of calls to methods that
+belong to the standard Java libraries `Math` and `System`, respectively.
+
+Exercise 4:
+
+```java nu fp=src/Main.java
+public class Main {
+    public static void main(String[] args) {
+        double a = 3;
+        double b = 4;
+        double h = 0;
+        h = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+        System.out.println(h);
+    }
+}
+```
+
+#### Comments Help You to Share Code
+
+Comments: `//` and `/* */`.
+
+#### CLI versus GUI
+
+Exercise 5:
+
+1. In IntelliJ IDEA, click on <Scr>Build Project</Scr>.
+2. ```shell
+   cd out/production/HelloWorld/
+   java Main
+   ```
+
+Activity 1:
+
+```java nu fp=src/Main.java
+public class Main {
+    public static void main(String[] args) {
+        double a = 3;
+        double b = 4;
+        double m = 0;
+        String r = "The minimum of numbers: " + a + " and " + b + " is ";
+        m = Math.min(a, b);
+        System.out.println(r + m);
+    }
+}
+```
+
+## Learning the Basics
+
+## Object-Oriented Programming
+
+## Collections, Lists and Java's Built-In APIs
+
+## Exceptions
+
+## Libraries, Packages, and Modules
+
+## Databases and JDBC
+
+## Sockets, Files, and Streams
+
+## Working with HTTP
+
+## Encryption
+
+## Processes
+
+## Regular Expressions
+
+## Functional Programming with Lambda Expressions
+
+## Recursion
+
+## Processing Data with Streams
+
+## Predicates and Other Functional Interfaces
+
+## Reactive Programming with Java Flow
+
+## Unit Testing

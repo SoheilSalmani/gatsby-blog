@@ -1,0 +1,145 @@
+---
+title: Java
+relatedResources:
+  - "9781838986698"
+tags: []
+---
+
+1. Create a Java project in IntelliJ IDEA which prints "Hello World!".
+
+   <Solution>
+
+   ```java nu fp=src/Main.java
+   public class Main {
+       public static void main(String[] args) {
+           System.out.println("Hello World!");
+       }
+   }
+   ```
+
+   </Solution>
+
+2. Declare and print multiple variables of the following types: `String`,
+   `char`, `int`, `float`, `double` and `boolean`.
+
+   <Solution>
+
+   ```java nu fp=src/Main.java
+   public class Main {
+       public static void main(String[] args) {
+           String t = "This is a text";
+           char c = 'A';
+           int i = 53;
+           float f = 23.08f;
+           double d = 1.97;
+           boolean b = true;
+           System.out.println(t);
+           System.out.println(c);
+           System.out.println(i);
+           System.out.println(f);
+           System.out.println(d);
+           System.out.println(b);
+       }
+   }
+   ```
+
+   </Solution>
+
+3. Fix the following program:
+
+   ```java nu fp=src/Main.java
+   public class Main {
+       public static void main(String[] args) {
+           String t;
+           System.out.println(t);
+           t = "Joe ...";
+           System.out.println(t);
+           t = "went fishing";
+           System.out.println(t);
+       }
+   }
+   ```
+
+   <Solution>
+
+   ```java nu fp=src/Main.java hl=3
+      public class Main {
+          public static void main(String[] args) {
+              String t = "";
+              System.out.println(t);
+              t = "Joe ...";
+              System.out.println(t);
+              t = "went fishing";
+              System.out.println(t);
+          }
+      }
+   ```
+
+   </Solution>
+
+4. Write a program which a round a float variable.
+
+   <Solution>
+
+   ```java nu fp=src/Main.java
+   public class Main {
+       public static void main(String[] args) {
+           float f = 51.49f;
+           System.out.println(f);
+           int i = Math.round(f);
+           System.out.println(i);
+       }
+   }
+   ```
+
+   </Solution>
+
+5. Write a program which solve the hypotenuse of a right triangle.
+
+   <Solution>
+
+   ```java nu fp=src/Main.java hl=3
+   public class Main {
+       public static void main(String[] args) {
+           double a = 3;
+           double b = 4;
+           double h = 0;
+           h = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+           System.out.println(h);
+       }
+   }
+   ```
+
+   </Solution>
+
+6. Build a Java Project and run it via the CLI.
+
+   <Solution>
+
+   1. In IntelliJ IDEA, click on <Scr>Build Project</Scr>.
+   2. ```shell
+      cd out/production/HelloWorld/
+      java Main
+      ```
+
+   </Solution>
+
+7. Write a program that will check two numbers entered as variables and print
+   out the message "The minimum of numbers: $x$ and $y$ is $z$".
+
+   <Solution>
+
+   ```java nu fp=src/Main.java
+   public class Main {
+       public static void main(String[] args) {
+           double a = 3;
+           double b = 4;
+           double m = 0;
+           String r = "The minimum of numbers: " + a + " and " + b + " is ";
+           m = Math.min(a, b);
+           System.out.println(r + m);
+       }
+   }
+   ```
+
+   </Solution>

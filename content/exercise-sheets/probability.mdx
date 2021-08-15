@@ -1,0 +1,153 @@
+---
+title: Probability
+relatedResources: ["9780387722061"]
+tags: []
+---
+
+1.  Define what sample points are. Give an other term used to mention these
+    elements.
+
+    <Solution>
+
+    Let us consider an experiment of which all possible results are included in
+    a finite number of outcomes $\omega_1,\dots,\omega_N$. We call
+    $\omega_1,\dots,\omega_N$ _elementary events_, or _sample points_.
+
+    </Solution>
+
+2.  Define what a sample space is. Give an other term used to mention that set.
+
+    <Solution>
+
+    The (finite) space of elementary events or the sample space is the finite
+    set
+
+    $$
+    \Omega = \{\omega_1,\dots,\omega_N\} \, .
+    $$
+
+    </Solution>
+
+3.  Give $\Omega$ for a single toss of a coin.
+
+    <Solution>
+
+    For a single toss of a coin the sample space $\Omega$ consists of two
+    points:
+
+    $$
+    \Omega = \{\text{H}, \text{T}\} \, ,
+    $$
+
+    where $\text{H} = \text{"head"}$ and $\text{T} = \text{"tail"}$.
+
+    </Solution>
+
+4.  Give $\Omega$ for $n$ tosses of a coin. Give the value of $N(\Omega)$.
+
+    <Solution>
+
+    For $n$ tosses of a coin the sample space is
+
+    $$
+    \Omega = \{\omega : \omega=(a_1,\dots,a_n), a_i=\text{H or T}\}
+    $$
+
+    and the total number $N(\Omega)$ of outcomes is $2^n$.
+
+    </Solution>
+
+5.  Give $\Omega$ for the following experiment. First toss a coin. If it falls
+    “head” then toss a die; if it falls “tail,” toss the coin again.
+
+    <Solution>
+
+    The sample space for this experiment is
+
+    $$
+    \Omega = \{\text{H1},\text{H2},\text{H3},\text{H4},\text{H5},\text{H6},\text{TH},\text{TT}\} \, .
+    $$
+
+    </Solution>
+
+6.  We consider the selection of $n$ balls from an urn containing $M$
+    distinguishable balls. We consider the case where the order in which the
+    balls are drawn matters. In the context of sampling with replacement, give
+    $\Omega$ and $N(\Omega)$.
+
+    <Solution>
+
+    We number the balls $1,\dots,M$, so that each sample of $n$ balls can be
+    presented in the form $(a_1,\dots,a_n)$ (ordered sample), where $a_i$ is the
+    label of the ball drawn at the $i$th step.
+
+    Thus the sample space has the form
+
+    $$
+    \Omega = \{\omega : \omega=(a_1,\dots,a_n), a_i=1,\dots,M\}
+    $$
+
+    and the number of (different) outcomes, which in combinatorics are called
+    _arrangements_ of $n$ out of $M$ elements _with repetitions_, is
+
+    $$
+    N(\Omega) = M^n \, .
+    $$
+
+    </Solution>
+
+7.  Same but this time, we consider the case where the order in which the balls
+    are drawn doesn't matter. Justify your answer for $N(\Omega)$.
+
+    <Solution>
+
+    If we consider _unordered_ samples _with replacement_ (called in
+    combinatorics _combinations_ of $n$ out of $M$ elements _with repetitions_),
+    then
+
+    $$
+    \Omega = \{\omega : \omega=[a_1,\dots,a_n], a_i=1,\dots,M\} \, .
+    $$
+
+    Clearly the number $N(\Omega)$ of (different) unordered samples is smaller
+    than the number of ordered samples. Let us show that in the present case
+
+    $$
+    N(\Omega) = C^n_{M+n-1} \, ,
+    $$
+
+    where $C_k^l = k!/[l!(k-l)!]$ is the number of combinations of $k$ elements,
+    taken $l$ at a time.
+
+    We prove this by induction. Let $N(M,n)$ be the number of outcomes of
+    interest. It is clear that when $k \le M$ we have
+
+    $$
+    N(k,1) = k = C^1_k \, .
+    $$
+
+    Now suppose that $N(k,n) = C^n_{k+n-1}$ for $k \le M$; we will show that
+    this formula continues to hold when $n$ is replaced by $n+1$. For the
+    unordered samples $[a_1,\dots,a_{n+1}]$ that we are considering, we may
+    suppose that the elements are arranged in nondecreasing order:
+    $a_1 \le a_2 \le \cdots \le a_{n+1}$. It is clear that the number of
+    unordered samples of size $n+1$ with $a_1 = 1$ is $N(M,n)$, the number with
+    $a_1 = 2$ is $N(M-1,n)$, etc. Consequently
+
+    $$
+    \begin{aligned}
+    N(M,n+1) &= N(M,n) + N(M-1,n) + \cdots + N(1,n) \\
+             &= C^n_{M+n-1} + C^n_{M-1+n-1} + \cdots + C^n_n \\
+             &= (C^{n+1}_{M+n}-C^{n+1}_{M+n-1}) + (C^{n+1}_{M-1+n}-C^{n+1}_{M-1+n-1}) + \cdots + (C^{n+1}_{n+2}-C^{n+1}_{n+1}) + C^n_n = C^{n+1}_{M+n} \, ;
+    \end{aligned}
+    $$
+
+    here we have used the easily verified property
+
+    $$
+    C^{l-1}_k + C^l_k = C^l_{k+1}
+    $$
+
+    of the _binomial coefficients_ $C^l_k$.
+
+    </Solution>

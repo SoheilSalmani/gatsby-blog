@@ -1,5 +1,79 @@
 ---
 title: Firebase
-relatedResources: []
+relatedResources:
+  - https://firebase.google.com/docs/web/setup
 tags: []
 ---
+
+1. Create a new project and register a web app (enable Firebase Hosting).
+
+   <Solution>
+
+   1. <Scr>Add project</Scr>, then enter a project name.
+   2. If you are creating a new project, you can edit the **Project ID**.
+   3. <Scr>&lt;/&gt;</Scr>, then enter the app's nickname.
+   4. Optionally, you can set up Firebase Hosting for your web app.
+
+   </Solution>
+
+2. Add Firebase SDKs to your Web app and initialize Firebase. Import Firebase
+   modules related to Authentication and Cloud Firestore.
+
+   <Solution>
+
+   1. ```shell
+      npm install -g gatsby-cli
+      gatsby new hello-world https://github.com/gatsbyjs/gatsby-starter-hello-world
+      cd hello-world
+      ```
+   2. ```shell
+      npm install --save firebase@9.0.0-beta.7
+      ```
+   3. ```js fp=src/services/firebase.js
+      import { initializeApp } from "firebase/app"
+      import { getAuth } from "firebase/auth"
+      import { getFirestore } from "firebase/firestore"
+
+      const firebaseConfig = {
+        // ...
+      }
+
+      const firebaseApp = initializeApp(firebaseConfig)
+
+      export default firebaseApp
+      export const db = getFirestore()
+      export const auth = typeof window !== "undefined" ? getAuth() : null
+      ```
+
+   4. ```jsx nu fp=src/pages/index.js hl=2,5..7
+      import React from "react"
+      import firebaseApp, { auth, db } from "../services/firebase"
+
+      export default function Home() {
+        console.log(firebaseApp)
+        console.log(auth)
+        console.log(db)
+        return <div>Hello world!</div>
+      }
+      ```
+
+   </Solution>
+
+3. Install the Firebase CLI and deploy to Firebase Hosting.
+
+   <Solution>
+
+   1. ```shell
+      npm install -g firebase-tools
+      ```
+   2. ```shell
+      firebase init
+      ```
+   3. ```shell
+      gatsby build
+      ```
+   4. ```shell
+      firebase deploy
+      ```
+
+   </Solution>

@@ -2,8 +2,14 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import _ from "lodash"
 import Highlight, { defaultProps } from "prism-react-renderer"
+import { Prism } from "prism-react-renderer"
 import theme from "prism-react-renderer/themes/nightOwl"
 import React from "react"
+;(typeof global !== "undefined" ? global : window).Prism = Prism
+
+require("prismjs/components/prism-groovy")
+require("prismjs/components/prism-java")
+require("prismjs/components/prism-properties")
 
 const Code = styled.div`
   padding: 0.5rem 0 0.5rem 0;

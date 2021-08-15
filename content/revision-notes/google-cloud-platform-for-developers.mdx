@@ -1,0 +1,192 @@
+---
+title: Google Cloud Platform for Developers
+resourceId: "9781788837675"
+---
+
+## Why GCP?
+
+The infrastructure Google offers in GCP is the same infrastructure Google uses
+internally.
+
+Google looks to stand out as a leader in scalable managed services and big data.
+
+## The Google Cloud Console
+
+### Creating a project
+
+When creating a projet, Google will will automatically convert this name to a
+**globally unique identifier**, which you will often use when interacting with
+Google Cloud APIs.
+
+Once finished, you'll need to enable billing to get started building solutions
+on GCP. Project billing is managed through billing accounts, which associates a
+user or organization with payment information. A billing account can be used for
+multiple projects and project billing can be managed by any project billing
+administrator.
+
+Enable billing: <Scr>Billing | Link a billing account</Scr> or <Scr>Billing |
+Manage billing accounts</Scr>.
+
+### The Google Cloud Console
+
+The Google Cloud Platform offers a range of channels for managing and
+interacting with project resources and services, including the Google Cloud
+Console, command-line tools, mobile applications, IDE plugins, web APIs, and
+libraries for many popular programming languages.
+
+#### Understanding the Cloud Console dashboard
+
+Use the <Scr>Customize</Scr> button to customize the _Dashboard_ section in the
+Google Cloud Console.
+
+A real-time stream of activity within your project is available in the
+_Activity_ view. This offers users a quick way to see what high-level operations
+are taking place such as administrative tasks, error alerts, information about
+quotas, and changes to project settings.
+
+If you find that you are using certain components within the Cloud Console
+regularly, it may be useful to pin your favorite products and services to the
+top of the menu.
+
+- Open/Collapse navigation menu: <Kbd>.</Kbd>.
+- Begin a search: <Kbd>/</Kbd>.
+- If you're working between multiple application life cycles or teams, you'll
+  likely need to switch between projects often: <Kbd>⌘ + O</Kbd>.
+
+### The Google Cloud Shell
+
+Cloud Shell runs on top of a `g1-small` Google Compute Engine instance. This VM
+is provisioned on a per-session basis, and the underlying resources are
+regularly recycled. To facilitate a productive developer environment, the Cloud
+Shell preserves the user's `$HOME` directory by backing it with a 5 GB
+persistent disk.
+
+#### Supporting multiple sessions
+
+You can create a new session with the Add Cloud Shell Session (<Scr>+</Scr>)
+button to the right of these tabs. You may notice that opening the shell from a
+new browser windows will cause active sessions in other windows to disconnect,
+displaying a notification that the session was transferred; this is due to the
+default **tmux** integrations.
+
+- Enable/Disable Tmux integration: <Scr>Terminal settings | Tmux Settings |
+  Enable Tmux</Scr>.
+
+#### Features and integrations
+
+Improve keyboard functionality when using the Cloud Shell: <Scr>Send key
+combination | Install Chrome extension</Scr>.
+
+#### File management
+
+The Cloud Shell supports transferring files between the VM and your local
+machine: <Scr>More settings | Upload/Download</Scr>.
+
+Downloads can also be done from within the shell by using the included
+`cloudshell` command:
+
+```shell
+cloudshell download <FILENAME ...>
+```
+
+#### Web Preview
+
+The Cloud Shell Web Preview is a quick and easy way to test web services without
+leaving your browser. Web Preview creates a publicly available proxy on your
+specified port, allowing you to access any web service running on that port. The
+proxy is secured over HTTPS and includes an authentication layer to ensure that
+only you can access your exposed service. Web Preview runs on port `8080` by
+default.
+
+The Web Preview can be very helpful for testing code while away from your
+workstation. For example, one could clone source code from a GCP Source
+Repository and test changes locally. Alternatively, developers can debug
+applications stored as Docker images in the Google Container Registry, or test
+applications using the Cloud Shell's included App Engine development server.
+
+#### The Cloud Shell Code Editor
+
+The Code Editor allows you to easily view and edit files within your Cloud
+Shell's `$HOME` directory.
+
+#### Opening in Cloud Shell
+
+To quickly get up and running with scripts and tutorials in the Cloud Shell,
+Google offers integrations for publicly hosted git repositories on GitHub and
+BitBucket. With the click of a button, users can clone git repositories into
+their Cloud Shell `$HOME` directory and open them in a new Cloud Shell Code
+Editor session.
+
+#### Trying it out
+
+1. Visit this
+   [GitHub repository](https://github.com/PacktPublishing/Google-Cloud-Platform-for-Developers).
+2. Click <Scr>Open in Cloud Shell</Scr>.
+3. ```shell
+   cd chapter_02/example_01
+   ```
+4. ```shell
+   npm install
+   npm start
+   ```
+5. <Scr>Web Preview</Scr>
+6. Use the Code Editor to modify `static/index.html`.
+
+#### Installing additional tools
+
+For many of the included programming languages, the Cloud Shell comes
+preconfigured with tools to support multiple versions. The current Java version
+can be changed via the `update-java-alternatives` command available from the
+`java-commons` package. For Node.js, this can be done using the Node Version
+Manager command `nvm`. Python comes with both `python` for version 2 and 3. In
+addition, the Cloud Shell VM includes `virtualenv` for managing Python
+dependency versioning on a per-service basis.
+
+There are a couple of ways around this, such as creating an install script to
+reinstall needed binaries. Another option is to install binaries directly in
+`$HOME/bin`, which will be automatically added to your system path. A third and
+often easier way to bring in additional tools is to leverage the included
+`docker` tools to pull and run Docker images as needed. Files and folders inside
+the `$HOME` directory can then be mounted as volumes to persist container data
+across sessions:
+
+```groovy nu fp=example.groovy
+println "Groovy script running successfully..."
+```
+
+```shell
+docker run --rm -v `pwd`:/app groovy groovy /app/example.groovy
+```
+
+#### Repairing the Cloud Shell
+
+Repairing the Cloud Shell:
+
+- <Scr>More | Restart</Scr>.
+- <Scr>More | Safe Mode</Scr>.
+
+## APIs, CLIs, IAM, and Billing
+
+## Google App Engine
+
+## Google Kubernetes Engine
+
+## Google Cloud Functions
+
+## Google Compute Engine
+
+## NoSQL with Datastore and Bigtable
+
+## Relational Data with Cloud SQL and Cloud Spanner
+
+## Google Cloud Storage
+
+## Stackdriver
+
+## Change Management
+
+## GCP Networking for Developers
+
+## Messaging with Pub/Sub and IoT Core
+
+## Integrating with Big Data Solutions on GCP

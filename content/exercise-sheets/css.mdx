@@ -1,5 +1,126 @@
 ---
 title: CSS
-relatedResources: []
+relatedResources:
+  - https://css-tricks.com/an-explanation-of-how-the-intersection-observer-watches/
 tags: []
 ---
+
+## Intersection Observer API
+
+1. Instantiate an `IntersectionObserver` object and set up its callback and
+   options. Link it with a `p` element.
+
+   <Solution>
+
+   ```html nu fp=index.html
+   <!DOCTYPE html>
+   <html lang="en">
+     <head>
+       <meta charset="UTF-8" />
+       <title>Intersection Observer API: Example</title>
+     </head>
+     <body>
+       <div>
+         <p>Hello, World!</p>
+       </div>
+     </body>
+   </html>
+   ```
+
+   ```js nu fp=script.js
+   const targetElement = document.querySelector("p")
+   const options = {
+     root: document.body,
+     rootMargin: "0px",
+     threshold: 0,
+   }
+
+   function callback(entries, observer) {
+     console.log(observer)
+
+     entries.forEach(entry => {
+       console.log(entry)
+     })
+   }
+
+   let observer = new IntersectionObserver(callback, options)
+   observer.observe(targetElement)
+   ```
+
+   ```css nu fp=styles.css
+   div {
+     height: 500px;
+     background-color: red;
+   }
+
+   p {
+     height: 250px;
+     background-color: blue;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     font-family: sans-serif;
+     font-weight: bold;
+     color: white;
+     font-size: 3rem;
+     margin: 0;
+   }
+   ```
+
+   </Solution>
+
+2. Try to get `0.5` for the `intersectionRatio` property of the
+   `IntersectionObserverEntry` related to the `p` element.
+
+   <Solution>
+
+   ```css fp=styles.css hl=7..8
+   div {
+     ...
+   }
+
+   p {
+     ...
+     position: relative;
+     top: 375px;
+   }
+   ```
+
+   </Solution>
+
+3. Same but this time, try to get `0` for the `intersectionRatio` property and
+   `true` for the `isIntersecting` property.
+
+   <Solution>
+
+   ```css fp=styles.css hl=8
+   div {
+     ...
+   }
+
+   p {
+     ...
+     position: relative;
+     top: 500px;
+   }
+   ```
+
+   </Solution>
+
+4. Same but this time, try to get `false` for the `isIntersecting` property.
+
+   <Solution>
+
+   ```css fp=styles.css hl=8
+   div {
+     ...
+   }
+
+   p {
+     ...
+     position: relative;
+     top: 501px;
+   }
+   ```
+
+   </Solution>

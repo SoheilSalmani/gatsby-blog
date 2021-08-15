@@ -1,5 +1,240 @@
 ---
 title: Gatsby
-relatedResources: []
+relatedResources:
+  - https://www.gatsbyjs.com/docs/reference/graphql-data-layer/schema-customization/
 tags: []
 ---
+
+## Schema Customization
+
+1. Load the content of the following files into Gatsby's internal data store.
+
+   ```md nu fp=src/data/post1.md
+   ---
+   title: Sample Post
+   publishedAt: 2019-04-01
+   author: jane@example.com
+   tags:
+     - wow
+   ---
+
+   # Heading
+
+   Text
+   ```
+
+   ```json nu fp=src/data/author.json
+   [
+     {
+       "name": "Doe",
+       "firstName": "Jane",
+       "email": "jane@example.com",
+       "joinedAt": "2018-01-01"
+     }
+   ]
+   ```
+
+   ```json nu fp=src/data/contributor.json
+   [
+     {
+       "name": "Doe",
+       "firstName": "Zoe",
+       "email": "zoe@example.com",
+       "receivedSwag": true
+     }
+   ]
+   ```
+
+   <Solution>
+
+   ```shell
+   npm install gatsby-source-filesystem gatsby-transformer-remark gatsby-transformer-json
+   ```
+
+   ```js nu fp=gatsby-config.js
+   module.exports = {
+     plugins: [
+       {
+         resolve: `gatsby-source-filesystem`,
+         options: {
+           name: `data`,
+           path: `${__dirname}/src/data/`,
+         },
+       },
+       "gatsby-transformer-remark",
+       "gatsby-transformer-json",
+     ],
+   }
+   ```
+
+   </Solution>
+
+2. Ensure that the `joinedAt` field is a `String` type.
+
+   <Solution>
+
+   ```js nu fp=gatsby-node.js
+   exports.createSchemaCustomization = ({ actions }) => {
+     const { createTypes } = actions
+     const typeDefs = `
+       type AuthorJson implements Node @dontInfer {
+         joinedAt: String
+       }
+     `
+     createTypes(typeDefs)
+   }
+   ```
+
+   </Solution>
+
+3. Opt out of type inference for `AuthorJson` nodes.
+
+   <Solution>
+
+   ```js nu fp=gatsby-node.js
+   exports.createSchemaCustomization = ({ actions }) => {
+     const { createTypes } = actions
+     const typeDefs = `
+       type AuthorJson implements Node @dontInfer {
+         name: String!
+         firstName: String!
+         email: String!
+         joinedAt: Date
+       }
+     `
+     createTypes(typeDefs)
+   }
+   ```
+
+   </Solution>
+
+4. Specify the `text/markdown` and `text/x-markdown` media types for `Markdown`
+   nodes.
+
+   <Solution>
+
+   ```graphql
+   type Markdown implements Node
+     @mimeTypes(types: ["text/markdown", "text/x-markdown"]) {
+     id: ID!
+   }
+   ```
+
+   </Solution>
+
+5. Create a type called `Mdx` which is a child of `File` and `Markdown` nodes.
+
+   <Solution>
+
+   ```graphql
+   # Adds `childMdx` as a field of `File` and `Markdown` nodes
+   type Mdx implements Node @childOf(types: ["File", "Markdown"]) {
+     id: ID!
+   }
+   ```
+
+   </Solution>
+
+6. Change the `Mdx` type to be a child of `text/markdown` and `text/x-markdown`
+   media types.
+
+   <Solution>
+
+   ```graphql
+   # Adds `childMdx` as a child of any node type with the `@mimeTypes` set to "text/markdown" or "text/x-markdown"
+   type Mdx implements Node
+     @childOf(mimeTypes: ["text/markdown", "text/x-markdown"]) {
+     id: ID!
+   }
+   ```
+
+   </Solution>
+
+7. Change the `Mdx` type to be a child of `text/markdown` and `text/x-markdown`
+   media types, and `File` nodes.
+
+   <Solution>
+
+   ```graphql
+   # Adds `childMdx` as a child of any node type with the `@mimeTypes` set to "text/markdown" or "text/x-markdown"
+   type Mdx implements Node
+     @childOf(mimeTypes: ["text/markdown", "text/x-markdown"]) {
+     id: ID!
+   }
+   ```
+
+   </Solution>
+
+8. Create a new type named `Frontmatter` to ensure that the frontmatter `tags`
+   will always be an array of strings.
+
+   <Solution>
+
+   ```js nu fp=gatsby-node.js
+   exports.createSchemaCustomization = ({ actions }) => {
+     const { createTypes } = actions
+     const typeDefs = `
+       type MarkdownRemark implements Node {
+         frontmatter: Frontmatter
+       }
+       type Frontmatter {
+         tags: [String!]!
+       }
+     `
+     createTypes(typeDefs)
+   }
+   ```
+
+   </Solution>
+
+9. Use a Gatsby type builder for the `ContributorJson` node type. Ensure that
+   the `receivedSwag` field is `false` if the field is not defined.
+
+   <Solution>
+
+   ```js nu fp=gatsby-node.js
+   exports.createSchemaCustomization = ({ actions, schema }) => {
+     const { createTypes } = actions
+     const typeDefs = [
+       schema.buildObjectType({
+         name: "ContributorJson",
+         fields: {
+           name: "String!",
+           firstName: "String!",
+           email: "String!",
+           receivedSwag: {
+             type: "Boolean",
+             resolve: source => source.receivedSwag || false,
+           },
+         },
+         interfaces: ["Node"],
+       }),
+     ]
+     createTypes(typeDefs)
+   }
+   ```
+
+   </Solution>
+
+10. Using a Gatsby type builder, keep the `name` field only for the
+    `ContributorJson` type node.
+
+   <Solution>
+   
+   ```js
+   schema.buildObjectType({
+     name: "ContributorJson",
+     fields: {
+       name: "String!",
+     },
+     interfaces: ["Node"],
+     extensions: {
+       // While in SDL you have two different directives,  infer and @dontInfer to
+       // control inference behavior, Gatsby Type Builders  ake a single `infer`
+       // extension which accepts a Boolean
+       infer: false
+     },
+   }),
+   ```
+   
+   </Solution>

@@ -1,0 +1,50 @@
+---
+title: Kafka
+relatedResources:
+  - "9781789342604"
+tags: []
+---
+
+1. Install Apache Kafka.
+
+   <Solution>
+
+   ```shell
+   brew install kafka
+   ```
+
+   </Solution>
+
+2. Configure and start Apache ZooKeeper.
+
+   <Solution>
+
+   ```properties fp=/usr/local/etc/kafka/zookeeper.properties
+   ...
+   dataDir=/usr/local/var/lib/zookeeper
+   ...
+   ```
+
+   ```shell
+   zookeeper-server-start /usr/local/etc/kafka/zookeeper.properties
+   ls /usr/local/var/lib/
+   ```
+
+   </Solution>
+
+3. Configure and start Apache Kafka.
+
+   <Solution>
+
+   ```properties fp=/usr/local/etc/kafka/server.properties
+   ...
+   log.dirs=/usr/local/var/lib/kafka-logs
+   ...
+   ```
+
+   ```shell
+   kafka-server-start /usr/local/etc/kafka/server.properties
+   ls /usr/local/var/lib/
+   ```
+
+   </Solution>

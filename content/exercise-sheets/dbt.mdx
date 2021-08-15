@@ -1,5 +1,99 @@
 ---
 title: dbt
-relatedResources: []
+relatedResources:
+  - https://docs.getdbt.com/tutorial/setting-up
 tags: []
 ---
+
+1. Create a service account named `dbt-user` for dbt. Save the key file under
+   the name `dbt-user-creds.json`.
+
+   <Solution>
+
+   1. <Scr>IAM & Admin | Service Accounts | + Create service account</Scr>
+   2. Service account name: `dbt-user`.
+   3. <Scr>Create and continue</Scr>
+   4. Select a role: `BigQuery User`.
+   5. Download and rename the key file.
+
+   </Solution>
+
+1. Create a dbt project on dbt Cloud using the key file.
+
+   <Solution>
+
+   1. <Scr>Account settings | New Project | Begin</Scr>
+   2. Name your project `dbt Tutorial`.
+   3. <Scr>BigQuery</Scr>
+   4. Name your database connection `BigQuery`.
+   5. <Scr>Upload a Service Account JSON file</Scr>
+   6. Test your connection.
+   7. <Scr>Continue | Managed</Scr>
+   8. Name your repository `soheil-dbt-tutorial`.
+   9. <Scr>>_ Start Developing | initialize your project</Scr>
+
+   ```yaml fp=dbt_project.yml hl=1,6
+   name: jaffle_shop # This normally says my_new_package
+
+   # ...
+
+   models:
+     jaffle_shop: # This normally says my_new_package. It should match the value for `name:`
+     # ...
+   ```
+
+   In the terminal bar at the bottom of the screen, type in `dbt run` and hit
+   enter. Then, commit your changes.
+
+   </Solution>
+
+1. Create the same dbt project locally using the dbt CLI.
+
+   <Solution>
+
+   ```shell
+   pip install dbt
+   dbt --version
+   dbt init jaffle-shop
+   cd jaffle_shop
+   ```
+
+   ```yaml nu fp=~/.dbt/profiles.yml
+   jaffle_shop: # This needs to match the profile: in your dbt_project.yml file
+     target: dev
+     outputs:
+       dev:
+         type: bigquery
+         method: service-account
+         keyfile: <key-file-full-path>.json
+         project: <project-id>
+         dataset: dbt_<your-name>
+         threads: 1
+         timeout_seconds: 300
+         location: US
+         priority: interactive
+   ```
+
+   ```yaml fp=dbt_project.yml hl=1,5,10
+   name: jaffle_shop # This normally says my_new_package
+
+   # ...
+
+   profile: jaffle_shop # This normally says default
+
+   # ...
+
+   models:
+     jaffle_shop: # This normally says my_new_package. It should match the value for `name:`
+     # ...
+   ```
+
+   ```shell
+   dbt debug
+   ```
+
+   ```shell
+   dbt run
+   ```
+
+   </Solution>

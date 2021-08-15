@@ -1,0 +1,156 @@
+---
+title: C# 9 and .NET 5 – Modern Cross-Platform Development
+resourceId: "9781800568105"
+stoppedAt: Building console apps using Visual Studio Code
+---
+
+## Hello, C#! Welcome, .NET!
+
+### Setting up your development environment
+
+In Visual Studio Code, to support C# 9, you should install the C# extension.
+
+### Understanding .NET
+
+#### Understanding .NET Framework
+
+.NET Framework is a development platform that includes a **Common Language
+Runtime (CLR)**, which manages the execution of code, and a **Base Class Library
+(BCL)**, which provides a rich library of classes to build applications from.
+Microsoft originally designed .NET Framework to have the possibility of being
+cross-platform, but Microsoft put their implementation effort into making it
+work best with Windows.
+
+Since .NET Framework 4.5.2 it has been an official component of the Windows
+operating system. .NET Framework is installed on over one billion computers so
+it must change as little as possible. Even bug fixes can cause problems, so it
+is updated infrequently.
+
+All of the apps on a computer written for .NET Framework share the same version
+of the CLR and libraries stored in the **Global Assembly Cache (GAC)**, which
+can lead to issues if some of them need a specific version for compatibility.
+
+**Note:** Good Practice: Practically speaking, .NET Framework is Windows-only
+and a legacy platform. Do not create new apps using it.
+
+#### Understanding the Mono and Xamarin projects
+
+Third parties developed a .NET Framework implementation named the **Mono**
+project. Mono is cross-platform, but it fell well behind the official
+implementation of .NET Framework.
+
+Mono has found a niche as the foundation of the **Xamarin** mobile platform as
+well as cross-platform game development platforms like **Unity**.
+
+Microsoft purchased Xamarin in 2016 and now gives away what used to be an
+expensive Xamarin extension for free with Visual Studio 2019.
+
+#### Understanding .NET Core
+
+Today, we live in a truly cross-platform world where modern mobile and cloud
+development have made Windows, as an operating system, much less important.
+Because of that, Microsoft has been working on an effort to decouple .NET from
+its close ties with Windows. While rewriting .NET Framework to be truly
+cross-platform, they've taken the opportunity to refactor and remove major parts
+that are no longer considered core.
+
+This new product was branded .NET Core and includes a cross-platform
+implementation of the CLR known as **CoreCLR** and a streamlined library of
+classes known as **CoreFX**.
+
+#### Understanding .NET 5 and the journey to one .NET
+
+At the Microsoft Build developer conference in May 2020, the .NET team announced
+that their plans for the unification of .NET had been delayed. They said .NET 5
+would be released on November 10, 2020 and it would unify all the various .NET
+platforms except mobile. It will not be until .NET 6 in November 2021 that
+mobile will also be supported by the unified .NET platform.
+
+.NET Core has been renamed .NET and the major version number has skipped the
+number four to avoid confusion with .NET Framework 4.x.
+
+#### Understanding .NET support
+
+.NET versions are either **Long-Term Support (LTS)** or **Current**:
+
+- **LTS** releases are stable and require fewer updates over their lifetime.
+  These are a good choice for applications that you do not intend to update
+  frequently. LTS releases will be supported for 3 years after general
+  availability.
+- **Current** releases include features that may change based on feedback. These
+  are a good choice for applications that you are actively developing because
+  they provide access to the latest improvements. After a 3-month maintenance
+  period, the previous minor version will no longer be supported.
+
+#### Understanding .NET Runtime and .NET SDK versions
+
+You can see which SDKs and runtimes are currently installed using the following
+commands:
+
+```shell
+dotnet --list-sdks
+dotnet --list-runtimes
+```
+
+#### Understanding intermediate language
+
+The C# compiler (named **Roslyn**) used by the `dotnet` CLI tool converts your
+C# source code into **intermediate language (IL)** code and stores the IL in an
+assembly (a DLL or EXE file). IL code statements are like assembly language
+instructions, which are executed by .NET's virtual machine, known as CoreCLR.
+
+At runtime, CoreCLR loads the IL code from the assembly, the **just-in-time
+(JIT)** compiler compiles it into native CPU instructions, and then it is
+executed by the CPU on your machine. The benefit of this three-step compilation
+process is that Microsoft is able to create CLRs for Linux and macOS, as well as
+for Windows. The same IL code runs everywhere because of the second compilation
+process, which generates code for the native operating system and CPU
+instruction set.
+
+Regardless of which language the source code is written in, for example, C#,
+Visual Basic, or F#, all .NET applications use IL code for their instructions
+stored in an assembly. Microsoft and others provide disassembler tools that can
+open an assembly and reveal this IL code, such as the ILSpy .NET Decompiler
+extension.
+
+### Building console apps using Visual Studio Code
+
+## Speaking C#
+
+## Controlling Flow and Converting Types
+
+## Writing, Debugging, and Testing Functions
+
+## Building Your Own Types with Object-Oriented Programming
+
+## Implementing Interfaces and Inheriting Classes
+
+## Understanding and Packaging .NET Types
+
+## Working with Common .NET Types
+
+## Working with Files, Streams, and Serialization
+
+## Protecting Your Data and Applications
+
+## Working with Databases Using Entity Framework Core
+
+## Querying and Manipulating Data Using LINQ
+
+## Improving Performance and Scalability Using Multitasking
+
+## Introducing Practical Applications of C# and .NET
+
+## Building Websites Using ASP.NET Core Razor Pages
+
+## Building Websites Using the Model-View-Controller Pattern
+
+## Building Websites Using a Content Management System
+
+## Building and Consuming Web Services
+
+## Building Intelligent Apps Using Machine Learning
+
+## Building Web User Interfaces Using Blazor
+
+## Building Cross-Platform Mobile Apps

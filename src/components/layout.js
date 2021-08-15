@@ -3,6 +3,7 @@ import { Link } from "gatsby"
 import React from "react"
 
 import useSiteMetadata from "../hooks/use-site-metadata"
+import "katex/dist/katex.min.css"
 import { rhythm } from "../utils/typography"
 
 export default function Layout({ children }) {
@@ -53,6 +54,10 @@ export default function Layout({ children }) {
           a.anchor {
             margin-left: 0.25em;
             background: none;
+          }
+
+          .katex {
+            font-size: 1rem;
           }
         `}
       />

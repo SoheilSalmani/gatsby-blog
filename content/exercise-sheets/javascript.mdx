@@ -1,5 +1,92 @@
 ---
 title: JavaScript
-relatedResources: []
+relatedResources:
+  - https://developer.mozilla.org/en-US/docs/Learn
 tags: []
 ---
+
+1. Build a page with a button which creates a paragraph on each click. Use
+   internal JavaScript.
+
+   <Solution>
+
+   ```html nu fp=index.html
+   <!DOCTYPE html>
+   <html lang="en-US">
+     <head>
+       <meta charset="utf-8" />
+       <title>Internal JavaScript example</title>
+       <script>
+         document.addEventListener("DOMContentLoaded", function () {
+           function createParagraph() {
+             let para = document.createElement("p")
+             para.textContent = "You clicked the button!"
+             document.body.appendChild(para)
+           }
+
+           const buttons = document.querySelectorAll("button")
+
+           for (let i = 0; i < buttons.length; i++) {
+             buttons[i].addEventListener("click", createParagraph)
+           }
+         })
+       </script>
+     </head>
+     <body>
+       <button>Click me</button>
+     </body>
+   </html>
+   ```
+
+   </Solution>
+
+2. Same but use external JavaScript this time.
+
+   <Solution>
+
+   ```html nu fp=index.html
+   <!DOCTYPE html>
+   <html lang="en-US">
+     <head>
+       <meta charset="utf-8" />
+       <title>External JavaScript example</title>
+       <script src="script.js" defer></script>
+     </head>
+     <body>
+       <button>Click me</button>
+     </body>
+   </html>
+   ```
+
+   ```js nu fp=script.js
+   function createParagraph() {
+     let para = document.createElement("p")
+     para.textContent = "You clicked the button!"
+     document.body.appendChild(para)
+   }
+
+   const buttons = document.querySelectorAll("button")
+
+   for (let i = 0; i < buttons.length; i++) {
+     buttons[i].addEventListener("click", createParagraph)
+   }
+   ```
+
+   </Solution>
+
+3. In which context should you use either `async` or `defer`?
+
+   <Solution>
+
+   `async` and `defer` both instruct the browser to download the script(s) in a
+   separate thread, while the rest of the page (the DOM, etc.) is downloading,
+   so the page loading is not blocked by the scripts.
+
+   If your scripts should be run immediately and they don't have any
+   dependencies, then use `async`.
+
+   If your scripts need to wait for parsing and depend on other scripts and/or
+   the DOM being in place, load them using `defer` and put their corresponding
+   `<script>` elements in the order you want the browser to execute them.
+
+   </Solution>

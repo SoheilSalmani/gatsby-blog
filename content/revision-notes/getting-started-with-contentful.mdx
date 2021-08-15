@@ -5,21 +5,29 @@ resourceId: https://www.contentful.com/developers/docs/tutorials/general/get-sta
 
 ## See how Contentful works with Gatsby and the latest web technologies
 
-![](/media/contentful-gatsby-hosting.png)
+<Figure src="/media/contentful-gatsby-hosting.png">
+  Contentful, Gatsby and static site hosting options.
+</Figure>
 
 ## Explore how the sample website is built with Contentful
 
-![](/media/website-built-with-contentful.gif)
+<Figure src="/media/website-built-with-contentful.gif">
+  Website built with Contentful.
+</Figure>
 
 ## Ready to start? Set-up and deploy a website through the Contentful CLI
 
 ### Install the Contentful CLI tool
 
-```sh
+```shell
 yarn global add contentful-cli
 ```
 
 ### Run the guide and follow the steps
+
+```shell
+contentful guide
+```
 
 Steps that the guide will take you through:
 
@@ -36,18 +44,18 @@ Steps that the guide will take you through:
 
 ### Netlify CLI Commands
 
-1.  ```sh
+1.  ```shell
     yarn global add netlify-cli
     ```
-2.  ```sh
+2.  ```shell
     netlify login
     ```
-3.  ```sh
+3.  ```shell
     yarn build
     ```
-4.  ```sh
+4.  ```shell
     netlify deploy -d public/
     ```
-5.  ```sh
+5.  ```shell
     netlify deploy -d public/ -p
     ```

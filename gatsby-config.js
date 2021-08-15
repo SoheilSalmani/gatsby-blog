@@ -31,6 +31,7 @@ module.exports = {
         defaultLayouts: {
           default: require.resolve("./src/components/layout.js"),
         },
+        remarkPlugins: [require("remark-html-katex"), require("remark-math")],
         gatsbyRemarkPlugins: [
           {
             resolve: `gatsby-remark-table-of-contents`,

@@ -1,5 +1,108 @@
 ---
 title: Firestore
-relatedResources: []
-tags: []
+relatedResources:
+  - https://firebase.google.com/docs/firestore/quickstart
+tags:
+  - Cloud
+  - Database
+  - Firebase
+  - Firestore
 ---
+
+1. Using JavaScript, create a script which initialize Cloud Firestore.
+
+   <Solution>
+
+   ```shell
+   npm install firebase@9.0.0-beta.7 --save
+   ```
+
+   ```js nu fp=index.js
+   import { initializeApp } from "firebase/app"
+   import { getFirestore } from "firebase/firestore"
+   const firebaseApp = initializeApp({
+     apiKey: "### FIREBASE API KEY ###",
+     authDomain: "### FIREBASE AUTH DOMAIN ###",
+     projectId: "### CLOUD FIRESTORE PROJECT ID ###",
+   })
+
+   const db = getFirestore()
+   ```
+
+   </Solution>
+
+2. Create a collection named `users`, then add the following document:
+
+   ```json
+   {
+     "first": "Ada",
+     "last": "Lovelace",
+     "born": 1815
+   }
+   ```
+
+   <Solution>
+
+   ```js
+   import { collection, addDoc } from "firebase/firestore"
+
+   try {
+     const docRef = await addDoc(collection(db, "users"), {
+       first: "Ada",
+       last: "Lovelace",
+       born: 1815,
+     })
+     console.log("Document written with ID: ", docRef.id)
+   } catch (e) {
+     console.error("Error adding document: ", e)
+   }
+   ```
+
+   </Solution>
+
+3. Add the following document:
+
+   ```json
+   {
+     "first": "Alan",
+     "middle": "Mathison",
+     "last": "Turing",
+     "born": 1912
+   }
+   ```
+
+   <Solution>
+
+   ```js
+   // Add a second document with a generated ID.
+   import { addDoc, collection } from "firebase/firestore"
+
+   try {
+     const docRef = await addDoc(collection(db, "users"), {
+       first: "Alan",
+       middle: "Mathison",
+       last: "Turing",
+       born: 1912,
+     })
+     console.log("Document written with ID: ", docRef.id)
+   } catch (e) {
+     console.error("Error adding document: ", e)
+   }
+   ```
+
+   </Solution>
+
+4. Read the data from Firestore and log them.
+
+   <Solution>
+
+   ```js
+   import { collection, getDocs } from "firebase/firestore"
+
+   const querySnapshot = await getDocs(collection(db, "users"))
+   querySnapshot.forEach(doc => {
+     console.log(`${doc.id} => ${doc.data()}`)
+   })
+   ```
+
+   </Solution>

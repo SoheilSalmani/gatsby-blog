@@ -1,0 +1,77 @@
+---
+title: Dagster
+relatedResources:
+  - https://docs.dagster.io/getting-started
+tags: []
+---
+
+1. Install Dagster into an existing Python environment.
+
+   <Solution>
+
+   ```shell
+   pip install dagster
+   ```
+
+   </Solution>
+
+2. Write a simple pipeline.
+
+   <Solution>
+
+   ```python
+   from dagster import pipeline, solid
+
+   @solid
+   def get_name():
+       return "dagster"
+
+   @solid
+   def hello(context, name: str):
+       context.log.info(f"Hello, {name}!")
+
+   @pipeline
+   def hello_pipeline():
+       hello(get_name())
+   ```
+
+   </Solution>
+
+3. Install Dagit, visualize your pipeline in Dagit and run it.
+
+   <Solution>
+
+   ```shell
+   pip install dagit
+   ```
+
+   ```shell
+   dagit -f hello_world.py
+   ```
+
+   Select <Screen opt="Playground,Launch Execution" /> to execute the pipeline.
+
+   </Solution>
+
+4. Run your pipeline using the Dagster Python API.
+
+   <Solution>
+
+   ```python
+   from dagster import execute_pipeline
+
+   if __name__ == "__main__":
+       result = execute_pipeline(hello_pipeline)
+   ```
+
+   </Solution>
+
+5. Run your pipeline using the Dagster CLI.
+
+   <Solution>
+
+   ```shell
+   dagster pipeline execute -f hello_world.py
+   ```
+
+   </Solution>

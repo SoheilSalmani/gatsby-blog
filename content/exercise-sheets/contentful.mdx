@@ -1,5 +1,38 @@
 ---
 title: Contentful
-relatedResources: []
+relatedResources:
+  - https://www.contentful.com/developers/docs/tutorials/general/get-started/
 tags: []
 ---
+
+1. Run the Contentful guide.
+
+   <Solution>
+
+   ```shell
+   contentful guide
+   ```
+
+   </Solution>
+
+2. Build the static site, and deploy it on Netlify.
+
+   <Solution>
+
+   1. ```shell
+      yarn global add netlify-cli
+      ```
+   2. ```shell
+      netlify login
+      ```
+   3. ```shell
+      yarn build
+      ```
+   4. ```shell
+      netlify deploy -d public/
+      ```
+   5. ```shell
+      netlify deploy -d public/ -p
+      ```
+
+   </Solution>

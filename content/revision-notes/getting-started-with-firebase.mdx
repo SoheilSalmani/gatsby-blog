@@ -1,7 +1,7 @@
 ---
 title: Getting started with Firebase
 resourceId: https://firebase.google.com/docs/web/setup
-stoppedAt: Step 4
+stoppedAt: Add Firebase to a server
 ---
 
 ## Add Firebase to an app
@@ -18,51 +18,54 @@ _Not now..._
 
 #### Step 1: Create a Firebase project
 
-Before you can add Firebase to your JavaScript app, you need to create a
-Firebase project to connect to your app.
-
-1. <Screen opt="Firebase console,Add project" /> : enter a project name. If you have
-   an existing Google Cloud project, you can select the project from the dropdown
-   menu to add Firebase resources to that project.
-1. If you are creating a new project, you can edit the **Project ID**.
-1. _(Optional)_ Set up Google Analytics for your project, which enables you to
-   have an optimal experience using any of the following Firebase products:
-
-   - Firebase Crashlytics
-   - Firebase Predictions
-   - Firebase Cloud Messaging
-   - Firebase In-App Messaging
-   - Firebase Remote Config
-   - Firebase A/B Testing
-
-   **Note:** You can always set up Google Analytics later in the _Integrations_
-   tab of your settings _Project settings_.
+1. <Scr>Add project</Scr>, then enter a project name.
+2. If you are creating a new project, you can edit the **Project ID**.
 
 #### Step 2: Register your app with Firebase
 
 After you have a Firebase project, you can add your web app to it.
 
-1. Click the **Web** icon to launch the setup workflow.
-1. Enter you app's nickname. This nickname is an internal, convenience
-   identifier and is only visible to you in the Firebase console.
-1. _(Optional)_ Set up Firebase Hosting for your web app.
+1. <Scr>&lt;/&gt;</Scr>, then enter the app's nickname.
+2. Optionally, you can set up Firebase Hosting for your web app.
 
-   - You can set up Firebase Hosting now or later. You can also link your
-     Firebase Web App to a Hosting site at any time in your Project settings.
-   - If you choose to set up Hosting up now, select a site from the dropdown
-     list to link to your Firebase Web App.
-     - This list displays your project's default Hosting site and any other
-       sites that you've set up in your project.
-     - Any site that you've already linked to a Firebase Web App is unavailable
-       for additional linking. Each Hosting site can only be linked to a single
-       Firebase Web App.
-
-#### Step 3: add Firebase SDKs and initialize Firebase
+#### Step 3: Add Firebase SDKs and initialize Firebase
 
 How you add Firebase SDKs to your Web app depends on whether you've chosen to
 use Firebase Hosting for your app, what tooling you're using with your app (like
-a module bundler), or if you're configuring a Node.js app. Check this
-[link](https://firebase.google.com/docs/web/setup?hl=en&sdk_version=v9#with-npm).
+a module bundler), or if you're configuring a Node.js app.
+
+With npm:
+
+1. ```shell
+   npm init
+   ```
+2. ```shell
+   npm install --save firebase@9.0.0-beta.7
+   ```
+3. To include only specific Firebase products (like Authentication and Cloud
+   Firestore), import Firebase modules:
+
+   ```js
+   // Firebase App (the core Firebase SDK) is always required and must be listed first
+   import { initializeApp } from "firebase/app"
+
+   // Add the Firebase products that you want to use
+   import { getAuth } from "firebase/auth"
+   import { getFirestore } from "firebase/firestore"
+   ```
+
+4. Initialize Firebase in your app:
+
+   ```js
+   import { initializeApp } from "firebase/app"
+
+   // TODO: Replace the following with your app's Firebase project configuration
+   const firebaseConfig = {
+     // ...
+   }
+
+   const firebaseApp = initializeApp(firebaseConfig)
+   ```
 
 To initialize Firebase in your app, you need to provide your app's Firebase
 project configuration.
@@ -75,6 +78,28 @@ project configuration.
 
 **Note:** The Firebase config object contains unique, but non-secret identifiers
 for your Firebase project.
+
+#### Step 4: (Optional) Install CLI and deploy to Firebase Hosting
+
+1. ```shell
+   npm install -g firebase-tools
+   ```
+2. ```shell
+   firebase login
+   ```
+3. ```shell
+   firebase init
+   ```
+
+By default, every Firebase project has free subdomains on the `web.app` and
+`firebaseapp.com` domains (`PROJECT_ID.web.app` and
+`PROJECT_ID.firebaseapp.com`).
+
+Run the following command from your app's root directory:
+
+```shell
+firebase deploy
+```
 
 ## Add Firebase to a game
 

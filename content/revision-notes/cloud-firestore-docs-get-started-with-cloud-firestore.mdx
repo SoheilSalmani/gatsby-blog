@@ -1,0 +1,119 @@
+---
+title: Get started with Cloud Firestore
+resourceId: https://firebase.google.com/docs/firestore/quickstart
+---
+
+## Create a Cloud Firestore database
+
+Select a starting mode for your Cloud Firestore Security Rules:
+
+- **Test mode:** Good for getting started with the mobile and web client
+  libraries, but allows anyone to read and overwrite your data.
+- **Locked mode:** Denies all reads and writes from mobile and web clients. Your
+  authenticated application servers (C#, Go, Java, Node.js, PHP, Python, or
+  Ruby) can still access your database.
+
+**Warning:** After you set your project's default GCP resource location, you
+cannot change it.
+
+**Note:** You can't use both Cloud Firestore and Cloud Datastore in the same
+project, which might affect apps using App Engine. Try using Cloud Firestore
+with a different project.
+
+## Set up your development environment
+
+```shell
+npm install firebase@9.0.0-beta.7 --save
+```
+
+```js
+import { initializeApp } from "firebase/app"
+import { getFirestore } from "firebase/firestore"
+```
+
+## (Optional) Prototype and test with Firebase Local Emulator Suite
+
+If you're trying out different data models, optimizing your security rules, or
+working to find the most cost-effective way to interact with the back-end, being
+able to work locally without deploying live services can be a great idea.
+
+A Cloud Firestore emulator is part of the Local Emulator Suite, which enables
+your app to interact with your emulated database content and config, as well as
+optionally your emulated project resources (functions, other databases, and
+security rules).
+
+## Initialize Cloud Firestore
+
+```js
+// Initialize Cloud Firestore through Firebase
+import { initializeApp } from "firebase/app"
+import { getFirestore } from "firebase/firestore"
+const firebaseApp = initializeApp({
+  apiKey: "### FIREBASE API KEY ###",
+  authDomain: "### FIREBASE AUTH DOMAIN ###",
+  projectId: "### CLOUD FIRESTORE PROJECT ID ###",
+})
+
+const db = getFirestore()
+```
+
+## Add data
+
+Cloud Firestore stores data in Documents, which are stored in Collections. Cloud
+Firestore creates collections and documents implicitly the first time you add
+data to the document. You do not need to explicitly create collections or
+documents.
+
+```js
+import { collection, addDoc } from "firebase/firestore"
+
+try {
+  const docRef = await addDoc(collection(db, "users"), {
+    first: "Ada",
+    last: "Lovelace",
+    born: 1815,
+  })
+  console.log("Document written with ID: ", docRef.id)
+} catch (e) {
+  console.error("Error adding document: ", e)
+}
+```
+
+Now add another document to the `users` collection. Notice that this document
+includes a Documents in a collection can contain different sets of information.
+
+```js
+// Add a second document with a generated ID.
+import { addDoc, collection } from "firebase/firestore"
+
+try {
+  const docRef = await addDoc(collection(db, "users"), {
+    first: "Alan",
+    middle: "Mathison",
+    last: "Turing",
+    born: 1912,
+  })
+  console.log("Document written with ID: ", docRef.id)
+} catch (e) {
+  console.error("Error adding document: ", e)
+}
+```
+
+## Read data
+
+```js
+import { collection, getDocs } from "firebase/firestore"
+
+const querySnapshot = await getDocs(collection(db, "users"))
+querySnapshot.forEach(doc => {
+  console.log(`${doc.id} => ${doc.data()}`)
+})
+```
+
+## Secure your data
+
+Use Firebase Authentication and Cloud Firestore Security Rules to secure your
+data in Cloud Firestore.
+
+If you're using one of the server SDKs, use Identity and Access Management (IAM)
+to secure your data in Cloud Firestore.

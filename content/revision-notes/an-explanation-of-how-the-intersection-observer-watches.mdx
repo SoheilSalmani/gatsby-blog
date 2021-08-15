@@ -1,7 +1,7 @@
 ---
 title: An Explanation of How the Intersection Observer Watches
 resourceId: https://css-tricks.com/an-explanation-of-how-the-intersection-observer-watches/
-stoppedAt: The observer object
+stoppedAt: Three properties...
 ---
 
 ## A brief explanation of the Intersection Observer
@@ -79,10 +79,21 @@ it is observing the target. When creating the observer, the callback function
 and options object can be external to the observer, as shown. A developer could
 write the code inline, but the observer is very flexible. For example, the
 callback and options can be used across multiple observers, if needed. The
-observe() method is then passed the target element that needs to be observed. It
-can only accept one target but the method can be repeated on the same observer
-for multiple targets. Again, very flexible.
+`observe()` method is then passed the target element that needs to be observed.
+It can only accept one target but the method can be repeated on the same
+observer for multiple targets. Again, very flexible.
 
 ### The observer object
 
+Contains essentially the `options` object passed into the observer when it was
+created.
+
 ### The entry object
+
+For most devs, the two properties that are most likely to be useful are
+`intersectionRatio` and `isIntersecting`. The `isIntersecting` property is a
+boolean that is exactly what one might think it is — the target element is
+intersecting the root element at the time of the intersection change. The
+`intersectionRatio` is the percentage of the target element that is currently
+intersecting the root element. This is represented by a percentage of zero to
+one, much like the threshold provided in the observer’s option object.

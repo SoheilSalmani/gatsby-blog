@@ -1,0 +1,180 @@
+---
+title: Getting Started Tutorial
+resourceId: https://docs.getdbt.com/tutorial/setting-up
+stoppedAt: Build your first models
+---
+
+## Getting Started
+
+### Setting up
+
+```sql nu
+with customers as (
+
+    select
+        id as customer_id,
+        first_name,
+        last_name
+
+    from `dbt-tutorial`.jaffle_shop.customers
+
+),
+
+orders as (
+
+    select
+        id as order_id,
+        user_id as customer_id,
+        order_date,
+        status
+
+    from `dbt-tutorial`.jaffle_shop.orders
+
+),
+
+customer_orders as (
+
+    select
+        customer_id,
+
+        min(order_date) as first_order_date,
+        max(order_date) as most_recent_order_date,
+        count(order_id) as number_of_orders
+
+    from orders
+
+    group by 1
+
+),
+
+
+final as (
+
+    select
+        customers.customer_id,
+        customers.first_name,
+        customers.last_name,
+        customer_orders.first_order_date,
+        customer_orders.most_recent_order_date,
+        coalesce(customer_orders.number_of_orders, 0) as number_of_orders
+
+    from customers
+
+    left join customer_orders using (customer_id)
+
+)
+
+select * from final
+```
+
+### Create a BigQuery project
+
+Create a new project in GCP, and run the query using BigQuery.
+
+### Generate BigQuery credentials
+
+Create a service account named `dbt-user`. Give the `BigQuery User` role. Name
+the keyfile `dbt-user-creds.json`.
+
+### Choose the way you want to develop
+
+There’s two main ways of working with dbt:
+
+- Edit files and run projects using the web-based Integrated Development
+  Environment (IDE) in **dbt Cloud**.
+- Edit files locally using a code editor, and run projects using the Command
+  Line Interface (**dbt CLI**).
+
+## Create a project
+
+### dbt Cloud
+
+1. <Scr>Account settings | New Project | Begin</Scr>
+2. Name your project `dbt Tutorial`.
+3. <Scr>BigQuery</Scr>
+4. Name your database connection `BigQuery`.
+5. <Scr>Upload a Service Account JSON file</Scr>
+6. Test your connection.
+7. <Scr>Continue | Managed</Scr>
+8. Name your repository `soheil-dbt-tutorial`.
+9. <Scr>>_ Start Developing | initialize your project</Scr>
+
+```yaml fp=dbt_project.yml hl=1,6
+name: jaffle_shop # This normally says my_new_package
+
+# ...
+
+models:
+  jaffle_shop: # This normally says my_new_package. It should match the value for `name:`
+  # ...
+```
+
+In the terminal bar at the bottom of the screen, type in `dbt run` and hit
+enter. Then, commit your changes.
+
+### dbt CLI
+
+```shell
+pip install dbt
+dbt --version
+dbt init jaffle-shop
+cd jaffle_shop
+```
+
+When developing locally, dbt connects to your data warehouse using a profile — a
+YAML file with all the connection details to your warehouse.
+
+```yaml nu fp=~/.dbt/profiles.yml
+jaffle_shop: # This needs to match the profile: in your dbt_project.yml file
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account
+      keyfile: <key-file-full-path>.json
+      project: <project-id>
+      dataset: dbt_<your-name>
+      threads: 1
+      timeout_seconds: 300
+      location: US
+      priority: interactive
+```
+
+```yaml hl=1,5,10 fp=dbt_project.yml
+name: jaffle_shop # This normally says my_new_package
+
+# ...
+
+profile: jaffle_shop # This normally says default
+
+# ...
+
+models:
+  jaffle_shop: # This normally says my_new_package. It should match the value for `name:`
+  # ...
+```
+
+```shell
+dbt debug
+```
+
+**What should I name my profile?** We typically use a company name for a profile
+name, and then use targets to differentiate between dev and prod.
+
+**What should I name my target?** We typically use targets to differentiate
+between development and production runs of dbt, naming the targets `dev` and
+`prod` respectively.
+
+**Can I use environment variables in my profile?** Yes!
+
+Build the models:
+
+```shell
+dbt run
+```
+
+## Build your first models
+
+## Test and document your project
+
+## Deploy your project

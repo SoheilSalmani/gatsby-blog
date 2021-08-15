@@ -1,0 +1,144 @@
+---
+title: Google Cloud Platform
+relatedResources:
+  - "9781788837675"
+tags: []
+---
+
+## Google Cloud Console
+
+1. Create a GCP project.
+
+   <Solution>
+
+   1. <Kbd>⌘ + O</Kbd>
+   2. <Scr>New Project</Scr>
+
+   </Solution>
+
+2. Add a billing administrator for the billing account tied to the project.
+
+   <Solution>
+
+   1. <Scr>
+        Billing | Go to linked billing account | Account management | Add
+        members
+      </Scr>
+   2. Use the _Billing Account Administrator_ role.
+
+   </Solution>
+
+3. In the Google Cloud Console, customize the _Dashboard_ section.
+
+   <Solution>
+     Use the <Scr>Customize</Scr> button.
+   </Solution>
+
+4. In the Google Cloud Console, go to the _Activity_ view, and use the searching
+   and filtering functionality.
+
+   <Solution>
+     Do what you want! Explore the searching and filtering functionality.
+   </Solution>
+
+5. Pin your favorite products and services to the top of the menu.
+
+   <Solution>Pin your favorite products in the menu navigation.</Solution>
+
+6. Use the shortcut to open/collapse the navigation menu.
+
+   <Solution>
+     The shortcut to use is <Kbd>.</Kbd>.
+   </Solution>
+
+7. Use the shortcut to begin a search.
+
+   <Solution>
+     The shortcut to use is <Kbd>/</Kbd>.
+   </Solution>
+
+8. Use the shortcut to switch between projects.
+
+   <Solution>
+     The shortcut to use is <Kbd>⌘ + O</Kbd>.
+   </Solution>
+
+## Google Cloud Shell
+
+1. Configure the Cloud Shell session to not persist over the lifetime of the
+   backing VM.
+
+   <Solution>
+     Go to <Scr>Terminal settings | Tmux Settings | Enable Tmux</Scr>.
+   </Solution>
+
+2. Improve keyboard functionality when using the Cloud Shell.
+
+   <Solution>
+     Go to <Scr>Send key combination | Install Chrome extension</Scr>.
+   </Solution>
+
+3. Transfer files between the VM and your local machine.
+
+   <Solution>
+     Go to <Scr>More settings | Upload/Download</Scr>.
+   </Solution>
+
+4. Download a file within the shell.
+
+   <Solution>
+
+   ```shell
+   cloudshell download <FILENAME ...>
+   ```
+
+   </Solution>
+
+5. Visit this
+   [GitHub repository](https://github.com/PacktPublishing/Google-Cloud-Platform-for-Developers),
+   and click to <Scr>Open in Cloud Shell</Scr>. Go to `chapter_02/example_01`,
+   and run `npm install` and `npm start`. View the running application in your
+   browser while editing the code with the Cloud Shell Editor.
+
+   <Solution>
+
+   1. Click <Scr>Open in Cloud Shell</Scr>.
+   2. ```shell
+      cd chapter_02/example_01
+      ```
+   3. ```shell
+      npm install
+      npm start
+      ```
+   4. <Scr>Web Preview</Scr>
+   5. Use the Code Editor to modify `static/index.html`.
+
+   </Solution>
+
+6. Within Cloud Shell, create a Groovy file named `example.groovy` which prints
+   "Groovy script running successfully...". Then, mount the current folder in a
+   Docker container to execute the Groovy script.
+
+   <Solution>
+
+   ```groovy nu fp=example.groovy
+   println "Groovy script running successfully..."
+   ```
+
+   ```shell
+   docker run --rm -v `pwd`:/app groovy groovy /app/example.groovy
+   ```
+
+   </Solution>
+
+7. Run Cloud Shell in safe mode and delete the `$HOME` directory.
+
+   <Solution>
+
+   1. <Scr>More | Safe Mode</Scr>.
+   2. ```shell
+      rm -rf /home/soheil_salmani/
+      ```
+   3. <Scr>More | Default Mode</Scr>.
+
+   </Solution>

@@ -8,6 +8,7 @@ export default function Solution({ label, children }) {
         border: 1px solid #aaa;
         border-radius: 4px;
         padding: 0.5em 0.5em 0;
+        text-align: justify;
 
         summary {
           transition: background-color 0.2s linear;

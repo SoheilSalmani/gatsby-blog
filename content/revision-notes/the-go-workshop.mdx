@@ -1,0 +1,432 @@
+---
+title: The Go Workshop
+resourceId: "9781838647940"
+stoppedAt: Operators
+---
+
+## Variables and Operators
+
+### Introduction
+
+A massive shift in computer performance has taken place. Going fast now means
+you need to be able to do as much work parallel or concurrently as possible.
+This change is due to the design of modern CPUs, which emphasize more cores over
+high clock speed. None of the currently popular programming languages have been
+designed to take advantage of this fact, which makes writing parallel and
+concurrent code in them error-prone. Go is designed to take advantage of
+multiple CPU cores, and it removes all the frustration and bug-filled code. Go
+is designed to allow any developer to easily and safely write parallel and
+concurrent code that enables them to take advantage of modern multicore CPUs and
+cloud computing – unlocking high-performance processing and massive scalability
+without the drama.
+
+### What Does Go Look Like?
+
+```go
+package main
+```
+
+This code is our package declaration. All Go files must start with one of these.
+If you want to run the code directly, you'll need to name it `main`. If you
+don't name it `main`, then you can use it as a library and import it into other
+Go code. All Go files in the same directory are considered part of the same
+package, which means all the files must have the same package name.
+
+```go
+// Import extra functionality from packages
+import (
+        "errors"
+        "fmt"
+        "log"
+        "math/rand"
+        "strconv"
+        "time"
+)
+```
+
+The packages are all from Go's standard library. Go's standard library is very
+high-quality and comprehensive. You are strongly recommended to maximize your
+use of it. You can tell if a package isn't from the standard library because
+it'll look like a URL.
+
+```go
+var helloList = []string{
+        "Hello, world",
+        "Καλημέρα κόσμε",
+        "こんにちは世界",
+        "سلام دنیا‎",
+        "Привет, мир",
+}
+```
+
+There are three types of lists in Go: slices, arrays, and maps.
+
+```go
+func main() {
+        // Seed random number generator using the current time
+        rand.Seed(time.Now().UnixNano())
+        // Generate a random number in the range of out list
+        index := rand.Intn(len(helloList))
+        // Call a function and receive multiple return values
+        msg, err := hello(index)
+        // Handle any errors
+        if err != nil {
+                log.Fatal(err)
+        }
+        // Print our message to the console
+        fmt.Println(msg)
+}
+```
+
+The `main()` function is the entry point of your Go code.
+
+To get the time, we call the `Now` function in the `time` package. The `Now`
+function returns a struct type variable. Structs are a collection of properties
+and functions, a little like objects in other languages.
+
+The `:=` notation, which is a very popular shortcut in Go. It tells the compiler
+to go ahead and assign that value to my variable and select the appropriate type
+for that value. This shortcut is one of the many things that makes Go feel like
+a dynamically typed language.
+
+```go
+func hello(index int) (string, error) {
+        if index < 0 || index > len(helloList)-1 {
+                // Create an error, convert the int type to a string
+                return "", errors.New("out of range: " + strconv.Itoa(index))
+        }
+        return helloList[index], nil
+}
+```
+
+Having an `error `as your last return value is a very common thing to have in
+Go.
+
+In Go, `nil` represents something with no value and no type.
+
+Exercise 1.01:
+
+```go nu
+package main
+
+import (
+        "fmt"
+        "math/rand"
+        "strings"
+        "time"
+)
+
+func main() {
+        rand.Seed(time.Now().UnixNano())
+        r := rand.Intn(5) + 1
+        stars := strings.Repeat("*", r)
+        fmt.Println(stars)
+}
+```
+
+Activity 1.01:
+
+```go nu
+package main
+
+import "fmt"
+
+func main() {
+        firstName := "Bob"
+        familyName := "Smith"
+        age := 34
+        peanutAllergy := false
+
+        fmt.Println(firstName)
+        fmt.Println(familyName)
+        fmt.Println(age)
+        fmt.Println(peanutAllergy)
+}
+```
+
+### Declaring a Variable Using var
+
+Using `var` is the foundational way to declare a variable. Every other way we'll
+cover is a variation of this approach, typically by omitting parts of this
+definition. A full `var` definition with everything in place looks like this:
+
+```go
+var foo string = "bar"
+```
+
+Exercise 1.02:
+
+```go nu
+package main
+
+import (
+        "fmt"
+)
+
+// Package level variable
+var foo string = "bar"
+
+func main() {
+        // Function level variable
+        var baz string = "qux"
+
+        fmt.Println(foo, baz)
+}
+```
+
+### Declaring Multiple Variables at Once with var
+
+```go nu
+package main
+
+import (
+        "fmt"
+        "time"
+)
+
+var (
+        Debug       bool      = false
+        LogLevel    string    = "info"
+        startUpTime time.Time = time.Now()
+)
+
+func main() {
+        fmt.Println(Debug, LogLevel, startUpTime)
+}
+```
+
+### Skipping the Type or Value When Declaring Variables
+
+```go nu
+package main
+
+import (
+        "fmt"
+        "time"
+)
+
+var (
+        Debug       bool
+        LogLevel    = "info"
+        startUpTime = time.Now()
+)
+
+func main() {
+        fmt.Println(Debug, LogLevel, startUpTime)
+}
+```
+
+### Type Inference Gone Wrong
+
+```go nu
+package main
+
+import "math/rand"
+
+func main() {
+        var seed = 1234456789 // Add int64
+        rand.Seed(seed)
+}
+```
+
+### Short Variable Declaration
+
+When declaring variables in functions and functions only, we can use the `:=`
+shorthand. This shorthand allows us to make our declarations even shorter. It
+does this by allowing us to not have to use the `var` keyword and by always
+inferring the type from a required initial value.
+
+Exercise 1.05:
+
+```go nu
+package main
+
+import (
+        "fmt"
+        "time"
+)
+
+func main() {
+        Debug := false
+        LogLevel := "info"
+        startUpTime := time.Now()
+        fmt.Println(Debug, LogLevel, startUpTime)
+}
+```
+
+### Declaring Multiple Variables with a Short Variable Declaration
+
+Exercise 1.06:
+
+```go nu
+package main
+
+import (
+        "fmt"
+        "time"
+)
+
+func getConfig() (bool, string, time.Time) {
+        return false, "info", time.Now()
+}
+
+func main() {
+        Debug, LogLevel, startUpTime := getConfig()
+        fmt.Println(Debug, LogLevel, startUpTime)
+}
+```
+
+If we used the `var` notation, it would look like this:
+
+```go
+var (
+        Debug bool
+        LogLevel string
+        startUpTime time.Time
+)
+Debug, LogLevel, startUpTime = getConfig()
+```
+
+### Using var to Declare Multiple Variables in One Line
+
+While it's more common to use a short variable declaration, you can use `var` to
+define multiple variables on a single line. One limitation of this is that, when
+declaring the type, all the values must have the same type. If you use an
+initial value, then each value infers its type from the literal value so that
+they can differ.
+
+```go nu
+package main
+
+import (
+        "fmt"
+        "time"
+)
+
+func getConfig() (bool, string, time.Time) {
+        return false, "info", time.Now()
+}
+
+func main() {
+        // Type only
+        var start, middle, end float32
+        fmt.Println(start, middle, end)
+
+        // Initial value mixed type
+        var name, left, right, top, bottom = "one", 1, 1.5, 2, 2.5
+        fmt.Println(name, left, right, top, bottom)
+
+        // Works with functions also
+        var Debug, LogLevel, startUpTime = getConfig()
+        fmt.Println(Debug, LogLevel, startUpTime)
+}
+```
+
+### Non-English Variable Names
+
+There are some limitations regarding what the name of a variable can be. The
+first character of the name must be a letter or `_`. The rest can be a mixture
+of letters, numbers, and `_`.
+
+```go nu
+package main
+
+import (
+        "fmt"
+        "time"
+)
+
+func main() {
+        デバッグ := false
+        日志级别 := "info"
+        ይጀምሩ := time.Now()
+        _A1_Μείγμα := ""
+        fmt.Println(デバッグ, 日志级别, ይጀምሩ, _A1_Μείγμα)
+}
+```
+
+### Changing the Value of a Variable
+
+Exercise 1.07:
+
+```go nu
+package main
+
+import "fmt"
+
+func main() {
+        offset := 5
+        fmt.Println(offset)
+        offset = 10
+        fmt.Println(offset)
+}
+```
+
+```go nu
+package main
+
+import "fmt"
+
+var defaultOffset = 10
+
+func main() {
+        offset := defaultOffset
+        fmt.Println(offset)
+        offset = offset + defaultOffset
+        fmt.Println(offset)
+}
+```
+
+### Changing Multiple Values at Once
+
+Exercise 1.08:
+
+```go nu
+package main
+
+import "fmt"
+
+func main() {
+        query, limit, offset := "bat", 10, 0
+        query, limit, offset = "ball", offset, 20
+        fmt.Println(query, limit, offset)
+}
+```
+
+### Operators
+
+## Logic and Loops
+
+## Core Types
+
+## Complex Types
+
+## Functions
+
+## Errors
+
+## Interfaces
+
+## Packages
+
+## Basic Debugging
+
+## About Time
+
+## Encoding and Decoding (JSON)
+
+## Files and Systems
+
+## SQL and Databases
+
+## Using the Go HTTP Client
+
+## HTTP Servers
+
+## Concurrent Work
+
+## Using Go Tools
+
+## Security
+
+## Special Features
