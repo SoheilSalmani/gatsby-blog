@@ -1,5 +1,270 @@
 ---
 title: React Native
-relatedResources: []
+relatedResources:
+  - "9781839210112"
 tags: []
 ---
+
+## React Native in Action
+
+1. Write a "Hello, World!" program in React Native using the following syntaxes:
+
+   - `createClass` syntax (ES5, JSX)
+   - Class syntax (ES2015, JSX)
+   - Stateless (reusable) component (JSX, two methods)
+   - `createElement` (JavaScript)
+
+   <Solution>
+
+   `createClass` syntax (ES5, JSX):
+
+   ```jsx nu
+   const React = require("react")
+   const ReactNative = require("react-native")
+   const { View, Text } = ReactNative
+
+   const MyComponent = React.createClass({
+     render() {
+       return (
+         <View>
+           <Text>Hello World</Text>
+         </View>
+       )
+     },
+   })
+   ```
+
+   Class syntax (ES2015, JSX):
+
+   ```jsx nu
+   import React from "react"
+   import { View, Text } from "react-native"
+
+   class MyComponent extends React.Component {
+     render() {
+       return (
+         <View>
+           <Text>Hello World</Text>
+         </View>
+       )
+     }
+   }
+   ```
+
+   Stateless (reusable) component (JSX):
+
+   ```jsx nu
+   import React from "react"
+   import { View, Text } from "react-native"
+
+   const MyComponent = () => (
+     <View>
+       <Text>Hello World</Text>
+     </View>
+   )
+   ```
+
+   ```jsx nu
+   import React from "react"
+   import { View, Text } from "react-native"
+
+   function MyComponent() {
+     return (
+       <View>
+         <Text>Hello World</Text>
+       </View>
+     )
+   }
+   ```
+
+   `createElement` (JavaScript):
+
+   ```js
+   class MyComponent extends React.Component {
+     render() {
+       return React.createElement(
+         View,
+         {},
+         React.createElement(Text, {}, "Hello")
+       )
+     }
+   }
+   ```
+
+   </Solution>
+
+2. Create a new React Native project using the Create React Native App CLI. Run
+   it.
+
+   <Solution>
+
+   First,
+   [set up the development environment](https://reactnative.dev/docs/environment-setup).
+
+   ```shell
+   npx create-react-native-app myProject
+   ```
+
+   ```shell
+   yarn ios
+   yarn android
+   yarn web
+   ```
+
+   </Solution>
+
+3. Create a new React Native project using the React Native CLI. Run it.
+
+   <Solution>
+
+   First,
+   [set up the development environment](https://reactnative.dev/docs/environment-setup).
+
+   ```shell
+   npx react-native init myProject
+   ```
+
+   ```shell
+   npx react-native start
+   ```
+
+   ```shell
+   npx react-native run-ios
+   npx react-native run-android
+   ```
+
+   </Solution>
+
+4. Create a React Native component whose content changes on press.
+
+   <Solution>
+
+   ```jsx nu fp=App.js
+   import React, { Component } from "react"
+   import { Text, View } from "react-native"
+
+   class App extends Component {
+     constructor() {
+       super()
+       this.state = {
+         year: 2016,
+       }
+     }
+     updateYear() {
+       this.setState({
+         year: 2017,
+       })
+     }
+     render() {
+       return (
+         <View>
+           <Text onPress={() => this.updateYear()}>
+             The year is: {this.state.year}
+           </Text>
+         </View>
+       )
+     }
+   }
+
+   export default App
+   ```
+
+   </Solution>
+
+5. Change the preceding code to not use `this.state` and add a new pressable
+   component to force an update.
+
+   <Solution>
+
+   ```jsx nu fp=App.js hl=7,10,12..14,21
+   import React, { Component } from "react"
+   import { Text, View } from "react-native"
+
+   class App extends Component {
+     constructor() {
+       super()
+       this.year = 2016
+     }
+     updateYear() {
+       this.year = 2017
+     }
+     update() {
+       this.forceUpdate()
+     }
+     render() {
+       return (
+         <View>
+           <Text onPress={() => this.updateYear()}>
+             The year is: {this.year}
+           </Text>
+           <Text onPress={() => this.update()}>Force Update</Text>
+         </View>
+       )
+     }
+   }
+
+   export default App
+   ```
+
+   </Solution>
+
+## React Native Projects
+
+1. Initialize a new React Native project called `ReactNativeNotes`.
+
+   <Solution>
+
+   ```shell
+   npx react-native init ReactNativeNotes
+   ```
+
+   </Solution>
+
+2. Run your React Native application in your Android emulator.
+
+   <Solution>
+
+   ```shell
+   npx react-native start
+   npx react-native run-android
+   ```
+
+   </Solution>
+
+3. Run your React Native application in the iOS Simulator.
+
+   <Solution>
+
+   ```shell
+   npx react-native start
+   npx react-native run-ios
+   ```
+
+   </Solution>
+
+4. Install NativeBase, Async Storage, React Navigation and the Stack Navigator.
+   Wrap the whole app in a navigation container.
+
+   <Solution>
+
+   1. Install NativeBase.
+   2. Install Async Storage.
+   3. Install React Navigation and the Stack Navigator.
+   4. Now, we need to wrap the whole app in `NavigationContainer`. Usually you'd
+      do this in your entry file, such as `index.js` or `App.js`:
+
+      ```jsx nu fp=App.js
+      import "react-native-gesture-handler"
+      import * as React from "react"
+      import { NavigationContainer } from "@react-navigation/native"
+
+      export default function App() {
+        return (
+          <NavigationContainer>
+            {/* Rest of your app code */}
+          </NavigationContainer>
+        )
+      }
+      ```
+
+   </Solution>

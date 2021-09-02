@@ -3,3 +3,74 @@ title: Kubernetes
 relatedResources: []
 tags: []
 ---
+
+## Kubernetes in Action
+
+1. What type of nodes compose a Kubernetes cluster?
+
+   <Solution>
+
+   At the hardware level, a Kubernetes cluster is composed of many nodes, which
+   can be split into two types:
+
+   - The _master_ node, which hosts the _Kubernetes Control Plane_ that controls
+     and manages the whole Kubernetes system
+   - Worker _nodes_ that run the actual applications you deploy
+
+   <Figure src="/media/kubernetes-cluster.png">
+     The components that make up a Kubernetes cluster
+   </Figure>
+
+   </Solution>
+
+2. Explain what the Kubernetes Control Plane is.
+
+   <Solution>
+
+   The Control Plane is what controls the cluster and makes it function. It
+   consists of multiple components that can run on a single master node or be
+   split across multiple nodes and replicated to ensure high availability. These
+   components are
+
+   - The _Kubernetes API Server_, which you and the other Control Plane
+     components communicate with
+   - The _Scheduler_, which schedules your apps (assigns a worker node to each
+     deployable component of your application)
+   - The _Controller Manager_, which performs cluster-level functions, such as
+     replicating components, keeping track of worker nodes, handling node
+     failures, and so on
+   - _etcd_, a reliable distributed data store that persistently stores the
+     cluster configuration.
+
+   The components of the Control Plane hold and control the state of the
+   cluster, but they don’t run your applications. This is done by the (worker)
+   nodes.
+
+   </Solution>
+
+3. Explain what worker nodes are.
+
+   <Solution>
+
+   The worker nodes are the machines that run your containerized applications.
+   The task of running, monitoring, and providing services to your applications
+   is done by the following components:
+
+   - Docker, rkt, or another _container runtime_, which runs your containers
+   - The _Kubelet_, which talks to the API server and manages containers on its
+     node
+   - The _Kubernetes Service Proxy (kube-proxy)_, which load-balances network
+     traffic between application components.
+
+   </Solution>
+
+4. Draw a schema explaining how a given application run in a Kubernetes cluster.
+
+   <Solution>
+
+   <Figure src="/media/kubernetes-architecture-overview.png">
+     A basic overview of the Kubernetes architecture and an application running
+     on top of it.
+   </Figure>
+
+   </Solution>

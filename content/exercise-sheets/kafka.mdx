@@ -48,3 +48,172 @@ tags: []
    ```
 
    </Solution>
+
+4. Create a topic named `first_topic` with 3 partitions and a replication factor
+   of 1.
+
+   <Solution>
+
+   ```shell
+   kafka-topics --bootstrap-server localhost:9092 --topic first_topic --create --partitions 3 --replication-factor 1
+   ```
+
+   </Solution>
+
+5. List all topics.
+
+   <Solution>
+
+   ```shell
+   kafka-topics --bootstrap-server localhost:9092 --list
+   ```
+
+   </Solution>
+
+6. Describe the previously created topic.
+
+   <Solution>
+
+   ```shell
+   kafka-topics --bootstrap-server localhost:9092 --topic first_topic --describe
+   ```
+
+   </Solution>
+
+7. Delete the topic and recreate the topic.
+
+   <Solution>
+
+   ```shell
+   kafka-topics --bootstrap-server localhost:9092 --topic first_topic --delete
+   kafka-topics --bootstrap-server localhost:9092 --topic first_topic --create --partitions 3 --replication-factor 1
+   ```
+
+   </Solution>
+
+8. Send messages to the topic, and configure the producer to get leader and
+   replicas acknowledgement.
+
+   <Solution>
+
+   ```shell
+   kafka-console-producer --broker-list localhost:9092 --topic first_topic --producer-property acks=all
+   ```
+
+   </Solution>
+
+9. Send messages to a topic that doesn't exist. Describe the new topic
+   automatically created.
+
+   <Solution>
+
+   ```shell
+   kafka-console-producer --broker-list localhost:9092 --topic new_topic
+   > Message!
+   kafka-topics --bootstrap-server localhost:9092 --list
+   kafka-topics --bootstrap-server localhost:9092 --topic first_topic --describe
+   ```
+
+   </Solution>
+
+10. Change the default number of partitions and send messages to a topic that
+    doesn't exist.
+
+    <Solution>
+
+    ```properties fp=/usr/local/etc/kafka/server.properties
+    ...
+    num.partitions=3
+    ...
+    ```
+
+    </Solution>
+
+11. Consume new messages from a topic.
+
+    <Solution>
+
+    ```shell
+    kafka-console-consumer --bootstrap-server localhost:9092 --topic first_topic
+    ```
+
+    </Solution>
+
+12. Consume messages using a consumer that does not already have an established
+    offset to consume from, and start with the earliest message present in the
+    log rather than the latest message.
+
+    <Solution>
+
+    ```shell
+    kafka-console-consumer --bootstrap-server localhost:9092 --topic first_topic --from-beginning
+    ```
+
+    </Solution>
+
+13. Test two Kafka consumers in a group.
+
+    <Solution>
+
+    Tab 1:
+
+    ```shell
+    kafka-console-consumer --bootstrap-server localhost:9092 --topic first_topic --group my-first-application
+    ```
+
+    Tab 2:
+
+    ```shell
+    kafka-console-consumer --bootstrap-server localhost:9092 --topic first_topic --group my-first-application
+    ```
+
+    Tab 3:
+
+    ```shell
+    kafka-console-producer --broker-list localhost:9092 --topic first_topic
+    > Message 1
+    > Message 2
+    > Message 3
+    ```
+
+    </Solution>
+
+14. List all consumer groups.
+
+    <Solution>
+
+    ```shell
+    kafka-consumer-groups --bootstrap-server localhost:9092 --list
+    ```
+
+    </Solution>
+
+15. Describe a consumer group.
+
+    <Solution>
+
+    ```shell
+    kafka-consumer-groups --bootstrap-server localhost:9092 --describe --group my-first-application
+    ```
+
+    </Solution>
+
+16. Reset a consumer group to the earliest offset.
+
+    <Solution>
+
+    ```shell
+    kafka-consumer-groups --bootstrap-server localhost:9092 --group my-first-application --reset-offsets --to-earliest --execute --topic first_topic
+    ```
+
+    </Solution>
+
+17. This time, reset by shifting by -2.
+
+    <Solution>
+
+    ```shell
+    kafka-consumer-groups --bootstrap-server localhost:9092 --group my-first-application --reset-offsets --shift-by -2 --execute --topic first_topic
+    ```
+
+    </Solution>

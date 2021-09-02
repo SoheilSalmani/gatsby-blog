@@ -1,0 +1,140 @@
+---
+title: App Framework
+resourceId: https://www.contentful.com/developers/docs/extensibility/app-framework/
+stoppedAt: TODO
+---
+
+## App Framework
+
+### What are apps?
+
+Apps are packages that simplify customization and integration by modifying your
+space. An app can help adapt Contentful to individual business processes and
+integrate with other services.
+
+With the App Framework, we give you the tools to build apps that can customize
+Contentful to fit your user and business needs.
+
+### What can apps do?
+
+Using apps, a huge variety of enhancements to the Contentful web app are
+possible. From small field editor improvements to deeply integrated full-page
+applications, the App Framework makes customizing the web app effortless.
+
+Some common use cases are:
+
+- Adding custom field editors to improve the editor experience
+- Managing content versions for running A/B tests on structured content using
+  personalization tools
+- Triggering actions such as CI builds in third-party systems
+- Tailor the default entry editor to suit your specific needs
+
+### Anatomy of an app
+
+#### Frontend apps
+
+Front end apps are single-page applications rendered within an iFrame in six
+different locations of the Contentful web app:
+
+- Entry Field
+- Entry Sidebar
+- Entry Editor
+- Page
+- App Configuration
+- Dialog
+
+You can enable or disable these locations individually via the app definition.
+
+Apps can be customized based on location and context within the Contentful web
+app. This allows for a seamless integration with the editing experience. Hosting
+apps is as simple as hosting static files -- no code has to run on your servers.
+The only requirement is that files must be accessible via URL by users of the
+Contentful web app.
+
+#### Backend apps
+
+In addition to providing a customized user interface with controls or dashboards
+within the Contentful web app, apps can also perform asynchronous work on a
+server without any user interaction. These apps are running on your servers and
+their behavior is therefore fully under your control. With app identities and
+events, apps can interact with the Contentful Content Management API with their
+own identity. Apps can individually subscribe to events within their installed
+environment, in a manner similar to webhooks. The big advantage of backend apps
+compared to using regular webhooks and CMA tokens is, that app identities are
+not user bound and therefore not restricted to a specific user account's
+permissions. Also, the frontend and backend configuration comes as a bundle and
+can be installed into an environment with a single click without manual setup of
+webhooks filters or updating the backend code for new environments.
+
+### Managing and distributing apps
+
+#### Private apps
+
+A private app is built by you for your specific organization's needs to optimize
+your organization's editorial experience. It is fully under your control and not
+accessible by other organizations. Apps are created within your organization and
+installed into one or more environments, each with the ability to be
+individually configured. The total number of apps and installations within your
+organization/environment is limited based on your Contentful plan
+
+#### Marketplace apps
+
+Marketplace apps are built by our technology partners and connect Contentful
+with other systems allowing you to assemble the stack of your choice.
+Marketplace apps can be installed free of charge from within the Contentful web
+app without touching a single line of code. Many of them are open source apps,
+so if you are interested in how these apps were built, feel free to check out
+our apps repository. Currently, Contentful’s Marketplace is open to only a
+select group of technology and integration partners.
+
+## Tutorials
+
+### Building your first app
+
+### Building a backend app
+
+### Verifying requests
+
+## Guides
+
+### Hosting an app
+
+### Converting an extension into an app
+
+### Publishing an app
+
+## Tooling
+
+### SDK Reference
+
+### Create Contentful App
+
+### Libraries
+
+### Field Editors
+
+### Forma36
+
+## Concepts
+
+### App Bundle
+
+### App Definition
+
+### App Events
+
+### App Locations
+
+### App Installation
+
+### App Identity
+
+### App Keys
+
+### Editor Interfaces
+
+### Installation Parameters
+
+### Instance Parameters
+
+### Target State

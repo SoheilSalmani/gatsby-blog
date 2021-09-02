@@ -1,7 +1,7 @@
 ---
 title: Getting Started Tutorial
 resourceId: https://docs.getdbt.com/tutorial/setting-up
-stoppedAt: Build your first models
+stoppedAt: Change the way your model is materialized
 ---
 
 ## Getting Started
@@ -174,6 +174,72 @@ dbt run
 ```
 
 ## Build your first models
+
+### Checkout a new branch
+
+#### dbt Cloud
+
+Click the <Scr>+ create new branch...</Scr> button, and name your branch
+`add-customers-model`.
+
+#### dbt CLI
+
+```shell
+git checkout -b add-customers-model
+```
+
+### Build your first model
+
+#### dbt Cloud
+
+1. Create a new file in the `models` directory named `customers.sql`.
+2. Paste the query.
+3. Execute `dbt run` in the command prompt at the bottom of the screen.
+
+#### dbt CLI
+
+1. Create a new file in the `models` directory named `customers.sql`.
+2. Paste the query.
+3. ```shell
+   dbt run
+   ```
+
+#### FAQs
+
+**How can I see the SQL that dbt is running?** To check out the SQL that dbt is
+running, you can look in:
+
+- dbt Cloud:
+  - Within the run output, click on a model name, and then select
+    <Scr>Details</Scr>
+- dbt CLI:
+  - The `target/compiled/` directory for compiled `select` statements
+  - The `target/run/` directory for compiled `create` statements
+  - The `logs/dbt.log` file for verbose logging.
+
+**How did dbt choose which schema to build my models in?** By default, dbt
+builds models in your target schema. To change your target schema:
+
+- If you're developing in **dbt Cloud**, these are set for each user when you
+  first use a development environment.
+- If you're developing with the **dbt CLI**, this is the `schema:` parameter in
+  your `profiles.yml` file.
+
+**Note:** on BigQuery, `dataset` is used interchangeably with `schema`.
+
+**Do I need to create my target schema before running dbt?** Nope! dbt will
+check if the schema exists when it runs. If the schema does not exist, dbt will
+create it for you.
+
+**If I rerun dbt, will there be any downtime as models are rebuilt?** Nope! The
+SQL that dbt generates behind the scenes ensures that any relations are replaced
+atomically (i.e. your business users won't experience any downtime).
+
+**What happens if the SQL in my query is bad?** If there's a mistake in your
+SQL, dbt will return the error that your database returns. Any models downstream
+of this model will also be skipped.
+
+### Change the way your model is materialized
 
 ## Test and document your project
 

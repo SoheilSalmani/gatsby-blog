@@ -1,5 +1,54 @@
 ---
 title: pytest
-relatedResources: []
+relatedResources:
+  - "9781789347562"
 tags: []
 ---
+
+1. Create a `fibonacci` function in a `fibo` Python module.
+
+   <Solution>
+
+   ```python nu fp=fibo.py
+   def fibo(n):
+       if n == 0:
+           return 0
+       if n in (1, 2):
+           return 1
+       return fibo(n - 1) + fibo(n - 2)
+   ```
+
+   </Solution>
+
+2. Test that function using `unittest`.
+
+   <Solution>
+
+   ```python nu fp=test_fibo.py
+   import unittest
+   from fibo import fibonacci
+
+   class Test(unittest.TestCase):
+
+       def test_fibo(self):
+           result = fibonacci(4)
+           self.assertEqual(result, 3)
+
+   if __name__ == '__main__':
+       unittest.main()
+   ```
+
+   </Solution>
+
+3. Same with `pytest`.
+
+   <Solution>
+
+   ```python nu fp=test_fibo.py
+   from fibo import fibonacci
+
+   def test_fibo():
+       assert fibonacci(4) == 3
+   ```
+
+   </Solution>

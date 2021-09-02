@@ -77,7 +77,7 @@ tags: []
    exports.createSchemaCustomization = ({ actions }) => {
      const { createTypes } = actions
      const typeDefs = `
-       type AuthorJson implements Node @dontInfer {
+       type AuthorJson implements Node {
          joinedAt: String
        }
      `
@@ -158,7 +158,10 @@ tags: []
    ```graphql
    # Adds `childMdx` as a child of any node type with the `@mimeTypes` set to "text/markdown" or "text/x-markdown"
    type Mdx implements Node
-     @childOf(mimeTypes: ["text/markdown", "text/x-markdown"]) {
+     @childOf(
+       types: ["File"]
+       mimeTypes: ["text/markdown", "text/x-markdown"]
+     ) {
      id: ID!
    }
    ```
@@ -235,6 +238,94 @@ tags: []
        infer: false
      },
    }),
+   ```
+   
+   </Solution>
+
+11. Link `MarkdownRemark` nodes with `AuthorJson` nodes using the node IDs. Use
+    a Gatsby Type Builder.
+
+   <Solution>
+   
+   ```js nu fp=gatsby-node.js hl=9..15
+   exports.createSchemaCustomization = ({ actions, schema }) => {
+     const { createTypes } = actions
+     const typeDefs = [
+       "type MarkdownRemark implements Node { frontmatter: Frontmatter }",
+       schema.buildObjectType({
+         name: "Frontmatter",
+         fields: {
+           author: {
+             type: "AuthorJson",
+             resolve: (source, args, context, info) => {
+               return context.nodeModel.getNodeById({
+                 id: source.author,
+                 type: "AuthorJson",
+               })
+             },
+           },
+         },
+       }),
+     ]
+     createTypes(typeDefs)
+   }
+   ```
+   
+   </Solution>
+
+12. Same but this time, use the author email.
+
+    <Solution>
+
+    ```js nu fp=gatsby-node.js hl=9..14
+    exports.createSchemaCustomization = ({ actions, schema }) => {
+      const { createTypes } = actions
+      const typeDefs = [
+        "type MarkdownRemark implements Node { frontmatter: Frontmatter }",
+        schema.buildObjectType({
+          name: "Frontmatter",
+          fields: {
+            author: {
+              type: "AuthorJson",
+              resolve: (source, args, context, info) => {
+                return context.nodeModel
+                  .getAllNodes({ type: "AuthorJson" })
+                  .find(author => author.email === source.author)
+              },
+            },
+          },
+        }),
+      ]
+      createTypes(typeDefs)
+    }
+    ```
+
+    </Solution>
+
+13. Link the `author` and `reviewers` field of the `Frontmatter` type with the
+    `AuthorJson` type, and link the `posts` field of the `AuthorJson` type with
+    the `MarkdownRemark` type. In the frontmatter, authors should be specified
+    using IDs and reviewers using their email.
+
+   <Solution>
+   
+   ```js nu fp=gatsby-node.js
+   exports.createSchemaCustomization = ({ actions, schema }) => {
+     const { createTypes } = actions
+     const typeDefs = `
+       type MarkdownRemark implements Node {
+         frontmatter: Frontmatter
+       }
+       type Frontmatter {
+         author: AuthorJson @link
+         reviewers: [AuthorJson] @link(by: "email")
+       }
+       type AuthorJson implements Node {
+         posts: [MarkdownRemark] @link(by: "frontmatter.author.email", from: "email")
+       }
+     `
+     createTypes(typeDefs)
+   }
    ```
    
    </Solution>

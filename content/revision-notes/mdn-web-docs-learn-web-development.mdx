@@ -1,7 +1,8 @@
 ---
 title: Learn web development
 resourceId: https://developer.mozilla.org/en-US/docs/Learn
-stoppedAt: What’s in the head? Metadata in HTML
+stoppedAt:
+  Adding custom icons to your site, What went wrong? Troubleshooting JavaScript
 ---
 
 ## Complete beginners start here!
@@ -45,7 +46,11 @@ elements and inline elements.
   &lt;a&gt; element creates a hyperlink, and elements such as &lt;em&gt; or
   &lt;strong&gt; create emphasis.
 
-**Note:** The terms block and inline, as used in this article, should not be
+**Note:** HTML5 redefined the element categories. While these definitions are
+more accurate and less ambiguous than their predecessors, the new definitions
+are a lot more complicated to understand than _block_ and _inline_.
+
+**Note:** The terms _block_ and _inline_, as used in this article, should not be
 confused with the types of CSS boxes that have the same names. While the names
 correlate by default, changing the CSS display type doesn't change the category
 of the element, and doesn't affect which elements it can contain and which
@@ -57,6 +62,9 @@ prevent this rather common confusion.
 Empty elements are sometimes called _void elements_.
 
 ##### Attributes
+
+Elements can also have attributes. Attributes contain extra information about
+the element that won't appear in the content.
 
 ###### Boolean attributes
 
@@ -96,6 +104,18 @@ Empty elements are sometimes called _void elements_.
 </html>
 ```
 
+When HTML was young (1991-1992), doctypes were meant to act as links to a set of
+rules that the HTML page had to follow to be considered good HTML. More
+recently, the doctype is a historical artifact that needs to be included for
+everything else to work right. `<!DOCTYPE html>` is the shortest string of
+characters that counts as a valid doctype.
+
+###### Whitespace in HTML
+
+No matter how much whitespace you use inside HTML element content (which can
+include one or more space character, but also line breaks), the HTML parser
+reduces each sequence of whitespace to a single space when rendering the code.
+
 ##### Entity references: Including special characters in HTML
 
 In HTML, the characters `<`, `>`,`"`,`'` and `&` are special characters.
@@ -107,6 +127,96 @@ In HTML, the characters `<`, `>`,`"`,`'` and `&` are special characters.
 - `&` &rArr; `&amp;`
 
 #### What’s in the head? Metadata in HTML
+
+##### What is the HTML head?
+
+The head's job is to contain metadata about the document.
+
+##### Adding a title
+
+The `<title>` element is used to add a title to the document.
+
+- The `<h1>` element appears on the page when loaded in the browser — generally
+  this should be used once per page, to mark up the title of your page content
+  (the story title, or news headline, or whatever is appropriate to your usage.)
+- The `<title>` element is metadata that represents the title of the overall
+  HTML document (not the document's content.)
+
+`<title>` is also used as pre-filled bookmark name and in search results.
+
+##### Metadata: the `<meta>` element
+
+Metadata is data that describes data, and HTML has an "official" way of adding
+metadata to a document — the `<meta>` element. There are a lot of different
+types of `<meta>` elements that can be included in your page's `<head>`.
+
+###### Specifying your document's character encoding
+
+```html
+<meta charset="utf-8" />
+```
+
+Many `<meta>` elements include `name` and `content` attributes.
+
+###### Adding an author and description
+
+```html
+<meta name="author" content="Chris Mills" />
+<meta
+  name="description"
+  content="The MDN Web Docs Learning Area aims to provide complete beginners to the Web with all they need to know to get started with developing web sites and applications."
+/>
+```
+
+Specifying an author is beneficial in many ways: it is useful to be able to
+understand who wrote the page, if you have any questions about the content and
+you would like to contact them. Some content management systems have facilities
+to automatically extract page author information and make it available for such
+purposes.
+
+Specifying a description that includes keywords relating to the content of your
+page is useful as it has the potential to make your page appear higher in
+relevant searches performed in search engines (such activities are termed Search
+Engine Optimization, or SEO.)
+
+The description is also used on search engine result pages.
+
+**Note:** In Google, you will see some relevant subpages listed below the main
+homepage link — these are called sitelinks, and are configurable in Google's
+webmaster tools — a way to make your site's search results better in the Google
+search engine.
+
+###### Other types of metadata
+
+As you travel around the web, you'll find other types of metadata, too. A lot of
+the features you'll see on websites are proprietary creations, designed to
+provide certain sites (such as social networking sites) with specific pieces of
+information they can use.
+
+For example, Open Graph Data is a metadata protocol that Facebook invented to
+provide richer metadata for websites.
+
+```html
+<meta
+  property="og:image"
+  content="https://developer.mozilla.org/static/img/opengraph-logo.png"
+/>
+<meta
+  property="og:description"
+  content="The Mozilla Developer Network (MDN) provides information about Open Web technologies including HTML, CSS, and APIs for both Web sites and HTML5 Apps. It also documents Mozilla products, like Firefox OS."
+/>
+<meta property="og:title" content="Mozilla Developer Network" />
+```
+
+Twitter also has its own similar proprietary metadata called Twitter Cards,
+which has a similar effect when the site's URL is displayed on `twitter.com`.
+For example:
+
+```html
+<meta name="twitter:title" content="Mozilla Developer Network" />
+```
+
+##### Adding custom icons to your site
 
 ### Multimedia and embedding
 
@@ -236,6 +346,155 @@ DOM being in place, load them using `defer` and put their corresponding
 ##### Comments
 
 Comments in JavaScript: `//` or `/* */`.
+
+#### A first splash into JavaScript
+
+Number guessing game:
+
+```html nu fp=index.html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Number guessing game</title>
+    <style>
+      html {
+        font-family: sans-serif;
+      }
+
+      body {
+        width: 50%;
+        max-width: 800px;
+        min-width: 480px;
+        margin: 0 auto;
+      }
+
+      .lastResult {
+        color: white;
+        padding: 3px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Number guessing game</h1>
+
+    <p>
+      We have selected a random number between 1 and 100. See if you can guess
+      it in 10 turns or fewer. We'll tell you if your guess was too high or too
+      low.
+    </p>
+
+    <form class="guess-form">
+      <p>
+        <label for="guess-field"
+          >Enter a guess:
+          <input type="text" id="guess-field" class="guess-field"
+        /></label>
+      </p>
+      <p><button class="guess-submit">Submit guess</button></p>
+    </form>
+
+    <div class="feedback-section">
+      <p class="previous-guesses"></p>
+      <p class="last-result"></p>
+      <p class="lower-or-higher"></p>
+    </div>
+
+    <script>
+      const previousGuessesElement = document.querySelector(".previous-guesses")
+      const lastResultElement = document.querySelector(".last-result")
+      const lowerOrHigherElement = document.querySelector(".lower-or-higher")
+      const guessFormElement = document.querySelector(".guess-form")
+      const guessSubmitElement = document.querySelector(".guess-submit")
+      const guessFieldElement = document.querySelector(".guess-field")
+
+      let randomNumber
+      let guessCount
+
+      const resetButtonElement = document.createElement("button")
+      resetButtonElement.textContent = "Start new game"
+
+      resetGame()
+
+      function checkGuess() {
+        guessCount++
+        let userGuess = Number(guessFieldElement.value)
+
+        if (guessCount === 1) {
+          previousGuessesElement.textContent = "Previous guesses:"
+        }
+
+        previousGuessesElement.textContent += " " + userGuess
+
+        if (userGuess === randomNumber) {
+          lastResultElement.textContent = "Congratulations! You got it right!"
+          lastResultElement.style.backgroundColor = "green"
+          lowerOrHigherElement.textContent = ""
+          setGameOver()
+        } else if (guessCount === 10) {
+          lastResultElement.textContent = "GAME OVER!"
+          lowerOrHigherElement.textContent = ""
+          setGameOver()
+        } else {
+          lastResultElement.textContent = "Wrong!"
+          lastResultElement.style.backgroundColor = "red"
+          if (userGuess < randomNumber) {
+            lowerOrHigherElement.textContent = "Last guess was too low!"
+          } else if (userGuess > randomNumber) {
+            lowerOrHigherElement.textContent = "Last guess was too high!"
+          }
+        }
+
+        guessFieldElement.value = ""
+        guessFieldElement.focus()
+      }
+
+      guessFormElement.addEventListener("submit", function (e) {
+        e.preventDefault()
+        checkGuess()
+      })
+
+      function setGameOver() {
+        guessFormElement.appendChild(resetButtonElement)
+        resetButtonElement.addEventListener("click", resetGame)
+        guessFieldElement.disabled = true
+        guessSubmitElement.disabled = true
+      }
+
+      function resetGame() {
+        previousGuessesElement.textContent = ""
+        lastResultElement.textContent = ""
+        lowerOrHigherElement.textContent = ""
+        if (resetButtonElement.parentNode) {
+          resetButtonElement.parentNode.removeChild(resetButtonElement)
+        }
+        guessFieldElement.disabled = false
+        guessSubmitElement.disabled = false
+        guessFieldElement.value = ""
+        guessFieldElement.focus()
+        lastResultElement.style.backgroundColor = "white"
+        guessCount = 0
+        randomNumber = Math.floor(Math.random() * 100) + 1
+      }
+    </script>
+  </body>
+</html>
+```
+
+#### What went wrong? Troubleshooting JavaScript
+
+#### Storing the information you need — Variables
+
+#### Basic math in JavaScript — Numbers and operators
+
+#### Handling text — Strings in JavaScript
+
+#### Useful string methods
+
+#### Arrays
+
+#### Assessment: Silly story generator
 
 ### JavaScript building blocks
 

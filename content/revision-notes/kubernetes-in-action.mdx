@@ -1,7 +1,7 @@
 ---
 title: Kubernetes in Action
 resourceId: "9781617293726"
-stoppedAt: Introducing container technologies
+stoppedAt: Setting up a Kubernetes cluster
 ---
 
 ## Overview
@@ -182,22 +182,509 @@ also runs Docker. You still need a VM for that.
 
 ##### Introducing rkt—an alternative to Docker
 
-After the success of Docker, the Open Container Initiative (OCI) was born to create
-open industry standards around container formats and runtime. Docker is part
-of that initiative, as is *rkt* (pronounced “rock-it”), which is another Linux container
-engine.
+After the success of Docker, the Open Container Initiative (OCI) was born to
+create open industry standards around container formats and runtime. Docker is
+part of that initiative, as is _rkt_ (pronounced “rock-it”), which is another
+Linux container engine.
 
-Like Docker, rkt is a platform for running containers. It puts a strong emphasis on
-security, composability, and conforming to open standards. It uses the OCI container
-image format and can even run regular Docker container images.
+Like Docker, rkt is a platform for running containers. It puts a strong emphasis
+on security, composability, and conforming to open standards. It uses the OCI
+container image format and can even run regular Docker container images.
 
 This book focuses on using Docker as the container runtime for Kubernetes,
-because it was initially the only one supported by Kubernetes. Recently, Kubernetes
-has also started supporting rkt, as well as others, as the container runtime.
+because it was initially the only one supported by Kubernetes. Recently,
+Kubernetes has also started supporting rkt, as well as others, as the container
+runtime.
 
 #### Introducing Kubernetes
 
+##### Looking at Kubernetes from the top of a mountain
+
+Kubernetes enables you to run your software applications on thousands of
+computer nodes as if all those nodes were a single, enormous computer. It
+abstracts away the underlying infrastructure and, by doing so, simplifies
+development, deployment, and management for both development and the operations
+teams.
+
+###### Understanding the core of what kubernetes does
+
+When the developer submits a list of apps to the master, Kubernetes deploys them
+to the cluster of worker nodes. What node a component lands on doesn’t (and
+shouldn’t) matter—neither to the developer nor to the system administrator.
+
+<Figure src="/media/understanding-kubernetes.png">
+  Kubernetes exposes the whole datacenter as a single deployment platform.
+</Figure>
+
+###### Helping developers focus on the core app features
+
+Kubernetes can be thought of as an operating system for the cluster. It relieves
+application developers from having to implement certain infrastructure-related
+services into their apps; instead they rely on Kubernetes to provide these
+services. This includes things such as service discovery, scaling,
+load-balancing, self-healing, and even leader election.
+
+###### Helping ops teams achieve better resource utilization
+
+Because your application doesn’t care which node it’s running on, Kubernetes can
+relocate the app at any time, and by mixing and matching apps, achieve far
+better resource utilization than is possible with manual scheduling.
+
+##### Understanding the architecture of a Kubernetes cluster
+
+At the hardware level, a Kubernetes cluster is composed of many nodes, which can
+be split into two types:
+
+- The _master_ node, which hosts the _Kubernetes Control Plane_ that controls
+  and manages the whole Kubernetes system
+- Worker _nodes_ that run the actual applications you deploy
+
+<Figure src="/media/kubernetes-cluster.png">
+  The components that make up a Kubernetes cluster
+</Figure>
+
+###### The Control Plane
+
+The Control Plane is what controls the cluster and makes it function. It
+consists of multiple components that can run on a single master node or be split
+across multiple nodes and replicated to ensure high availability. These
+components are
+
+- The _Kubernetes API Server_, which you and the other Control Plane components
+  communicate with
+- The _Scheduler_, which schedules your apps (assigns a worker node to each
+  deployable component of your application)
+- The _Controller Manager_, which performs cluster-level functions, such as
+  replicating components, keeping track of worker nodes, handling node failures,
+  and so on
+- _etcd_, a reliable distributed data store that persistently stores the cluster
+  configuration.
+
+The components of the Control Plane hold and control the state of the cluster,
+but they don’t run your applications. This is done by the (worker) nodes.
+
+###### The nodes
+
+The worker nodes are the machines that run your containerized applications. The
+task of running, monitoring, and providing services to your applications is done
+by the following components:
+
+- Docker, rkt, or another _container runtime_, which runs your containers
+- The _Kubelet_, which talks to the API server and manages containers on its
+  node
+- The _Kubernetes Service Proxy (kube-proxy)_, which load-balances network
+  traffic between application components.
+
+##### Running an application in Kubernetes
+
+To run an application in Kubernetes, you first need to package it up into one or
+more container images, push those images to an image registry, and then post a
+description of your app to the Kubernetes API server.
+
+The description includes information such as the container image or images that
+contain your application components, how those components are related to each
+other, and which ones need to be run co-located (together on the same node) and
+which don’t. For each component, you can also specify how many copies (or
+_replicas_) you want to run. Additionally, the description also includes which
+of those components provide a service to either internal or external clients and
+should be exposed through a single IP address and made discoverable to the other
+components.
+
+###### Understanding how the description results in a container
+
+When the API server processes your app’s description, the Scheduler schedules
+the specified groups of containers onto the available worker nodes based on
+computational resources required by each group and the unallocated resources on
+each node at that moment. The Kubelet on those nodes then instructs the
+Container Runtime (Docker, for example) to pull the required container images
+and run the containers.
+
+<Figure src="/media/kubernetes-architecture-overview.png">
+  A basic overview of the Kubernetes architecture and an application running on
+  top of it.
+</Figure>
+
+The app descriptor lists four containers, grouped into three sets (these sets
+are called _pods_). The first two pods each contain only a single container,
+whereas the last one contains two. That means both containers need to run
+co-located and shouldn’t be isolated from each other. Next to each pod, you also
+see a number representing the number of replicas of each pod that need to run in
+parallel. After submitting the descriptor to Kubernetes, it will schedule the
+specified number of replicas of each pod to the available worker nodes. The
+Kubelets on the nodes will then tell Docker to pull the container images from
+the image registry and run the containers.
+
+###### Keeping the containers running
+
+Once the application is running, Kubernetes continuously makes sure that the
+deployed state of the application always matches the description you provided.
+For example, if you specify that you always want five instances of a web server
+running, Kubernetes will always keep exactly five instances running. If one of
+those instances stops working properly, like when its process crashes or when it
+stops responding, Kubernetes will restart it automatically.
+
+Similarly, if a whole worker node dies or becomes inaccessible, Kubernetes will
+select new nodes for all the containers that were running on the node and run
+them on the newly selected nodes.
+
+###### Scaling the number of copies
+
+While the application is running, you can decide you want to increase or
+decrease the number of copies, and Kubernetes will spin up additional ones or
+stop the excess ones, respectively. You can even leave the job of deciding the
+optimal number of copies to Kubernetes. It can automatically keep adjusting the
+number, based on real-time metrics, such as CPU load, memory consumption,
+queries per second, or any other metric your app exposes.
+
+###### Hitting a moving target
+
+We’ve said that Kubernetes may need to move your containers around the cluster.
+This can occur when the node they were running on has failed or because they
+were evicted from a node to make room for other containers. If the container is
+providing a service to external clients or other containers running in the
+cluster, how can they use the container properly if it’s constantly moving
+around the cluster? And how can clients connect to containers providing a
+service when those containers are replicated and spread across the whole
+cluster?
+
+To allow clients to easily find containers that provide a specific service, you
+can tell Kubernetes which containers provide the same service and Kubernetes
+will expose all of them at a single static IP address and expose that address to
+all applications running in the cluster. This is done through environment
+variables, but clients can also look up the service IP through good old DNS. The
+kube-proxy will make sure connections to the service are load balanced across
+all the containers that provide the service. The IP address of the service stays
+constant, so clients can always connect to its containers, even when they’re
+moved around the cluster.
+
+##### Understanding the benefits of using Kubernetes
+
+If you have Kubernetes deployed on all your servers, the ops team doesn’t need
+to deal with deploying your apps anymore. Because a containerized application
+already contains all it needs to run, the system administrators don’t need to
+install anything to deploy and run the app. On any node where Kubernetes is
+deployed, Kubernetes can run the app immediately without any help from the
+sysadmins.
+
+###### Simplifying application deployment
+
+In essence, all the nodes are now a single bunch of computational resources that
+are waiting for applications to consume them. A developer doesn’t usually care
+what kind of server the application is running on, as long as the server can
+provide the application with adequate system resources.
+
+Certain cases do exist where the developer does care what kind of hardware the
+application should run on. If the nodes are heterogeneous, you’ll find cases
+when you want certain apps to run on nodes with certain capabilities and run
+other apps on others. For example, one of your apps may require being run on a
+system with SSDs instead of HDDs, while other apps run fine on HDDs. In such
+cases, you obviously want to ensure that particular app is always scheduled to a
+node with an SSD.
+
+Using Kubernetes, instead of selecting a specific node where your app should be
+run, it’s more appropriate to tell Kubernetes to only choose among nodes with an
+SSD.
+
+###### Achieving better utilization of hardware
+
+When you tell Kubernetes to run your application, you’re letting it choose the
+most appropriate node to run your application on based on the description of the
+application’s resource requirements and the available resources on each node.
+
+By using containers and not tying the app down to a specific node in your
+cluster, you’re allowing the app to freely move around the cluster at any time,
+so the different app components running on the cluster can be mixed and matched
+to be packed tightly onto the cluster nodes. This ensures the node’s hardware
+resources are utilized as best as possible.
+
+###### Health checking and self-healing
+
+Having a system that allows moving an application across the cluster at any time
+is also valuable in the event of server failures. As your cluster size
+increases, you’ll deal with failing computer components ever more frequently.
+
+Kubernetes monitors your app components and the nodes they run on and
+automatically reschedules them to other nodes in the event of a node failure.
+This frees the ops team from having to migrate app components manually and
+allows the team to immediately focus on fixing the node itself and returning it
+to the pool of available hardware resources instead of focusing on relocating
+the app.
+
+If your infrastructure has enough spare resources to allow normal system
+operation even without the failed node, the ops team doesn’t even need to react
+to the failure.
+
+###### Automatic scaling
+
+Using Kubernetes to manage your deployed applications also means the ops team
+doesn’t need to constantly monitor the load of individual applications to react
+to sudden load spikes. Kubernetes can be told to monitor the resources used by
+each application and to keep adjusting the number of running instances of each
+application.
+
+If Kubernetes is running on cloud infrastructure, where adding additional nodes
+is as easy as requesting them through the cloud provider’s API, Kubernetes can
+even automatically scale the whole cluster size up or down based on the needs of
+the deployed applications.
+
+###### Simplifying application development
+
+If you turn back to the fact that apps run in the same environment both during
+development and in production, this has a big effect on when bugs are
+discovered. We all agree the sooner you discover a bug, the easier it is to fix
+it, and fixing it requires less work. It’s the developers who do the fixing, so
+this means less work for them.
+
+Then there’s the fact that developers don’t need to implement features that they
+would usually implement. This includes discovery of services and/or peers in a
+clustered application. Kubernetes does this instead of the app. Usually, the app
+only needs to look up certain environment variables or perform a DNS lookup. If
+that’s not enough, the application can query the Kubernetes API server directly
+to get that and/or other information.
+
+Querying the Kubernetes API server like that can even save developers from
+having to implement complicated mechanisms such as leader election.
+
+As a final example of what Kubernetes brings to the table, you also need to
+consider the increase in confidence developers will feel knowing that when a new
+version of their app is going to be rolled out, Kubernetes can automatically
+detect if the new version is bad and stop its rollout immediately. This increase
+in confidence usually accelerates the continuous delivery of apps, which
+benefits the whole organization.
+
 ### First steps with Docker and Kubernetes
+
+#### Creating, running, and sharing a container image
+
+##### Installing Docker and running a Hello World container
+
+```shell
+docker run busybox echo "Hello world"
+```
+
+<Figure src="/media/running-busybox-container.png">
+  Running echo “Hello world” in a container based on the busybox container
+  image.
+</Figure>
+
+All software packages get updated, so more than a single version of a package
+usually exists. Docker supports having multiple versions or variants of the same
+image under the same name. Each variant must have a unique tag. When referring
+to images without explicitly specifying the tag, Docker will assume you’re
+referring to the so-called _latest_ tag.
+
+```shell
+docker run <image>:<tag>
+```
+
+##### Creating a trivial Node.js app
+
+```js nu fp=app.js
+const http = require("http")
+const os = require("os")
+
+console.log("Kubia server starting...")
+
+var handler = function (request, response) {
+  console.log("Received request from " + request.connection.remoteAddress)
+  response.writeHead(200)
+  response.end("You've hit " + os.hostname() + "\n")
+}
+
+var www = http.createServer(handler)
+www.listen(8080)
+```
+
+##### Creating a Dockerfile for the image
+
+```dockerfile
+FROM node:7
+ADD app.js /app.js
+ENTRYPOINT ["node", "app.js"]
+```
+
+In the third line, you’re defining what command should be executed when somebody
+runs the image.
+
+##### Building the container image
+
+```shell
+docker build -t kubia .
+```
+
+<Figure src="/media/building-a-container-image-from-dockerfile.png">
+  Building a new container image from a Dockerfile.
+</Figure>
+
+###### Understanding how an image is built
+
+The build process isn’t performed by the Docker client. Instead, the contents of
+the whole directory are uploaded to the Docker daemon and the image is built
+there. The client and daemon don’t need to be on the same machine at all.
+Because all the files in the build directory are uploaded to the daemon, if it
+contains many large files and the daemon isn’t running locally, the upload may
+take longer.
+
+**Tip:** Don’t include any unnecessary files in the build directory, because
+they’ll slow down the build process—especially when the Docker daemon is on a
+remote machine.
+
+###### Understanding image layers
+
+Different images may share several layers, which makes storing and transferring
+images much more efficient. For example, if you create multiple images based on
+the same base image, all the layers comprising the base image will be stored
+only once. Also, when pulling an image, Docker will download each layer
+individually. Several layers may already be stored on your machine, so Docker
+will only download those that aren’t.
+
+You may think that each Dockerfile creates only a single new layer, but that’s
+not the case. When building an image, a new layer is created for each individual
+command in the Dockerfile. During the build of your image, after pulling all the
+layers of the base image, Docker will create a new layer on top of them and add
+the app.js file into it. Then it will create yet another layer that will specify
+the command that should be executed when the image is run. This last layer will
+then be tagged as `kubia:latest`.
+
+List all locally stored images:
+
+```shell
+docker images
+```
+
+###### Comparing building images with a Dockerfile vs. manually
+
+Dockerfiles are the usual way of building container images with Docker, but you
+could also build the image manually by running a container from an existing
+image, executing commands in the container, exiting the container, and
+committing the final state as a new image. This is exactly what happens when you
+build from a Dockerfile, but it’s performed automatically and is repeatable,
+which allows you to make changes to the Dockerfile and rebuild the image any
+time, without having to manually retype all the commands again.
+
+##### Running the container image
+
+```shell
+docker run --name kubia-container -p 8080:8080 -d kubia
+```
+
+The container will be detached from the console (`-d` flag), which means it will
+run in the background. Port 8080 on the local machine will be mapped to port
+8080 inside the container (`-p 8080:8080` option).
+
+###### Accessing your app
+
+```shell
+curl localhost:8080
+```
+
+**Note:** The hostname is the ID of the Docker container.
+
+###### Listing all running containers
+
+```shell
+docker ps
+```
+
+For each container, Docker prints out its ID and name, the image used to run the
+container, and the command that’s executing inside the container.
+
+##### Exploring the inside of a running container
+
+```shell
+docker exec -it kubia-container bash
+```
+
+The `-it` option is shorthand for two options:
+
+- `-i`, which makes sure STDIN is kept open. You need this for entering commands
+  into the shell.
+- `-t`, which allocates a pseudo terminal (TTY).
+
+You need both if you want the use the shell like you’re used to. (If you leave
+out the first one, you can’t type any commands, and if you leave out the second
+one, the command prompt won’t be displayed and some commands will complain about
+the `TERM` variable not being set.)
+
+###### Exploring the container from within
+
+```shell
+ps aux
+```
+
+###### Understanding that processes in a container run in the host operating system
+
+```shell
+ps aux | grep app.js
+```
+
+The processes have different IDs inside the container vs. on the host. The
+container is using its own PID Linux namespace and has a completely isolated
+process tree, with its own sequence of numbers.
+
+###### The container's filesystem is also isolated
+
+Listing the contents of the root directory inside the container will only show
+the files in the container and will include all the files that are in the image
+plus any files that are created while the container is running (log files and
+similar).
+
+###### Stopping and removing a container
+
+```shell
+docker stop kubia-container
+```
+
+The container itself still exists and you can see it with `docker ps -a`. The
+`-a` option prints out all the containers, those running and those that have
+been stopped.
+
+To remove a container:
+
+```shell
+docker rm kubia-container
+```
+
+This deletes the container. All its contents are removed and it can’t be started
+again.
+
+##### Pushing the image to an image registry
+
+Docker Hub will allow you to push an image if the image’s repository name starts
+with your Docker Hub ID. You create your Docker Hub ID by registering at
+[http://hub.docker.com](http://hub.docker.com).
+
+###### Tagging an image under an additional tag
+
+```shell
+docker tag kubia luksa/kubia
+```
+
+This doesn’t rename the tag; it creates an additional tag for the same image.
+
+```shell
+docker images | head
+```
+
+Both `kubia` and `luksa/kubia` point to the same image ID, so they’re in fact
+one single image with two tags.
+
+Before you can push the image to Docker Hub, you need to log in under your user
+ID with the `docker login` command.
+
+Push the image to Docker Hub:
+
+```shell
+docker push luksa/kubia
+```
+
+###### Running the image on a different machine
+
+```shell
+docker run -p 8080:8080 -d luksa/kubia
+```
+
+#### Setting up a Kubernetes cluster
 
 ## Core concepts
 

@@ -1,0 +1,218 @@
+---
+title: Git
+relatedResources:
+  - https://frontendmasters.com/courses/git-in-depth/
+tags: []
+---
+
+1. Get the SHA1 of "Hello, World!" using Git.
+
+   <Solution>
+
+   ```shell
+   echo 'Hello, World!' | git hash-object --stdin
+   ```
+
+   </Solution>
+
+2. Try to get the same SHA1 using `openssl`.
+
+   <Solution>
+
+   ```shell
+   printf 'blob 14\0Hello, World!\n' | openssl sha1
+   ```
+
+   </Solution>
+
+3. Save a blob with "Hello, World!" as content using Git.
+
+   <Solution>
+
+   ```shell
+   echo 'Hello, World!' | git hash-object -w --stdin
+   ```
+
+   </Solution>
+
+4. List (as a tree) the contents of the `.git` directory.
+
+   <Solution>
+
+   ```shell
+   tree .git
+   ```
+
+   </Solution>
+
+5. Create the following structure and commit it.
+
+   <Figure src="/media/git-identical-content.png">
+     Identical content is only stored one!
+   </Figure>
+
+   <Solution>
+
+   ```shell
+   echo "Hello World!" > hello.txt
+   mkdir copies
+   echo "Hello World!" > hello-copy.txt
+   ```
+
+   ```shell
+   git add .
+   git commit -m "Initial commit"
+   ```
+
+   </Solution>
+
+6. Inspect all Git objects (type and content).
+
+   <Solution>
+
+   ```shell
+   tree .git
+   ```
+
+   Use:
+
+   ```shell
+   git cat-file -t [sha1]
+   git cat-file -p [sha1]
+   ```
+
+   </Solution>
+
+7. Inspect all references.
+
+   <Solution>
+
+   ```shell
+   git log --oneline
+   cat .git/refs/heads/master
+   cat .git/HEAD
+   ```
+
+   </Solution>
+
+8. Configure the editor that Git should use (test with VSCode and Vim).
+
+   <Solution>
+
+   Vim:
+
+   ```shell
+   git config --global core.editor vim
+   ```
+
+   VSCode:
+
+   ```shell
+   git config --global core.editor "code --wait"
+   ```
+
+   </Solution>
+
+9. Create a new folder and initialize it as a Git repo.
+
+   <Solution>
+
+   ```shell
+   git status
+   git identical
+   ```
+
+   </Solution>
+
+10. Create a file, stage it, and commit it to your new repo.
+
+    <Solution>
+
+    ```shell
+    echo 'Hello World!' > hello.txt
+    git add hello.txt
+    git commit -m "Initial commit"
+    ```
+
+    </Solution>
+
+11. Look at your `.git` folder, using tree if you have it.
+
+    <Solution>
+
+    Using tree, look in your .git/objects folder, you should now see three
+    objects, represented by long SHA1 hashes. These represent the tree, blob,
+    and commit that we created in the last step.
+
+    ```shell
+    tree .git
+    ```
+
+    </Solution>
+
+12. Inspect the objects in your `.git/objects` folder using `git cat-file`. See
+    if you can find the tree, blob, and commit objects for your recent commit.
+
+    <Solution>
+
+    Use:
+
+    ```shell
+    git cat-file -t [sha1]
+    git cat-file -p [sha1]
+    ```
+
+    </Solution>
+
+13. Look at your `.git/HEAD` and `.git/refs/heads/master` files and see if you
+    can figure out where these references are pointing to.
+
+    <Solution>
+
+    Let's look under the hood at our `HEAD` variable. `HEAD` is just git's
+    pointer to "where you are now," usually referring to the current branch. We
+    can see that right now, it points to our current branch - `master`.
+
+    Now, if we look at our `master` reference, we can see that it points to the
+    latest commit.
+
+    ```shell
+    cat .git/HEAD
+    cat .git/refs/heads/master
+    ```
+
+    </Solution>
+
+14. Open something with `less`, go to the next page and then return to the
+    previous page.
+
+    <Solution>
+
+    To navigate:
+
+    - <Kbd>F</Kbd>, for next page
+    - <Kbd>B</Kbd>, for previous page
+
+    </Solution>
+
+15. Search a word in `less`, select the next match and then the previous match.
+
+    <Solution>
+
+    To search:
+
+    - <Kbd>/&lt;query&gt;</Kbd>
+    - <Kbd>N</Kbd>, for next match
+    - <Kbd>P</Kbd>, for previous match
+
+    </Solution>
+
+16. Quit less.
+
+    <Solution>
+
+    To quit:
+
+    - <Kbd>Q</Kbd>, to quit
+
+    </Solution>

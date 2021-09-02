@@ -97,3 +97,38 @@ tags: []
    ```
 
    </Solution>
+
+1. In dbt Cloud, create a new branch, and name your branch
+   `add-customers-models`. Create a new model named `customers.sql` and run dbt.
+   Check out the SQL that dbt is running.
+
+   <Solution>
+
+   1. Click the <Scr>+ create new branch...</Scr> button, and name your branch
+      `add-customers-model`.
+   1. Create a new file in the `models` directory named `customers.sql`.
+   1. Paste the query.
+   1. Execute `dbt run` in the command prompt at the bottom of the screen.
+   1. Within the run output, click on a model name, and then select
+      <Scr>Details</Scr>.
+
+   </Solution>
+
+1. Same, but using the dbt CLI this time.
+
+   <Solution>
+
+   1. ```shell
+      git checkout -b add-customers-model
+      ```
+   1. Create a new file in the `models` directory named `customers.sql`.
+   1. Paste the query.
+   1. ```shell
+      dbt run
+      ```
+   1. To check out the SQL that dbt is running, you can look in:
+      - The `target/compiled/` directory for compiled `select` statements
+      - The `target/run/` directory for compiled `create` statements
+      - The `logs/dbt.log` file for verbose logging.
+
+   </Solution>

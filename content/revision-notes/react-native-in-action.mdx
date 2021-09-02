@@ -1,0 +1,735 @@
+---
+title: React Native in Action
+resourceId: "9781617294051"
+stoppedAt: Building your first React Native app
+---
+
+## Getting started with React Native
+
+### Getting started with React Native
+
+#### Introducing React and React Native
+
+##### A basic React class
+
+There are two main types of React Native components: _stateful_ and _stateless_:
+
+```jsx
+class HelloWorld extends React.Component {
+  constructor() {
+    super()
+    this.state = { name: "Chris" }
+  }
+  render() {
+    return <SomeComponent />
+  }
+}
+```
+
+```jsx
+const HelloWorld = () => <SomeComponent />
+```
+
+The main difference is that stateless components don’t hook into any lifecycle
+methods and hold no state of their own, so any data to be rendered must be
+received as properties (props).
+
+```jsx
+import React from "react"
+import { View, Text, StyleSheet } from "react-native"
+
+class HelloWorld extends React.Component {
+  constructor() {
+    super()
+    this.state = {
+      name: "React Native in Action",
+    }
+  }
+  componentDidMount() {
+    console.log("mounted..")
+  }
+  render() {
+    return (
+      <View style={styles.container}>
+        <Text>{this.state.name}</Text>
+      </View>
+    )
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    marginTop: 100,
+    flex: 1,
+  },
+})
+```
+
+View is the most fundamental building block for creating React Native components
+and the UI in general and can be thought of like a `div` in HTML. Text allows
+you to create text elements and is comparable to a `span` tag in HTML.
+`StyleSheet` lets you create style objects to use in an application.
+
+##### React lifecycle
+
+The only required lifecycle method is `render`; all the others are optional.
+
+#### Creating and using basic components
+
+##### Component composition
+
+Remember, a `View` component is similar to an HTML `<div>`, and a `Text`
+component is similar to an HTML `<span>`.
+
+`createClass` syntax (ES5, JSX):
+
+```jsx nu
+const React = require("react")
+const ReactNative = require("react-native")
+const { View, Text } = ReactNative
+
+const MyComponent = React.createClass({
+  render() {
+    return (
+      <View>
+        <Text>Hello World</Text>
+      </View>
+    )
+  },
+})
+```
+
+Class syntax (ES2015, JSX):
+
+```jsx nu
+import React from "react"
+import { View, Text } from "react-native"
+
+class MyComponent extends React.Component {
+  render() {
+    return (
+      <View>
+        <Text>Hello World</Text>
+      </View>
+    )
+  }
+}
+```
+
+Stateless (reusable) component (JSX):
+
+```jsx nu
+import React from "react"
+import { View, Text } from "react-native"
+
+const MyComponent = () => (
+  <View>
+    <Text>Hello World</Text>
+  </View>
+)
+```
+
+```jsx nu
+import React from "react"
+import { View, Text } from "react-native"
+
+function MyComponent() {
+  return (
+    <View>
+      <Text>Hello World</Text>
+    </View>
+  )
+}
+```
+
+`createElement` (JavaScript):
+
+`React.createElement` takes a few arguments:
+
+- `type`—The element you want to render
+- `props`—Any properties you want the component to have
+- `children`—Child components or text
+
+```js
+class MyComponent extends React.Component {
+  render() {
+    return React.createElement(View, {}, React.createElement(Text, {}, "Hello"))
+  }
+}
+```
+
+#### Creating a starter project
+
+##### Create React Native App CLI
+
+You can create React Native projects using the Create React Native App CLI, a
+project generator that’s maintained in the React Community GitHub repository,
+mainly by the Expo team. Expo created the React Native App project as a way to
+allow developers to get up and running with React Native without having to worry
+about installing all the native SDKs involved with running a React Native
+project using the CLI.
+
+To create a new project using Create React Native App, first install the CLI:
+
+```shell
+npm install -g create-react-native-app
+```
+
+Then, create a new project:
+
+```shell
+create-react-native-app myProject
+```
+
+##### React Native CLI
+
+Install the react-native CLI globally by typing the following:
+
+```shell
+npm install -g react-native-cli
+```
+
+Then, initalize a new project:
+
+```shell
+react-native init myProject
+```
+
+Let’s look at the main files and folders this process has generated for you:
+
+- `android`—This folder contains all the Android platform-specific code and
+  dependencies. You won’t need to go into this folder unless you’re implementing
+  a custom bridge into Android or you install a plugin that calls for some type
+  of deep configuration.
+- `ios`—This folder contains all the iOS platform-specific code and
+  dependencies. You won’t need to go into this folder unless you’re implementing
+  a custom bridge into iOS or you install a plugin that calls for some type of
+  deep configuration.
+- `node_modules` —React Native uses `npm` (node package manager) to manage
+  dependencies. These dependencies are identified and versioned in the
+  `package.json` file and stored in the `node_modules` folder. When you install
+  any new packages from the npm/node ecosystem, they’ll go here. These can be
+  installed using either npm or yarn.
+- `.flowconfig`—Flow (also open sourced by Facebook) offers type checking for
+  JavaScript. Flow is like Typescript, if you’re familiar with that. This file
+  is the configuration for flow, if you choose to use it.
+- `.gitignore`—This is the place to store any file paths you don’t want in
+  version control.
+- `.watchmanconfig`—Watchman is a file watcher that React Native uses to watch
+  files and record when they change. This is the configuration for Watchman. No
+  changes to this will be needed except in rare use cases.
+- `index.js`—This is the entry point of the application. In this file, `App.js`
+  is imported and `AppRegistry.registerComponent` is called, initializing the
+  app.
+- `App.js`—This is the default main import used in `index.js` containing the
+  base project. You can change it by deleting this file and replacing the main
+  import in `index.js`.
+- `package.json`—This file holds your npm configuration. When you npm install
+  files, you can save them here as dependencies. You can also set up scripts to
+  run different tasks.
+
+`Platform` is an API that allows you to detect the current type of operating
+system you’re running on: web, iOS, or Android.
+
+`StyleSheet` is an abstraction like CSS stylesheets. In React Native, you can
+declare styles either inline or using stylesheets.
+
+At the bottom of the `index.js` file, you see:
+
+```js
+AppRegistry.registerComponent("myProject", () => App)
+```
+
+### Understanding React
+
+#### Managing component data using state
+
+Component state is declared when the component is created, and its structure is
+a plain JavaScript object. State can be updated within the component using a
+function called `setState`.
+
+The other way data can be handled is by using props. Props are passed down as
+parameters when the component is created; unlike state, they can’t be updated
+within the component.
+
+##### Correctly manipulating component state
+
+If any child components are inheriting this state as props, then all of the
+child components are rerendered as well. The main point to understand when
+differentiating between state and props is that state is mutable, whereas props
+are immutable.
+
+State is initialized when a component is created either in the constructor or
+with a property initializer. Once the state is initialized, it’s available in
+the component as `this.state`.
+
+```jsx nu
+import React from "react"
+
+class MyComponent extends React.Component {
+  state = {
+    year: 2016,
+    name: "Nader Dabit",
+    colors: ["blue"],
+  }
+  render() {
+    return (
+      <View>
+        <Text>My name is: {this.state.name}</Text>
+        <Text>The year is: {this.state.year}</Text>
+        <Text>My colors are {this.state.colors[0]}</Text>
+      </View>
+    )
+  }
+}
+```
+
+```jsx nu
+import React from "react"
+
+class MyComponent extends React.Component {
+  constructor() {
+    super()
+    this.state = {
+      year: 2016,
+      name: "Nader Dabit",
+      colors: ["blue"],
+    }
+  }
+  render() {
+    return (
+      <View>
+        <Text>My name is: {this.state.name}</Text>
+        <Text>The year is: {this.state.year}</Text>
+        <Text>My colors are {this.state.colors[0]}</Text>
+      </View>
+    )
+  }
+}
+```
+
+State can be updated by calling `this.setState(object)`, passing in an object
+with the new state you want to use. `setState` merges the previous state with
+the current state, so if you only pass in a single item (key-value pair), the
+rest of the state will remain the same, while the new item in the state will be
+overwritten.
+
+`onPress` can be called on a few types of “tappable” React Native components.
+
+```jsx nu
+import React, { Component } from "react"
+
+class MyComponent extends Component {
+  constructor() {
+    super()
+    this.state = {
+      year: 2016,
+    }
+  }
+  updateYear() {
+    this.setState({
+      year: 2017,
+    })
+  }
+  render() {
+    return (
+      <View>
+        <Text onPress={() => this.updateYear()}>
+          The year is: {this.state.year}
+        </Text>
+      </View>
+    )
+  }
+}
+```
+
+Calling `forceUpdate` causes `render` to be called on the component, triggering
+a rerendering of the UI. Using `forceUpdate` isn’t usually necessary or
+recommended.
+
+```jsx
+class MyComponent extends Component {
+  constructor() {
+    super()
+    this.state = {
+      year: 2016,
+    }
+  }
+  updateYear() {
+    this.state.year = 2017
+  }
+  update() {
+    this.forceUpdate()
+  }
+  render() {
+    return (
+      <View>
+        <Text onPress={() => this.updateYear()}>
+          The year is: {this.state.year}
+        </Text>
+        <Text onPress={() => this.update()}>Force Update</Text>
+      </View>
+    )
+  }
+}
+```
+
+State with other data types:
+
+```jsx
+class MyComponent extends Component {
+  constructor() {
+    super()
+    this.state = {
+      year: 2016,
+      leapYear: true,
+      topics: ["React", "React Native", "JavaScript"],
+      info: {
+        paperback: true,
+        length: "335 pages",
+        type: "programming",
+      },
+    }
+  }
+  render() {
+    let leapyear = <Text>This is not a leapyear!</Text>
+    if (this.state.leapYear) {
+      leapyear = <Text>This is a leapyear!</Text>
+    }
+    return (
+      <View>
+        <Text>{this.state.year}</Text>
+        <Text>Length: {this.state.info.length}</Text>
+        <Text>Type: {this.state.info.type}</Text>
+        {leapyear}
+      </View>
+    )
+  }
+}
+```
+
+#### Managing component data using props
+
+_Props_ (short for _properties_) are a component’s inherited values or
+properties that have been passed down from a parent component. Props can be
+either static or dynamic values when they’re declared, but when they’re
+inherited they’re immutable.
+
+Props:
+
+- External data
+- Immutable
+- Inherited from a parent
+- Can be changed by a parent component
+- Can be passed down as props
+- Can’t change inside the component
+
+State:
+
+- Internal data
+- Mutable
+- Created in the component
+- Can only be updated in the component
+- Can be passed down as props
+- Can change inside the component
+
+```jsx
+class MyComponent extends Component {
+  render() {
+    return <BookDisplay book="React Native in Action" />
+  }
+}
+class BookDisplay extends Component {
+  render() {
+    return (
+      <View>
+        <Text>{this.props.book}</Text>
+      </View>
+    )
+  }
+}
+```
+
+##### Dynamic props
+
+```jsx
+class MyComponent extends Component {
+  constructor() {
+    super()
+    this.state = {
+      book: "React Native in Action",
+    }
+  }
+  updateBook() {
+    this.setState({ book: "Express in Action" })
+  }
+  render() {
+    const { book } = this.state
+    return <BookDisplay updateBook={() => this.updateBook()} book={book} />
+  }
+}
+class BookDisplay extends Component {
+  render() {
+    const { book, updateBook } = this.props
+    return (
+      <View>
+        <Text onPress={updateBook}>{book}</Text>
+      </View>
+    )
+  }
+}
+```
+
+##### Destructuring props and state
+
+Destructuring is a new JavaScript feature that was added as part of the ES2015
+spec. The basic idea is that you can take properties from an object and use them
+as variables in an app.
+
+##### Props with stateless components
+
+```jsx
+const BookDisplay = ({ updateBook, book }) => {
+  return (
+    <View>
+      <Text onPress={updateBook}>{book}</Text>
+    </View>
+  )
+}
+```
+
+##### Passing arrays and objects as props
+
+```jsx
+class MyComponent extends Component {
+  constructor() {
+    super()
+    this.state = {
+      leapYear: true,
+      info: {
+        type: "programming",
+      },
+    }
+  }
+  render() {
+    return (
+      <BookDisplay
+        leapYear={this.state.leapYear}
+        info={this.state.info}
+        topics={["React", "React Native", "JavaScript"]}
+      />
+    )
+  }
+}
+const BookDisplay = props => {
+  let leapyear
+  let { topics } = props
+  const { info } = props
+  topics = topics.map((topic, i) => {
+    return <Text>{topic}</Text>
+  })
+  if (props.leapYear) {
+    leapyear = <Text>This is a leapyear!</Text>
+  }
+  return (
+    <View>
+      {leapyear}
+      <Text>Book type: {info.type}</Text>
+      {topics}
+    </View>
+  )
+}
+```
+
+#### React component specifications
+
+##### Using property initializers and constructors
+
+State can be created in a constructor or using a property initializer. Property
+initializers are an ES7 specification to the JavaScript language, but they work
+out of the box with React Native.
+
+Setting the state based on props usually isn’t good practice unless you’re
+intentionally setting some type of seed data for the component’s internal
+functionality, because the data will no longer be consistent across components
+if it’s changed. State is only created when the component is first mounted or
+created. If you rerender the same component using different prop values, then
+any instances of that component that have already been mounted won’t use the new
+prop values to update state.
+
+#### React lifecycle methods
+
+Various methods are executed at specific points in a component’s lifecycle:
+these are called the _lifecycle methods_.
+
+The life of a React component has three stages: creation (mounting), updating,
+and deletion (unmounting). During these three stages, you can hook into three
+sets of lifecycle methods:
+
+- _Mounting (creation)_—When a component is created, a series of lifecycle
+  methods are triggered and you have the option to hook into any or all of them:
+  `constructor`, `getDerivedStateFromProps`, `render`, and `componentDidMount`.
+- _Updating_—When a component updates, the update lifecycle methods are
+  triggered: `getDerivedStateFromProps` (when props change),
+  `shouldComponentUpdate`, `render`, `getSnapshotBeforeUpdate`, and
+  `componentDidUpdate`. An update can happen in one of two ways:
+
+  - When `setState` or `forceUpdate` is called within a component
+  - When new props are passed down into the component
+
+- _Unmounting_—When the component is unmounted (destroyed), a final lifecycle
+  method is triggered: `componentWillUnmount`.
+
+##### The static `getDerivedStateFromProps` method
+
+`getDerivedStateFromProps` is a static class method that is called both when the
+component is created and when it receives new props. This method receives the
+new props and most up-to-date state as arguments and returns an object. The data
+in the object is updated to the state.
+
+```jsx
+export default class App extends Component {
+  state = {
+    userLoggedIn: false,
+  }
+  static getDerivedStateFromProps(nextProps, nextState) {
+    if (nextProps.user.authenticated) {
+      return {
+        userLoggedIn: true,
+      }
+    }
+    return null
+  }
+  render() {
+    return (
+      <View style={styles.container}>
+        {this.state.userLoggedIn && <AuthenticatedComponent />}
+      </View>
+    )
+  }
+}
+```
+
+##### The `componentDidMount` lifecycle method
+
+`componentDidMount` is called exactly once, just after the component has been
+loaded. This method is a good place to fetch data with AJAX calls, perform
+`setTimeout` functions, and integrate with other JavaScript frameworks.
+
+```jsx
+class MainComponent extends Component {
+  constructor() {
+    super()
+    this.state = { loading: true, data: {} }
+  }
+  componentDidMount() {
+    setTimeout(() => {
+      this.setState({
+        loading: false,
+        data: { name: "Nader Dabit", age: 35 },
+      })
+    }, 2000)
+  }
+  render() {
+    if (this.state.loading) {
+      return <Text>Loading</Text>
+    }
+    const { name, age } = this.state.data
+    return (
+      <View>
+        <Text>Name: {name}</Text>
+        <Text>Age: {age}</Text>
+      </View>
+    )
+  }
+}
+```
+
+##### The `shouldComponentUpdate` lifecycle method
+
+`shouldComponentUpdate` returns a Boolean and lets you decide when a component
+renders. If you know the new state or props won’t require the component or any
+of its children to render, you can return `false`. If you want the component to
+rerender, return `true`.
+
+```jsx
+class MainComponent extends Component {
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextProps.name !== this.props.name) {
+      return true
+    }
+    return false
+  }
+  render() {
+    return <SomeComponent />
+  }
+}
+```
+
+##### The `componentDidUpdate` lifecycle method
+
+`componentDidUpdate` is invoked immediately after the component has been updated
+and rerendered. You get the previous state and previous props as arguments.
+
+```jsx
+class MainComponent extends Component {
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.showToggled === this.state.showToggled) {
+      this.setState({
+        showToggled: !showToggled,
+      })
+    }
+  }
+  render() {
+    return <SomeComponent />
+  }
+}
+```
+
+##### The `componentWillUnmount` lifecycle method
+
+`componentWillUnmount` is called before the component is removed from the
+application. Here, you can perform any necessary cleanup, remove listeners, and
+remove timers that were set up in `componentDidMount`.
+
+```jsx
+class MainComponent extends Component {
+  handleClick() {
+    this._timeout = setTimeout(() => {
+      this.openWidget()
+    }, 2000)
+  }
+  componentWillUnmount() {
+    clearTimeout(this._timeout)
+  }
+  render() {
+    return <SomeComponent handleClick={() => this.handleClick()} />
+  }
+}
+```
+
+### Building your first React Native app
+
+## Developing applications in React Native
+
+### Introduction to styling
+
+### Styling in depth
+
+### Navigation
+
+### Animations
+
+### Using the Redux data architecture library
+
+## API reference
+
+### Implementing cross-platform APIs
+
+### Implementing iOS-specific components and APIs
+
+### Implementing Android-specific components and APIs
+
+## Bringing it all together
+
+### Building a Star Wars app using cross-platform components

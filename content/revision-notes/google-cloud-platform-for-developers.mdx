@@ -1,6 +1,7 @@
 ---
 title: Google Cloud Platform for Developers
 resourceId: "9781788837675"
+stoppedAt: "The gcloud command-line tool"
 ---
 
 ## Why GCP?
@@ -166,6 +167,68 @@ Repairing the Cloud Shell:
 - <Scr>More | Safe Mode</Scr>.
 
 ## APIs, CLIs, IAM, and Billing
+
+### Google Cloud APIs
+
+#### Managing APIs
+
+The Google Cloud Console offers a reasonably detailed dashboard for controlling
+API access and monitoring usage. To view the dashboard, go to <Scr>Navigation
+menu | APIs & Services | Dashboard</Scr>. Clicking on any service API here will
+allow you to dive into more detail about that specific service, including a
+per-account and per-endpoint view of usage.
+
+By default, some APIs are disabled for your Google Cloud project. A disabled API
+will not be accessible and will therefore not incur any charges. In these cases,
+you will often see a notification that the API is disabled along with an option
+to enable it. To enable APIs, it is often useful to use the Google Cloud API
+Library, available at <Scr>Navigation menu | APIs & Services | Library</Scr>.
+
+#### Google APIs Explorer
+
+The APIs Explorer offers developers a straightforward interface where you can:
+
+- Search for APIs by products and services
+- Browse the methods available for an API
+- Authenticate against an API and grant specific authorization scopes
+- Execute requests for a given API method and view the response
+
+When you've found an API method you would like to execute, the APIs Explorer
+will present a form with the various fields of the request body, along with a
+description of each field.
+
+For authorizing the request, the APIs Explorer will present a list of required
+OAuth2 scopes and allow you to modify these scopes. This can be useful when
+developing against APIs to see how different permissions affect the request.
+
+#### Trying out the APIs Explorer
+
+1. Search "Compute Engine"
+2. Select "Compute Engine API v1"
+3. Find the `compute.instance.list` method
+4. Set <Scr>project</Scr> to your Google Cloud project ID
+5. Set <Scr>zone</Scr> to any zone.
+6. Click on <Scr>Execute</Scr>.
+
+### The Google Cloud SDK
+
+For normal day-to-day operations and basic task automation, Google offers a set
+of command-line tools as part of the Google Cloud SDK. In addition to
+command-line tools, the Google Cloud SDK also includes tools to aid in local
+application development, including a local App Engine development server and
+emulators for cloud services, such as Pub/Sub, Datastore, and Bigtable.
+
+#### Installing the Google Cloud SDK
+
+The Google Cloud SDK installs the following tools by default:
+
+- `gcloud`: A command-line interface for managing cloud resources.
+- `bq`: Commands for interacting with Google BigQuery.
+- `gsutil`: Tools for Google Cloud Storage.
+
+The SDK image is available on Docker Hub as `google/cloud-sdk`.
+
+### The gcloud command-line tool
 
 ## Google App Engine
 

@@ -1,10 +1,66 @@
 ---
 title: pytest Quick Start Guide
 resourceId: "9781789347562"
-stoppedAt: Introducing pytest
+stoppedAt: Writing and Running Tests
 ---
 
 ## Introducing pytest
+
+With `unittest`, you create tests by subclassing from `unittest.TestCase` and
+defining methods that begin with `test`.
+
+```python nu
+import unittest
+from fibo import fibonacci
+
+class Test(unittest.TestCase):
+
+    def test_fibo(self):
+        result = fibonacci(4)
+        self.assertEqual(result, 3)
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+Pytest is a mature and full-featured testing framework, from small tests to
+large scale functional tests for applications and libraries alike.
+
+Pytest is simple to get started with. To write tests, you don't need classes;
+you can write simple functions that start with `test` and use Python's built-in
+`assert` statement:
+
+```python nu
+from fibo import fibonacci
+
+def test_fibo():
+    assert fibonacci(4) == 3
+```
+
+Pytest not only makes it **simple to write tests**, it has many **command-line
+options that increase productivity**, such as running just the last failing
+tests, or running a specific group of tests by name or because they're specially
+marked.
+
+Tests for real-world applications usually need complex setups, such as starting
+a background worker, filling up a database, or initializing a GUI. Using pytest,
+those complex test resources can be managed by a powerful mechanism called
+**fixtures**.
+
+Customization is important, and pytest goes a step further by defining a very
+powerful plugin system. Plugins can change several aspects of the test run, from
+how tests are executed to providing new fixtures and capabilities to make it
+easy to test many types of applications and frameworks. There are plugins that
+execute tests in a random order each time to ensure tests are not changing
+global state that might affect other tests, plugins that repeat failing tests a
+number of times to weed out flaky behavior, plugins that show failures as they
+appear instead of only at the end of the run, and plugins that execute tests
+across many CPUs to speed up the suite. There are also plugins that are useful
+when testing Django, Flask, Twisted, and Qt applications, further plugins for
+the acceptance testing of web applications using Selenium.
+
+Pytest runs `unittest` based test suites out of the box and without any
+modifications, so you can gradually migrate existing test suites.
 
 ## Writing and Running Tests
 

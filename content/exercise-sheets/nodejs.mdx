@@ -3,3 +3,41 @@ title: Node.js
 relatedResources: []
 tags: []
 ---
+
+1. What is the command to install the latest LTS version of Node.js using NVM?
+
+   <Solution>
+
+   ```shell
+   nvm install --lts
+   ```
+
+   </Solution>
+
+2. Experiment ES6 module syntax in Node.js.
+
+   <Solution>
+
+   ```js nu fp=utils.mjs
+   export const action = () => {
+     console.log("action")
+   }
+
+   export const run = () => {
+     console.log("run")
+   }
+
+   export default function () {
+     console.log("default")
+   }
+   ```
+
+   ```js nu fp=index.mjs
+   import something, { action, run } from "./utils.mjs"
+
+   something()
+   action()
+   run()
+   ```
+
+   </Solution>

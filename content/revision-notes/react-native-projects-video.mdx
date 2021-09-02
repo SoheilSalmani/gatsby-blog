@@ -1,7 +1,7 @@
 ---
 title: React Native Projects
 resourceId: "9781839210112"
-stoppedAt: Advanced Navigation with React Navigation
+stoppedAt: TODO
 ---
 
 ## Getting Prepared for React Native Projects
@@ -23,7 +23,7 @@ implement current best practices:
 - **Ignite CLI** has built in boilerplates and plugins to get developers off to
   a great start
 
-#### React Native CLI: Whan and Why?
+#### React Native CLI: When and Why?
 
 Great for those who:
 
@@ -150,11 +150,11 @@ Each project will have:
 ### Setup and Review a Project Created with the react-native-cli
 
 ```sh
-npx react-native init reactnativenotes
+npx react-native init ReactNativeNotes
 ```
 
 ```sh
-cd reactnativenotes
+cd ReactNativeNotes
 npx react-native run-ios
 ```
 
@@ -170,52 +170,27 @@ import { name as appName } from "./app.json"
 AppRegistry.registerComponent(appName, () => App)
 ```
 
-```sh
-npm install native-base react-native-svg styled-components styled-system react-native-safe-area-context
-```
+1. Install NativeBase.
+2. Install Async Storage.
+3. Install React Navigation and the Stack Navigator.
+4. Now, we need to wrap the whole app in `NavigationContainer`. Usually you'd do
+   this in your entry file, such as `index.js` or `App.js`:
 
-```sh
-npm install @react-native-async-storage/async-storage
-```
+   ```jsx nu fp=App.js
+   import "react-native-gesture-handler"
+   import * as React from "react"
+   import { NavigationContainer } from "@react-navigation/native"
 
-```sh
-npm install @react-navigation/native
-```
+   export default function App() {
+     return (
+       <NavigationContainer>{/* Rest of your app code */}</NavigationContainer>
+     )
+   }
+   ```
 
-```sh
-npm install react-native-reanimated react-native-gesture-handler react-native-screens react-native-safe-area-context @react-native-masked-view/masked-view
-npm install @react-navigation/stack
-```
-
-If you're on a Mac and developing for iOS, you need to install the pods (via
-Cocoapods) to complete the linking.
-
-```sh
-npx pod-install ios
-```
-
-To finalize installation of `react-native-gesture-handler`, add the following at
-the **top** (make sure it's at the top and there's nothing else before it) of
-your entry file, such as `index.js` or `App.js`.
-
-Now, we need to wrap the whole app in `NavigationContainer`. Usually you'd do
-this in your entry file, such as `index.js` or `App.js`:
-
-```jsx nu fp=App.js
-import "react-native-gesture-handler"
-import React from "react"
-import { NavigationContainer } from "@react-navigation/native"
-
-export default function App() {
-  return (
-    <NavigationContainer>{/* Rest of your app code */}</NavigationContainer>
-  )
-}
-```
-
-```sh
-mkdir Components Contexts Screens
-```
+5. ```sh
+   mkdir Components Contexts Screens
+   ```
 
 ### Reviewing Note Application: Requirements and User Stories
 
@@ -368,7 +343,7 @@ const HomeScreen = props => {
     getData()
   }, [])
 
-  return ();
+  return ()
 }
 ```
 
@@ -403,7 +378,7 @@ What is the Drawer Navigator?
 - The UI apps are not on display here
 - Used to maximize screen space
 
-```jsx nu fp=App.js
+```jsx nu fp=App.js hl=4..8,10,14,16..23,25
 import "react-native-gesture-handler"
 import React from "react"
 import { NavigationContainer } from "@react-navigation/native"
@@ -429,6 +404,55 @@ export default function App() {
         <Stack.Navigator>
       </NavigationContainer>
     <NoteProvider>
+  )
+}
+```
+
+```jsx fp=Screens/HomeScreen.js
+import React, { useEffect, useState, useContext } from "react"
+import { Text, FlatList, TouchableOpacity } from "react-native"
+
+import { Button } from "native-base"
+import { Layout } from "../Components/Layout"
+import { NoteContent } from "../Components/NoteContent"
+import { NoteContext } from "../Contexts/NoteContext"
+
+const HomeScreen = props => {
+  const { getContextNotes } = useContext(NoteContext)
+  const [notes, setNotes] = useState()
+
+  useEffect(() => {
+    const getData = () => {
+      getContextNotes()
+    }
+    getData()
+  }, [])
+
+  return (
+    <Layout
+      title="My Notes"
+      footer={
+        <Button full onPress={() => props.navigation.navigate("AddNoteScreen")}>
+          <Text>Add Note</Text>
+        </Button>
+      }
+    >
+      <FlatList
+        data={notes}
+        keyExtractor={note => note.id}
+        renderItem={note => (
+          <TouchableOpacity
+            onPress={() =>
+              props.navigation.navigate("ModNote", {
+                id: note.item.id,
+              })
+            }
+          >
+            <NoteContent note={{ ...note }} />
+          </TouchableOpacity>
+        )}
+      />
+    </Layout>
   )
 }
 ```

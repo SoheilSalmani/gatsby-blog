@@ -1,7 +1,7 @@
 ---
 title: Customizing the GraphQL Schema
 resourceId: https://www.gatsbyjs.com/docs/reference/graphql-data-layer/schema-customization/
-stoppedAt: Foreign-key fields
+stoppedAt: Extensions and directives
 ---
 
 Gatsby is able to automatically infer a GraphQL Schema from your data, and in
@@ -109,8 +109,8 @@ GraphQL schema.
 Assume a new author joins the team, but in the new author entry there is a typo
 on the `joinedAt` field: “201-04-02” which is not a valid Date.
 
-This will confuse Gatsby’s type inference since the joinedAt field will now have
-both Date and String values.
+This will confuse Gatsby’s type inference since the `joinedAt` field will now
+have both Date and String values.
 
 #### Fixing field types
 
@@ -219,10 +219,10 @@ Fields can however also contain complex object values. To target those fields in
 GraphQL SDL, you can provide a full type definition for the nested type, which
 can be arbitrarily named (as long as the name is unique in the schema). In the
 example project, the `frontmatter` field on the `MarkdownRemark` node type is a
-good example. Say you want to ensure that frontmatter`tags` will always be an
+good example. Say you want to ensure that frontmatter `tags` will always be an
 array of strings.
 
-```graphql
+```js nu fp=gatsby-node.js
 exports.createSchemaCustomization = ({ actions }) => {
   const { createTypes } = actions
   const typeDefs = `
@@ -242,7 +242,7 @@ without also specifying that this is the type of the `frontmatter` field on the
 `MarkdownRemark` type, The following would fail because Gatsby would have no way
 of knowing which field the `Frontmatter` type should be applied to:
 
-```graphql
+```js nu fp=gatsby-node.js
 exports.createSchemaCustomization = ({ actions }) => {
   const { createTypes } = actions
   const typeDefs = `
@@ -321,6 +321,63 @@ also accepts `graphql-js` types directly, but usually either SDL or Type
 Builders are the better alternatives.
 
 #### Foreign-key fields
+
+```js nu fp=gatsby-node.js
+exports.createSchemaCustomization = ({ actions, schema }) => {
+  const { createTypes } = actions
+  const typeDefs = [
+    "type MarkdownRemark implements Node { frontmatter: Frontmatter }",
+    schema.buildObjectType({
+      name: "Frontmatter",
+      fields: {
+        author: {
+          type: "AuthorJson",
+          resolve: (source, args, context, info) => {
+            // If you were linking by ID, you could use `getNodeById` to
+            // find the correct author:
+            // return context.nodeModel.getNodeById({
+            //   id: source.author,
+            //   type: "AuthorJson",
+            // })
+            // But since the example is using the author email as foreign key,
+            // you can use `runQuery`, or get all author nodes
+            // with `getAllNodes` and manually find the linked author
+            // node:
+            return context.nodeModel
+              .getAllNodes({ type: "AuthorJson" })
+              .find(author => author.email === source.author)
+          },
+        },
+      },
+    }),
+  ]
+  createTypes(typeDefs)
+}
+```
+
+Because creating foreign-key relations is such a common use case, Gatsby luckily
+also provides a much easier way to do this — with the help of extensions or
+directives. It looks like this:
+
+```graphql
+type MarkdownRemark implements Node {
+  frontmatter: Frontmatter
+}
+type Frontmatter {
+  author: AuthorJson @link # default foreign-key relation by `id`
+  reviewers: [AuthorJson] @link(by: "email") # foreign-key relation by custom field
+}
+type AuthorJson implements Node {
+  posts: [MarkdownRemark] @link(by: "frontmatter.author.email", from: "email") # easy back-ref
+}
+```
+
+Keep in mind that in the example above, the link of `posts` in` AuthorJson`
+works because `frontmatter` and `author` are both objects. If, for example, the
+`Frontmatter` type had a list of `authors` instead
+(`frontmatter.authors.email`), it wouldn’t work since the `by` argument doesn’t
+support arrays. In that case, you’d have to provide a custom resolver with
+Gatsby Type Builders or createResolvers API.
 
 #### Extensions and directives
 

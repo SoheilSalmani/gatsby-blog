@@ -1,7 +1,7 @@
 ---
 title: An Explanation of How the Intersection Observer Watches
 resourceId: https://css-tricks.com/an-explanation-of-how-the-intersection-observer-watches/
-stoppedAt: Three properties...
+stoppedAt: Intersection Observer methods
 ---
 
 ## A brief explanation of the Intersection Observer
@@ -97,3 +97,43 @@ intersecting the root element at the time of the intersection change. The
 `intersectionRatio` is the percentage of the target element that is currently
 intersecting the root element. This is represented by a percentage of zero to
 one, much like the threshold provided in the observer’s option object.
+
+Three properties — `boundingClientRect`, `intersectionRect`, and `rootBounds` —
+represent specific data about three aspects of the intersection. The
+`boundingClientRect` property provides the bounding box of the target element
+with bottom, left, right, and top values from the top-left of the viewport, just
+like with `Element.getBoundingClientRect()`. Then the height and width of the
+target element is provided as the X and Y coordinates. The `rootBounds` property
+provides the same form of data for the root element. The `intersectionRect`
+provides similar data but its describing the box formed by the intersection area
+of the target element inside the root element, which corresponds to the
+`intersectionRatio` value.
+
+The `target` property refers to the target element that is being observed. In
+cases where an observer contains multiple targets, this is the easy way to
+determine which target element triggered this intersection change.
+
+The `time` property provides the time (in milliseconds) from when the observer
+is first created to the time this intersection change is triggered. This is how
+you can track the time it takes for a viewer to come across a particular target.
+Even if the target is scrolled into view again at a later time, this property
+will have the new time provided. This can be used to track the time of a target
+entering and leaving the root element.
+
+While all this information is provided to us whenever an intersection change is
+observed, it’s also provided to us when the observer is first started. For
+example, on page load the observers on the page will immediately invoke the
+callback function and provide the current state of every target element it is
+observing.
+
+## Intersection Observer methods
+
+## Performance: Intersection Observer versus scroll events
+
+## Understanding the intersectionRatio property
+
+## Finding the position
+
+## Creating a position sticky event
+
+## Combining with Scrolling Events

@@ -1,0 +1,92 @@
+---
+title: React in Action
+resourceId: "9781617293856"
+stoppedAt: "React for teams"
+---
+
+## Meet React
+
+### Meet React
+
+#### Meet React
+
+- **Components:** Encapsulated units of functionality that are the primary unit
+  in React. They utilize data (_properties_ and _state_) to render your UI as
+  output. Certain types of React components also provide a set of lifecycle
+  methods that you can hook into. The rendering process (outputting and updating
+  a UI based on your data) is predictable in React, and your components can hook
+  into it using React’s APIs.
+- **React libraries:** React uses a set of core libraries. The core React
+  library works with the `react-dom` and `react-native` libraries and is focused
+  on component specification and definition. It allows you to build a tree of
+  components that a renderer for the browser or another platform can use.
+  `react-dom` is one such renderer and is aimed at browser environments and
+  serverside rendering. The React Native libraries focus on native platforms and
+  let you create React applications for iOS, Android, and other platforms.]
+- **Third-party libraries:** React doesn’t come with tools for data modeling,
+  HTTP calls, styling libraries, or other common aspects of a frontend
+  application. This leaves you free to use additional code, modules, or other
+  tools you prefer in your application. And even though these common
+  technologies don’t come bundled with React, the broader ecosystem around React
+  is full of incredibly useful libraries.
+- **Running a React application:** Your React application runs on the platform
+  you’re building for. This book focuses on the web platform and builds a
+  browser and serverbased application, but other projects like React Native and
+  React VR open the possibility of your app running on other platforms.
+
+#### The virtual DOM
+
+A _virtual DOM_ is a data structure or collection of data structures that mimics
+or mirrors the Document Object Model that exists in browsers. In general, a
+virtual DOM will serve as an intermediate layer between the application code and
+the browser DOM.
+
+##### Updates and diffing
+
+React creates and maintains a virtual DOM in memory, and a renderer like
+ReactDOM handles updating the browser DOM based on changes. React can perform
+intelligent updates and only do work on parts that have changed because it can
+use _heuristic diffing_ to calculate which parts of the inmemory DOM require
+changes to the DOM. Theoretically, this is much more streamlined and elegant
+than “dirty checking” or other more bruteforce approaches, but a major practical
+implication is that developers have less complicated state tracking to reason
+about.
+
+<Figure src="/media/react-diffing-and-update-procedure.png">
+
+React’s diffing and update procedure. When a change happens, React determines
+differences between the actual and in-memory DOMs. Then it performs an efficient
+update to the browser’s DOM. This process is often referred to as a _diff_
+(“what changed?”) and _patch_ (“update only what changed”) process.
+
+</Figure>
+
+#### React for teams
+
+### `<Hello World />`: our first component
+
+## Components and data in React
+
+### Data and data flow in React
+
+### Rendering and lifecycle methods in React
+
+### Working with forms in React
+
+### Integrating third-party libraries with React
+
+### Routing in React
+
+### More routing and integrating Firebase
+
+### Testing React components
+
+## React application architecture
+
+### Redux application architecture
+
+### More Redux and integrating Redux with React
+
+### React on the server and integrating React Router
+
+### An introduction to React Native

@@ -1,7 +1,7 @@
 ---
 title: Get Started
 resourceId: https://dvc.org/doc/start
-stoppedAt: Data and Model Versioning
+stoppedAt: Retrieving
 ---
 
 ```shell
@@ -43,6 +43,99 @@ Once you set up your DVC repository, you can also interact with it using DVC
 Studio, the online UI for DVC.
 
 ## Data and Model Versioning
+
+The foundation of DVC consists of a few commands you can run along with `git` to
+track large files, directories, or ML model files. Think "Git for data".
+
+```shell
+mkdir data
+dvc get https://github.com/iterative/dataset-registry get-started/data.xml -o data/data.xml
+```
+
+`dvc get` can download any file or directory tracked in a DVC repository. It's
+like `wget`, but for DVC or Git repos.
+
+To start tracking a file or directory, use `dvc add`:
+
+```shell
+dvc add data/data.xml
+```
+
+DVC stores information about the added file (or a directory) in a special `.dvc`
+file named `data/data.xml.dvc` — a small text file with a human-readable format.
+This metadata file is a placeholder for the original data, and can be easily
+versioned like source code with Git:
+
+```shell
+git add data/data.xml.dvc data/.gitignore
+git commit -m "Add raw data"
+```
+
+### Storing and sharing
+
+You can upload DVC-tracked data or model files with `dvc push`, so they're
+safely stored remotely.
+
+```shell
+dvc remote add -d storage s3://mybucket/dvcstore
+git add .dvc/config
+git commit -m "Configure remote storage"
+```
+
+DVC remotes let you store a copy of the data tracked by DVC outside of the local
+cache (usually a cloud storage service). For simplicity, let's set up a _local
+remote_:
+
+```shell
+mkdir -p /tmp/dvcstore
+dvc remote add -d myremote /tmp/dvcstore
+git commit .dvc/config -m "Configure local remote"
+```
+
+```shell
+dvc push
+```
+
+```shell
+ls -R /tmp/dvcstore
+```
+
+### Retrieving
+
+Having DVC-tracked data and models stored remotely, it can be downloaded when
+needed in other copies of this project with `dvc pull`.
+
+If you've run `dvc push`, you can delete the cache (`.dvc/cache`) and
+`data/data.xml` to experiment with `dvc pull`:
+
+```shell
+rm -rf .dvc/cache
+rm -f data/data.xml
+```
+
+```shell
+dvc pull
+```
+
+### Making changes
+
+```shell
+cp data/data.xml /tmp/data.xml
+cat /tmp/data.xml >> data/data.xml
+```
+
+```shell
+dvc add data/data.xml
+```
+
+Usually you would also run `git commit` and `dvc push` to save the changes:
+
+```shell
+git commit data/data.xml.dvc -m "Dataset updates"
+dvc push
+```
+
+### Switching between versions
 
 ## Data and Model Access
 

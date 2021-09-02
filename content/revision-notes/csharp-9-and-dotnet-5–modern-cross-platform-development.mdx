@@ -1,7 +1,7 @@
 ---
 title: C# 9 and .NET 5 – Modern Cross-Platform Development
 resourceId: "9781800568105"
-stoppedAt: Building console apps using Visual Studio Code
+stoppedAt: Speaking C#
 ---
 
 ## Hello, C#! Welcome, .NET!
@@ -114,6 +114,61 @@ open an assembly and reveal this IL code, such as the ILSpy .NET Decompiler
 extension.
 
 ### Building console apps using Visual Studio Code
+
+```shell
+dotnet new console
+```
+
+```shell
+dotnet run
+```
+
+Let compare the traditional minimum console app:
+
+```csharp nu
+using System;
+class Program
+{
+    static void Main(string[] args)
+    {
+        Console.WriteLine("Hello World!");
+    }
+}
+```
+
+To the new **top-level program** minimum console app:
+
+```csharp nu
+using System;
+Console.WriteLine("Hello World!");
+```
+
+During compilation, all the boilerplate code to define the `Program` class and
+its `Main` method is generated and wrapped around the statements you write. Any
+`using` statements still have to go at the top of the file. There can be only
+one file like this in a project.
+
+### Looking for help
+
+To open the official documentation in a browser window for the `dotnet new`
+command:
+
+```shell
+dotnet help new
+```
+
+To get help output at the command line, use the `-h` or `--help` flag:
+
+```shell
+dotnet new console -h
+```
+
+One of the most useful keyboard shortcuts in Visual Studio Code is
+
+<Kbd>F12</Kbd> to **Go To Definition**. This will show what the public definition
+of the type or member looks like by reading the metadata in the compiled assembly.
+Some tools, such as ILSpy .NET Decompiler, will even reverse-engineer from the metadata
+and IL code back into C# for you.
 
 ## Speaking C#
 

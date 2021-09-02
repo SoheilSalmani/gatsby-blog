@@ -1,9 +1,36 @@
 ---
 title: Groovy Programming Fundamentals for Java Developers [Video]
 resourceId: "9781801074063"
+stoppedAt: Exploring the Groovy Tool Set
 ---
 
 ## Getting Set Up
+
+### Installing Groovy on a Mac or Linux System from the sdkman.io Website
+
+Install SDKMAN!.
+
+```shell
+sdk ls groovy
+sdk i groovy
+sdk i groovy 4.0.0-alpha-3
+sdk d groovy
+groovy --version
+```
+
+```shell
+sdk u 4.0.0-alpha-3
+groovy --version
+```
+
+```shell
+ls -l ~/.sdkman/candidates/groovy/
+```
+
+```shell
+sdk ls
+sdk help
+```
 
 ### Creating and Debugging a Groovy Project in IDEA
 
@@ -19,7 +46,14 @@ class HelloWorld {
 }
 ```
 
-### Exploring the Groovy Tool Set
+### Using the Groovy Console to Execute and Examine Groovy Code
+
+```groovy
+class Person {
+    String name
+    int age
+}
+```
 
 ### Using the Groovy Console to Execute and Examine Groovy Code
 

@@ -1,5 +1,86 @@
 ---
 title: Python
-relatedResources: []
+relatedResources:
+  - https://cjolowicz.github.io/posts/hypermodern-python-01-setup/
 tags: []
 ---
+
+1. Install pyenv and install Python 3.8.2 and 3.8.5 using it. Create a GitHub
+   repository and pull it, then make the Python installations available inside
+   the repository.
+
+   <Solution>
+
+   Install pyenv.
+
+   ```shell
+   pyenv install 3.8.2
+   pyenv install 3.7.7
+   ```
+
+   ```shell
+   git init
+   pyenv local 3.8.2 3.7.5
+   ```
+
+   </Solution>
+
+2. Install Poetry and initialize your Python project using Poetry (without
+   interaction).
+
+   <Solution>
+
+   Install Poetry and source `~/.poetry/env` in your current shell.
+
+   ```shell
+   poetry init --no-interaction
+   ```
+
+   </Solution>
+
+3. Add some metadata to the package.
+
+   <Solution>
+
+   ```toml fp=pyproject.toml
+   [tool.poetry]
+   ...
+   description = "The hypermodern Python project"
+   license = "MIT"
+   readme = "README.md"
+   homepage = "https://github.com/<your-username>/hypermodern-python"
+   repository = "https://github.com/<your-username>/hypermodern-python"
+   keywords = ["hypermodern"]
+   ```
+
+   </Solution>
+
+4. Update the `pyproject.toml` to support Python 3.7.
+
+   <Solution>
+
+   ```toml fp=pyproject.toml hl=2
+   [tool.poetry.dependencies]
+   python = "^3.7"
+   ```
+
+   </Solution>
+
+5. Create a `hypermodern_python` package in `src/` and specify a version of
+   `0.1.0`.
+
+   <Solution>
+
+   ```tree
+   .
+   ├── pyproject.toml
+   └── src
+       └── hypermodern_python
+           └── __init__.py
+   ```
+
+   ```python nu fp=src/hypermodern_python/__init__.py
+   __version__ = "0.1.0"
+   ```
+
+   </Solution>

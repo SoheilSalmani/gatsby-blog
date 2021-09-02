@@ -1,18 +1,39 @@
 ---
 title: Linux in Action
 resourceId: "9781617294938"
-stoppedAt: Basic survival skills
+stoppedAt: "Getting around: Linux navigation tools"
 ---
 
 ## Welcome to Linux
 
 ### What makes Linux different from other operating systems
 
-A *distribution* (sometimes shortened to *distro*) is a customized
-stack of software that’s packaged along with the Linux kernel and distributed
-with tools for installing a working version of Linux of user computers.
+A _distribution_ (sometimes shortened to _distro_) is a customized stack of
+software that’s packaged along with the Linux kernel and distributed with tools
+for installing a working version of Linux of user computers.
 
 ### Basic survival skills
+
+#### The Linux file system
+
+You can think of a file system as a data table (or an index) that creates
+apparent connections between individual files and groups of files with
+identifiable locations on a disk. A file system uses such an index to provide
+the appearance of an organized set of directories and files within a single disk
+division known as a _partition_.
+
+**Note:** The most commonly used Linux file system is ext4.
+
+All the files in a disk partition are kept in directories beneath the root
+directory, which is represented by the `/` (forward slash) character. The way
+these directories are arranged is largely governed by the UNIX Filesystem
+Hierarchy Standard (FHS).
+
+<Figure src="/media/linux-top-level-directories.png">
+  Common top-level directories as defined by the UNIX FHS.
+</Figure>
+
+#### Getting around: Linux navigation tools
 
 ## Linux virtualization: Building a Linux working environment
 

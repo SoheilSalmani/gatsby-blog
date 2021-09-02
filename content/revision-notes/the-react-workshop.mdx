@@ -1,18 +1,2017 @@
 ---
 title: The React Workshop
 resourceId: "9781838645564"
-stoppedAt: TODO
+stoppedAt: State and Props
 ---
 
 ## Getting Started with React
 
+### Introducing React
+
+React allows you to think of all of the code as part of the same data structure,
+all intertwined and working together:
+
+- The component
+- The state
+- The display (or render)
+
+Create React App introduces a scaffold to React applications. Through this,
+configuration and setup are minimized around opinionated configuration (a set of
+configurations where a lot of the decisions have been made for you) and
+pre-built structures. Your directories, input, and output are all handled for
+you.
+
+A scaffold in the development world is something that sets up boilerplate (that
+is, often-repeated bits of code or configuration) details for you with the idea
+that you will be using the same configuration, setup, and directory structure
+that the project is using. A scaffold allows you to get to development
+significantly faster, with the drawback that it may be harder to break away from
+decisions made in the scaffold later on in your development process, or that you
+may end up with more dependencies or structure than you need.
+
+The Create React App scaffold is designed around the idea of the developer
+experience: that setting up a new project should be seamless and painless. If
+you want to start developing right now and not have to worry about how you are
+going to test your application, or how you are going to structure your
+application, or what libraries you are going to include in your application,
+then a scaffold such as Create React App is the way to go.
+
+LTS is the long-term support version of the Node.js runtime. This is designed
+more for things that are running on the server side in production environments
+and specifically need to not change over time, whether for security or stability
+reasons.
+
+`npx` is a utility that executes npm package binaries (such as Create React App)
+with a minimal amount of fuss.
+
+```shell
+npm -v
+npx create-react-app --help
+npx create-react-app --version
+```
+
+Some flags: `--verbose`, `--info`, `--scripts-version`, `--use-npm`, `--use-pnp`
+(default `yarn`), `--typescript`.
+
+### Using Create React App to Create Our Project
+
+```shell
+npx create-react-app hello-react
+```
+
+Scripts we can run via `yarn`:
+
+- `start` spins up a server listening locally on your computer on a specific
+  port, where it watches for any changes made in the project.
+- `build` produce an optimized production build of our code. This takes all of
+  the project's code (not just the JavaScript, but other file types, such as
+  CSS) and optimizes as much as possible for use in a production environment.
+  This includes minification and any other major optimizations that allow the
+  code to download faster and execute quicker when it's out and serving real
+  production traffic.
+- `test` will run all of the tests for your code and display the results in an
+  easy-to-read manner. It will also automatically run unit tests for each code
+  change, including just the tests that failed when related code was modified,
+  resulting in a broken test suite.
+- `eject` is not often used but is invaluable when you start hitting certain
+  limitations of the Create React App scaffold. `eject` is a command that pulls
+  the covers off all of the configuration and scripts behind the scenes in your
+  project, allowing you to edit and tweak any configuration detail that you will
+  like. This also removes the safety net of the scaffolding, so it becomes
+  easier to accidentally change something in your project and potentially break
+  things or negatively impact the reliability of your production builds. Also,
+  when you run this command, there is no turning back, so this is definitely
+  something that you only want to do when you are good and ready and understand
+  the potential impact on your project.
+
+Project structure:
+
+- `package.json` exists to tell Node.js more details about this project:
+  - `name`, which is the name of your project.
+  - `version`, which should be used to indicate the semantic versioning for your
+    project.
+  - `private` flag, which tells `npm` if our project is `public` or `private`.
+    If it is private, then it is not published to npm with any sort of public
+    visibility.
+  - `dependencies` list is critical to your project, as this is what is used to
+    tell Node.js what other libraries your project depends on. This could be
+    major dependencies, such as React in our example, or sometimes less critical
+    sets of dependencies such as utilities to make writing your tests a little
+    easier. You'll just see three entries in there: `react`, `react-dom`, and
+    `react-scripts`.
+  - `scripts`: Each of these can be executed either via `npm run [script]` or
+    `yarn [script]`.
+  - `eslintConfig` setting, which tells our code linter to use
+    `create-react-app` style linting (or alternatively, you can use something
+    like Prettier, an automatic code formatter, instead).
+  - `browserslist`, which tells Create React App which browsers to target for
+    our projects to work with.
+- `yarn.lock` provides a way to lock in the dependencies of our project.
+- `public/` includes all the files that you will want to interact with after the
+  build process is completed. This is a good place to put certain types of
+  assets, such as images, movies, or any kind of documents or downloads you'd
+  want to include in your project. For example, our `favicon.ico` file would be
+  found here, along with an `index.html` file, which is used to pull in the
+  built application when served from that directory, and the `manifest.json`
+  file, which is used to describe Progressive Web Apps. Progressive Web Apps are
+  apps that can be downloaded and used offline as well and may have faster
+  startup times if cached appropriately by your browser.
+- `src/` contains all of your actual application code. All your React code will
+  be located here, which is then built and output into `public/` after being
+  combined, minified, and turned into files that make it easier for the browser
+  to download, consume, and interpret the project you have built, all in the
+  name of further optimization.
+
+**Semantic versioning:** The major version is used for major rewrites or
+backward compatibility-breaking changes, the minor version is used for large
+changes that may not dramatically affect backward compatibility, and the patch
+version is typically used for tiny fixes, usually hotfixes or security updates,
+that don't affect backward compatibility at all.
+
+### Introduction to JSX
+
+In JSX `class` is a reserved keyword, so we use `className` to indicate a class
+attribute in HTML.
+
+We can't just declare our style as a string inside of our element. Instead, we
+embed a JavaScript object inside the style attribute that returns whatever CSS
+properties you need to include.
+
+```jsx
+<div className="greeting" style={{ color: "red" }}>
+  Hello World!
+</div>
+```
+
+Exercise 1.01:
+
+```jsx
+<div
+  className="greeting"
+  style={{ background: "black", color: "white" }}
+  onClick={() => alert("hello")}
+>
+  Hello World
+</div>
+```
+
+### Creating a React Component
+
+Props is just a shorthand name for properties, and you can think of them
+similarly to how you will think about passing in HTML attributes to modify the
+behavior of an HTML tag. Passing in props allows components to take in
+information along the way and change how the component is rendered to the end
+user.
+
+```jsx
+const Greeting = props => <p>Hello {props.name}!</p>
+```
+
+```jsx
+const App = props => (
+  <div>
+    <h1>My App</h1>
+    <Greeting name="User" />
+  </div>
+)
+```
+
+Exercise 1.02:
+
+```jsx nu
+import React from "react"
+
+const App = props => (
+  <div>
+    <h1>My App</h1>
+    <p>Hello React!</p>
+  </div>
+)
+
+export default App
+```
+
+If you have a component that spans multiple lines of JSX, you will need to wrap
+your JSX inside parentheses.
+
+`ReactDOM` is a library that provides interaction with the DOM layer of the
+browser, and we use it specifically to place our React components into the
+browsers, available to be viewed and interacted with by the user.
+
+```jsx fp=src/index.js
+ReactDOM.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById("root")
+)
+```
+
+`StrictMode` helps to spot potential errors in advance. It performs code checks
+only during development time. It does not work in the production run.
+
+Exercise 1.03:
+
+```jsx nu
+import React, { Component } from 'react';
+
+const Greeting = props => <p>Hello {props.name}!</p>;
+
+class App extends Component {
+  constructor(props) {
+    super(props);
+    this.title = 'React App';
+    this.state = { clickCounter: 0 };
+  }
+  renderClickCount() {
+    return <p>I've been clicked {this.state.clickCounter} times!</p>;
+  }
+  render() {
+    return (
+      <div>
+        <h1>{this.title}</h1>
+        <Greeting name="User" />
+        {this.renderClickCount()}
+      </div>
+    );
+  }
+```
+
+Activity 1.01:
+
+```jsx nu
+import React, { Component } from "react"
+
+const Header = props => <h1>{props.title}</h1>
+
+const InventoryItem = props => (
+  <div className="InventoryItem">
+    <p>
+      <strong>{props.itemName}</strong>
+    </p>
+    <hr />
+    <p>{props.itemPrice}</p>
+  </div>
+)
+
+class App extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      items: [
+        { itemName: "Shoe", itemPrice: 5 },
+        { itemName: "Sock", itemPrice: 3 },
+      ],
+    }
+  }
+  render() {
+    return (
+      <div className="App">
+        <Header title="BuyStuff" />
+        <InventoryItem
+          itemName={this.state.items[0].itemName}
+          itemPrice={this.state.items[0].itemPrice}
+        />
+        <InventoryItem
+          itemName={this.state.items[1].itemName}
+          itemPrice={this.state.items[1].itemPrice}
+        />
+      </div>
+    )
+  }
+}
+
+export default App
+```
+
 ## Dealing with React Events
+
+### Getting Started - Building Our Baseline Component
+
+Exercise 2.01:
+
+```jsx nu
+import React, { Component } from "react"
+
+class App extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      username: "",
+      password: "",
+      passwordConfirmation: "",
+      email: "",
+      errors: [],
+    }
+  }
+  displayForm() {
+    return (
+      <div>
+        <p>
+          <label>
+            Username: <input type="text" />
+          </label>
+        </p>
+        <p>
+          <label>
+            Password: <input type="password" />
+          </label>
+        </p>
+        <p>
+          <label>
+            Password Confirmation: <input type="password" />
+          </label>
+        </p>
+        <p>
+          <label>
+            Email: <input type="text" />
+          </label>
+        </p>
+        <p>
+          <button>Submit</button>
+        </p>
+      </div>
+    )
+  }
+  render() {
+    return (
+      <div className="App">
+        <h1>Create Account</h1>
+        <hr />
+        {this.displayForm()}
+      </div>
+    )
+  }
+}
+
+export default App
+```
+
+### Event Handlers in React
+
+```jsx hl=9,13..17
+...
+  displayForm() {
+    return (
+      <div>
+        <p><label>Username: <input type="text" /></label></p>
+        <p><label>Password: <input type="password" /></label></p>
+        <p><label>Password Confirmation: <input type="password" /></label></p>
+        <p><label>Email: <input type="text" /></label></p>
+        <p><button onClick={this.submitForm}>Submit</button></p>
+      </div>
+    );
+  }
+  submitForm(event) {
+    event.preventDefault()
+    console.log("Submitting the form now...");
+    console.log(event);
+  }
+...
+```
+
+The `onBlur` event performs the validation for each field as that field loses
+focus.
+
+### Context of Event Handlers
+
+To resolve the problem of context for event handlers, we have two ways:
+
+- In-line bind statements
+- Constructor bind statements
+
+**In-line Bind Statements:** add a context to our baseline component by adding
+`bind(this)` call to the end of our event handler declaration.
+
+**Constructor Bind Statements:** we use constructor bind statements to tell
+JavaScript explicitly that when we reference the `this.validateUsernameOnBlur`
+function in our component, it should always have the context of the component
+bound to it when this is referenced.
+
+Exercise 2.03:
+
+```jsx nu hl=13,20,44..47
+import React, { Component } from "react"
+
+class App extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      username: "",
+      password: "",
+      passwordConfirmation: "",
+      email: "",
+      errors: [],
+    }
+    this.validateUsernameOnBlur = this.validateUsernameOnBlur.bind(this)
+  }
+  displayForm() {
+    return (
+      <div>
+        <p>
+          <label>
+            Username: <input type="text" onBlur={this.validateUsernameOnBlur} />
+          </label>
+        </p>
+        <p>
+          <label>
+            Password: <input type="password" />
+          </label>
+        </p>
+        <p>
+          <label>
+            Password Confirmation: <input type="password" />
+          </label>
+        </p>
+        <p>
+          <label>
+            Email: <input type="text" />
+          </label>
+        </p>
+        <p>
+          <button onClick={this.submitForm}>Submit</button>
+        </p>
+      </div>
+    )
+  }
+  validateUsernameOnBlur(event) {
+    console.log("I should validate whatever is in ", event.target.value)
+    this.setState()
+  }
+  submitForm(event) {
+    event.preventDefault()
+    console.log("Submitting the form now...")
+    console.log(event)
+  }
+  render() {
+    return (
+      <div className="App">
+        <h1>Create Account</h1>
+        <hr />
+        {this.displayForm()}
+      </div>
+    )
+  }
+}
+
+export default App
+```
+
+Exercise 2.04:
+
+```jsx nu hl=4..10,40..43
+import React, { Component } from "react"
+
+class App extends Component {
+  state = {
+    username: "",
+    password: "",
+    passwordConfirmation: "",
+    email: "",
+    errors: [],
+  }
+  displayForm() {
+    return (
+      <div>
+        <p>
+          <label>
+            Username: <input type="text" onBlur={this.validateUsernameOnBlur} />
+          </label>
+        </p>
+        <p>
+          <label>
+            Password: <input type="password" />
+          </label>
+        </p>
+        <p>
+          <label>
+            Password Confirmation: <input type="password" />
+          </label>
+        </p>
+        <p>
+          <label>
+            Email: <input type="text" />
+          </label>
+        </p>
+        <p>
+          <button onClick={this.submitForm}>Submit</button>
+        </p>
+      </div>
+    )
+  }
+  validateUsernameOnBlur = event => {
+    console.log("I should validate whatever is in ", event.target.value)
+    this.setState()
+  }
+  submitForm(event) {
+    event.preventDefault()
+    console.log("Submitting the form now...")
+    console.log(event)
+  }
+  render() {
+    return (
+      <div className="App">
+        <h1>Create Account</h1>
+        <hr />
+        {this.displayForm()}
+      </div>
+    )
+  }
+}
+
+export default App
+```
+
+### Form Validation in React
+
+Exercise 2.05:
+
+```jsx nu hl=14..18,54..101,111
+import React, { Component } from "react"
+import "./App.css"
+
+class App extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      username: "",
+      password: "",
+      passwordConfirmation: "",
+      email: "",
+      errors: [],
+    }
+    this.validateUsernameOnBlur = this.validateUsernameOnBlur.bind(this)
+    this.validatePasswordOnBlur = this.validatePasswordOnBlur.bind(this)
+    this.validatePasswordConfirmationOnBlur =
+      this.validatePasswordConfirmationOnBlur.bind(this)
+    this.validateEmailOnBlur = this.validateEmailOnBlur.bind(this)
+  }
+  displayForm() {
+    return (
+      <div>
+        <p>
+          <label>
+            Username: <input type="text" onBlur={this.validateUsernameOnBlur} />
+          </label>
+        </p>
+        <p>
+          <label>
+            Password:{" "}
+            <input type="password" onBlur={this.validatePasswordOnBlur} />
+          </label>
+        </p>
+        <p>
+          <label>
+            Password Confirmation:{" "}
+            <input
+              type="password"
+              onBlur={this.validatePasswordConfirmationOnBlur}
+            />
+          </label>
+        </p>
+        <p>
+          <label>
+            Email: <input type="text" onBlur={this.validateEmailOnBlur} />
+          </label>
+        </p>
+        <p>
+          <button onClick={this.submitForm}>Submit</button>
+        </p>
+      </div>
+    )
+  }
+  displayErrors() {
+    return (
+      <div className="errors">
+        {this.state.errors.map((err, i) => (
+          <p key={`err-${i}`}>{err}</p>
+        ))}
+      </div>
+    )
+  }
+  validateNotEmpty(fieldName, value) {
+    if (value.length <= 0) {
+      return `${fieldName} must be filled out!`
+    }
+  }
+  validateUsernameOnBlur(event) {
+    const username = event.target.value
+    const errors = this.state.errors
+    errors.push(this.validateNotEmpty("Username", username))
+    this.setState({ username, errors })
+  }
+  validatePasswordOnBlur(event) {
+    const password = event.target.value
+    const errors = this.state.errors
+    errors.push(this.validateNotEmpty("Password", password))
+    this.setState({ password, errors })
+  }
+  validateEmailOnBlur(event) {
+    const email = event.target.value
+    const errors = this.state.errors
+    errors.push(this.validateEmailFormat("Email", email))
+    this.setState({ email, errors })
+  }
+  validateEmailFormat(fieldName, value) {
+    let [lhs, rhs] = value.split("@")
+    lhs = lhs || ""
+    rhs = rhs || ""
+    if (lhs.length <= 0 || rhs.length <= 0) {
+      return `${fieldName} must be in a standard email format!`
+    }
+  }
+  validatePasswordConfirmationOnBlur(event) {
+    const passwordConfirmation = event.target.value
+    const errors = this.state.errors
+    if (passwordConfirmation !== this.state.password) {
+      errors.push("Password must match password confirmation!")
+    }
+    this.setState({ passwordConfirmation, errors })
+  }
+  submitForm(event) {
+    event.preventDefault()
+    console.log("Submitting the form now...")
+    console.log(event)
+  }
+  render() {
+    return (
+      <div className="App">
+        <h1>Create Account</h1>
+        {this.displayErrors()}
+        <hr />
+        {this.displayForm()}
+      </div>
+    )
+  }
+}
+
+export default App
+```
+
+Activity 2.01:
+
+```jsx nu
+import React, { Component } from "react"
+
+class App extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { field: "", submitDisabled: true }
+  }
+  renderFieldLength() {
+    return <p>{`${this.state.field.length} character(s)!`}</p>
+  }
+  updateFieldLength(event) {
+    const field = event.target.value
+    this.setState({ field }, () => {
+      this.validateFieldLength()
+    })
+  }
+  validateFieldLength() {
+    if (this.state.submitDisabled && this.state.field.length > 100) {
+      this.setState({ submitDisabled: false })
+    } else if (!this.state.submitDisabled && this.state.field.length <= 100) {
+      this.setState({ submitDisabled: true })
+    }
+  }
+  submitForm(event) {
+    event.preventDefault()
+    alert("Submitting the blog post!")
+  }
+  render() {
+    return (
+      <div className="App">
+        <h1>Blog Post Writer</h1>
+        <hr />
+        <form>
+          <label>
+            <h2>Write your post here</h2>
+            <p>Must be at least 100 characters!</p>
+            <textarea
+              cols="80"
+              rows="25"
+              onChange={this.updateFieldLength.bind(this)}
+            ></textarea>
+          </label>
+          {this.renderFieldLength()}
+          <button
+            disabled={this.state.submitDisabled}
+            onClick={this.submitForm}
+          >
+            Submit Post
+          </button>
+        </form>
+      </div>
+    )
+  }
+}
+
+export default App
+```
 
 ## Conditional Rendering and for Loops
 
+### Conditional Rendering
+
+In React, there are two primary ways to tackle conditional renders:
+
+- Inline in JSX,
+- Via dedicated subrender function.
+
+```jsx nu
+import React, { Component } from "react"
+
+class App extends Component {
+  render() {
+    const showMessage = true
+    return <div className="App">{showMessage && <p>Hello World</p>}</div>
+  }
+}
+
+export default App
+```
+
+```jsx nu
+import React, { Component } from "react"
+
+class App extends Component {
+  renderMessage(show) {
+    if (show) {
+      return <p>Hello World</p>
+    } else {
+      return null
+    }
+  }
+  render() {
+    const showMessage = true
+    return <div className="App">{this.renderMessage(showMessage)}</div>
+  }
+}
+
+export default App
+```
+
+Exercise 3.01:
+
+```jsx nu fp=src/App.js
+import React, { Component } from "react"
+
+class App extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      showSecret: false,
+    }
+  }
+  secretMessage() {
+    if (!this.state.showSecret) {
+      return
+    }
+    return <div className="secret-message">I am the secret message!</div>
+  }
+  toggleSecretMessage() {
+    this.setState({
+      showSecret: !this.state.showSecret,
+    })
+  }
+  render() {
+    return (
+      <div className="App">
+        <button onClick={this.toggleSecretMessage.bind(this)}>
+          Click to {this.state.showSecret ? "hide" : "show"} show the secret
+          message!
+        </button>
+        {this.secretMessage()}
+      </div>
+    )
+  }
+}
+
+export default App
+```
+
+Ternary operator for conditional rendering is fine for very simple examples and
+can arguably help to keep your code clean.
+
+A _guard clause_ is a simple statement at the top of your function that verifies
+inputs, properties, or state, and returns early to avoid unnecessary work.
+
+### Nested Conditional Rendering
+
+Exercise 3.02:
+
+```jsx nu fp=src/App.js
+import React, { Component } from "react"
+import "./App.css"
+
+class App extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      playerScore: 0,
+      questions: [
+        {
+          question: "What animal barks?",
+          possibleAnswers: ["Dog", "Cat"],
+          rightAnswer: "Dog",
+          playerChoice: null,
+        },
+        {
+          question: "What animal is more closely related to a tiger?",
+          possibleAnswers: ["Dog", "Cat"],
+          rightAnswer: "Cat",
+          playerChoice: null,
+        },
+        {
+          question: "What animal is more closely related to a wolf?",
+          possibleAnswers: ["Dog", "Cat"],
+          rightAnswer: "Dog",
+          playerChoice: null,
+        },
+        {
+          question: "What animal is best known for playing fetch?",
+          possibleAnswers: ["Dog", "Cat"],
+          rightAnswer: "Dog",
+          playerChoice: null,
+        },
+      ],
+    }
+    this.answerQuestion = this.answerQuestion.bind(this)
+  }
+  answerQuestion(index, choice) {
+    const answeredQuestion = this.state.questions[index]
+    answeredQuestion.playerChoice = choice
+    const allQuestions = this.state.questions
+    allQuestions[index] = answeredQuestion
+    this.setState(
+      {
+        questions: allQuestions,
+      },
+      () => {
+        this.updatePlayerScore()
+      }
+    )
+  }
+  updatePlayerScore() {
+    const playerScore = this.state.questions.filter(
+      q => q.rightAnswer === q.playerChoice
+    ).length
+    this.setState({ playerScore })
+    console.log("New player score:", playerScore)
+  }
+  displayResult(index) {
+    const question = this.state.questions[index]
+    if (!question.playerChoice) {
+      return
+    }
+    if (question.playerChoice === question.rightAnswer) {
+      return <p className="result-correct">Your answer is correct!</p>
+    } else {
+      return <p className="result-incorrect">Your answer is incorrect!</p>
+    }
+  }
+  displayQuestion(index) {
+    if (this.state.playerScore < index) {
+      return
+    }
+    const question = this.state.questions[index]
+    return (
+      <div className="question-display">
+        <p className="question">{question.question}</p>
+        <button
+          className="question-choice"
+          onClick={() =>
+            this.answerQuestion(index, question.possibleAnswers[0])
+          }
+        >
+          {question.possibleAnswers[0]}
+        </button>
+        <button
+          className="question-choice"
+          onClick={() =>
+            this.answerQuestion(index, question.possibleAnswers[1])
+          }
+        >
+          {question.possibleAnswers[1]}
+        </button>
+        {this.displayResult(index)}
+      </div>
+    )
+  }
+  render() {
+    return (
+      <div className="App">
+        <h1>Quiz Show!</h1>
+        <hr />
+        {this.displayQuestion(0)}
+        {this.displayQuestion(1)}
+        {this.displayQuestion(2)}
+        {this.displayQuestion(3)}
+      </div>
+    )
+  }
+}
+
+export default App
+```
+
+```css nu fp=src/App.css
+.question-display {
+  background: #ddd;
+  border: 2px solid #ccc;
+  margin: 20px;
+  padding: 10px;
+}
+
+.question {
+  font-weight: bold;
+}
+
+.question-choice {
+  height: 5em;
+  width: 20em;
+  margin: 10px;
+}
+
+.result-correct {
+  color: #272;
+}
+
+.result-incorrect {
+  color: #922;
+}
+```
+
+We can write rendering loops either via inline statements in our JSX or through
+functions.
+
+```jsx fp=src/App.js
+// ...
+  render() {
+    return (
+      <div className="App">
+        <h1>Quiz Show!</h1>
+        <hr />
+        {this.state.questions.map((question, index) =>
+          this.displayQuestion(index)
+        )}
+      </div>
+    )
+  }
+// ...
+```
+
+**Note:** Each child component rendered by a loop should have a unique _key_
+prop.
+
+```jsx
+<div className="question-display" key={`q-${index}`}>
+```
+
+Exercise 3.03:
+
+```jsx
+// ...
+  render() {
+    return (
+      <div className="App">
+        <h1>Quiz Show!</h1>
+        <hr />
+        {this.renderQuestions()}
+      </div>
+    )
+  }
+// ...
+```
+
+```jsx
+// ...
+  renderQuestions() {
+    return this.state.questions.map((question, index) =>
+      this.displayQuestion(index)
+    )
+  }
+// ...
+```
+
+```jsx fp=src/App.js hl=10..18
+// ...
+  displayQuestion(index) {
+    if (this.state.playerScore < index) {
+      return
+    }
+    const question = this.state.questions[index]
+    return (
+      <div className="question-display">
+        <p className="question">{question.question}</p>
+        {question.possibleAnswers.map((answer, answerIndex) => (
+          <button
+            key={`q-${index}-a-${answerIndex}`}
+            className="question-choice"
+            onClick={() => this.answerQuestion(index, answer)}
+          >
+            {answer}
+          </button>
+        ))}
+        {this.displayResult(index)}
+      </div>
+    )
+  }
+// ...
+```
+
+Activity 3.01:
+
+```css fp=src/App.css
+.Tile {
+  width: 200px;
+  height: 200px;
+  font-size: 64pt;
+  border: 2px solid #aaa;
+  text-align: center;
+  margin: 10px;
+  padding: 10px;
+  float: left;
+  cursor: pointer;
+}
+
+.Tile:hover {
+  border: 2px solid #f00;
+}
+
+.Tile.flipped {
+  background: #aaa;
+}
+
+.Tile.matched {
+  border: 2px solid #040;
+  background: #afa;
+}
+
+button.reset {
+  padding: 10px;
+  width: 200px;
+}
+```
+
+```jsx fp=src/App.js
+import React, { Component } from "react"
+import "./App.css"
+
+const TILE_COUNT = 24
+
+class App extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      tiles: [],
+      lastFlipped: null,
+      clicks: 0,
+    }
+    this.resetTiles = this.resetTiles.bind(this)
+    this.flipTile = this.flipTile.bind(this)
+  }
+  flipAllBackOver(tiles) {
+    tiles.forEach(tile => {
+      if (!tile.matched) {
+        tile.flipped = true
+      }
+    })
+    return tiles
+  }
+  flipTile(index) {
+    let tiles = this.state.tiles
+    let tile = tiles[index]
+    let clicks = this.state.clicks + 1
+    let lastFlipped = this.state.lastFlipped
+    if (lastFlipped === null) {
+      tiles = this.flipAllBackOver(tiles)
+      tile.flipped = !tile.flipped
+      lastFlipped = index
+    } else {
+      tile.flipped = !tile.flipped
+      let lastFlippedTile = this.state.tiles[lastFlipped]
+      if (lastFlippedTile.number === tile.number) {
+        lastFlippedTile.matched = true
+        tile.matched = true
+        tiles[lastFlipped] = lastFlippedTile
+      }
+      lastFlipped = null
+    }
+    tiles[index] = tile
+    this.setState({ clicks, tiles, lastFlipped })
+  }
+  resetTiles() {
+    let tiles = []
+    let number = 0
+    for (let i = 0; i < TILE_COUNT; i += 2) {
+      number++
+      let tileOne = { flipped: true, matched: false, number }
+      let tileTwo = { flipped: true, matched: false, number }
+      tiles = [...tiles, tileOne, tileTwo]
+    }
+    for (let i = 0; i < tiles.length; i++) {
+      const swapWith = Math.floor(Math.random() * tiles.length)
+      ;[tiles[i], tiles[swapWith]] = [tiles[swapWith], tiles[i]]
+    }
+    this.setState({ clicks: 0, tiles })
+  }
+  renderTile(tile, index) {
+    let classes = ["Tile"]
+    if (tile.flipped) {
+      classes = [...classes, "flipped"]
+    }
+    if (tile.matched) {
+      classes = [...classes, "matched"]
+    }
+    let key = `tile-${index}`
+    return (
+      <div
+        key={key}
+        className={classes.join(" ")}
+        onClick={() => this.flipTile(index)}
+      >
+        {!tile.flipped && tile.number}
+      </div>
+    )
+  }
+  render() {
+    return (
+      <div className="App">
+        <h1>Memory Game</h1>
+        <strong>Clicks: {this.state.clicks}</strong>
+        <br />
+        <button onClick={this.resetTiles} className="reset">
+          New Game
+        </button>
+        <hr />
+        {this.state.tiles.map((tile, index) => this.renderTile(tile, index))}
+      </div>
+    )
+  }
+}
+
+export default App
+```
+
 ## React Lifecycle Methods
 
+### Overview of the component lifecycle
+
+The React component lifecycle broadly comprises of two different segments:
+
+- The initial **mount** lifecycle (when React attempts to build the component
+  for the first time and inserts it into the DOM)
+- The **update** lifecycle (after the component has been loaded and rendered for
+  the first time and now is in a state of watching and updating for changes),
+  which loops back on itself over and over
+
+<Figure src="/media/react-lifecycle-methods.png">
+  Flow of React lifecycle methods.
+</Figure>
+
+All methods comprising the mount lifecycle are executed first. Then, the program
+flow proceeds to the update life cycle methods, which are executed repeatedly as
+long as the component is alive.
+
+Most used:
+
+- `constructor()`: The constructor of our component, the first thing that gets
+  called.
+- `render()`: This is called when the component is rendered to the DOM.
+- `componentDidMount()`: This is when the component has been rendered and
+  included in the DOM.
+- `componentDidUpdate()`: This is when the component had a change that triggered
+  an update and was re-rendered to the DOM (for example, if a prop or the state
+  changed).
+
+Less used:
+
+- `static getDerivedStateFromProps(props, state)`
+- `shouldComponentUpdate(nextProps, nextState)`
+- `getSnapshotBeforeUpdate(prevProps, prevState)`
+
+When a component unmounts, the `componentWillUnmount()` call happens right
+before the component is totally removed from the DOM.
+
+It's important to note that all of this is only a lifecycle in class components.
+
+MOUNT: (`constructor` -> `render` -> `componentDidMount`) -> UPDATE: (`render`,
+`componentDidUpdate`) -> UPDATE (repeat until component removed) -> UNMOUNT:
+(`componentWillUnmount`)
+
+Exercise 4.01:
+
+```jsx nu
+import React, { Component } from "react"
+
+class App extends Component {
+  constructor(props) {
+    super(props)
+    console.log("Constructor")
+    this.state = { cycle: 0 }
+    setInterval(() => this.setState({ cycle: this.state.cycle + 1 }), 1000)
+  }
+  componentDidMount() {
+    console.log("Component Did Mount")
+  }
+  componentDidUpdate() {
+    console.log("Component Did Update")
+  }
+  render() {
+    console.log("Render")
+    return <div className="App">Hello Lifecycle: Cycle {this.state.cycle}</div>
+  }
+}
+
+export default App
+```
+
+### The Mount Lifecycle
+
+The mount lifecycle is called twice: before and immediately after React renders
+the component into DOM. Note that mounting alone happens only once; there is no
+scope in a React world where you can remount a React component into the DOM.
+When we say that React renders to the DOM, it means that this is when React
+processes the JSX, converts it to HTML, and shows it on the browser.
+
+Mounting is where a lot of the functionality will take place specific to
+initializing a component's state at the time of loading. Mounting happens when
+your app loads up for the first time, when you navigate to a particular
+component using something like React router, or it could be something like when
+you add a component to a page dynamically, like through conditional renders or
+loops. The first one of these functionalities is one you should be very
+comfortable with at this point: the constructor.
+
+#### constructor()
+
+Exercise 4.02:
+
+```jsx nu fp=App.js
+import React, { Component } from "react"
+import LifecycleTest from "./LifecycleTest"
+
+class App extends Component {
+  render() {
+    return (
+      <div className="App">
+        Hello Conditional
+        {true && <LifecycleTest />}
+      </div>
+    )
+  }
+}
+
+export default App
+```
+
+```jsx nu fp=LifecycleTest.js
+import React, { Component } from "react"
+
+class LifecycleTest extends Component {
+  constructor(props) {
+    super(props)
+    console.log("LifecycleTest Constructor")
+  }
+  render() {
+    return <p>I only show up if the conditional is true!</p>
+  }
+}
+
+export default LifecycleTest
+```
+
+With that, you can see how the mount lifecycle method is affected by conditional
+rendering. It's important to see how conditional rendering can affect lifecycle
+methods, since you may need to rely on knowing when components are getting
+mounted and rendered into your DOM.
+
+#### render()
+
+`render()` is the point where React converts the JSX that represents our
+component to the DOM. But up until now, we have not really used it much for
+anything outside of rendering JSX with a `return` statement. The reality is that
+`render()` is just a normal function and can actually have a good amount of
+other logic inside of it.
+
+#### componentDidMount()
+
+The `componentDidMount()` lifecycle method is better suited for functions that
+take an indeterminate amount of time to load. `componentDidMount()` is called
+after `render()` is called, so you don't get any weird behavior where the
+component takes a long time before it actually shows up on your page. As a
+result, this lifecycle method has become the standard for when you want to load
+anything into the state that is the result of an AJAX call or anything that
+involves any sort of long-running code.
+
+One thing worth noting, however, is that your calls that modify the state might
+take a very short amount of time. If this happens, you might sometimes see a
+_flicker_ effect that occurs when you display a placeholder for things that are
+only conditionally rendered when the state is updated with data. This is
+generally considered to be bad practice and you should instead use a placeholder
+`render` (such as a little bit of text that says "Loading..." or displays a
+spinner when the page is loading).
+
+Another common best practice is to render an element that informs the reader
+that the page or content is still loading, rather than having the initializing
+state to be empty. If you do this, it will give the impression that the
+component has no data, and then when the AJAX call returns, it suddenly has
+data. This can be confusing for the end user, and generally it's better to be
+clear about the transitional states in your component rather than having a
+binary loaded/not loaded state.
+
+### The Update Lifecycle
+
+If you modify the `shouldComponentUpdate()` lifecycle function to just always
+return `false`, then as far as React is concerned, no changes should ever
+retrigger the update loop. Similarly, if you always return `true`, then React
+will assume every state or props change needs to retrigger re-rendering.
+
+#### componentDidUpdate()
+
+The `componentDidUpdate()` allows you to react to a component updating from
+changes in props and/or state, which can be helpful if you need to update some
+state management code or to make calls to remote services, for example.
+
+```js
+componentDidUpdate(prevProps, prevState, snapshot)
+```
+
+The `prevProps` parameter is the shape of the component's props before the
+update happened and `prevState` is the shape of the component's state before the
+component updated. The `snapshot` argument is a bit trickier; picture it as a
+virtual representation of the component in the update. Also, the `snapshot`
+argument is only needed if your component also implements the
+`getSnapshotBeforeUpdate()` function, which is incredibly rare. If you are not
+using that, you can just leave the snapshot argument out completely.
+
+**Warning:** One word of caution, however, is that if you are doing anything
+that would then update props or state, you need to wrap those calls in some sort
+of conditional. If you don't, you'd update the props or state, which would
+trigger the update lifecycle, leading to this function, where you'd update the
+props or state, which would trigger... well, you get the picture.
+
+Exercise 4.03:
+
+```jsx nu
+import React, { Component } from "react"
+
+class App extends Component {
+  constructor(props) {
+    super(props)
+    // State will be messages: ["Hello World", "How are you"]
+    this.state = { messages: [], loading: true }
+  }
+  componentDidUpdate(prevProps, prevState) {
+    console.log("prevProps:", prevProps)
+    console.log("prevState:", prevState)
+  }
+  componentDidMount() {
+    setTimeout(
+      () =>
+        this.setState({
+          messages: ["Hello World", "How are you?"],
+          loading: false,
+        }),
+      10000 // 10 seconds
+    )
+  }
+  componentWillUnmount() {
+    alert("I've been removed!")
+  }
+  renderProfile() {
+    if (this.state.loading) {
+      return <div>Loading...</div>
+    }
+    if (this.state.messages && this.state.messages.length > 0) {
+      return (
+        <div>
+          <ul>
+            {this.state.messages.map((msg, index) => (
+              <li key={`msg-${index}`}>{msg}</li>
+            ))}
+          </ul>
+        </div>
+      )
+    } else {
+      return <div>No messages!</div>
+    }
+  }
+  render() {
+    return (
+      <div className="App">
+        User Profile
+        <hr />
+        {this.renderProfile()}
+      </div>
+    )
+  }
+}
+
+export default App
+```
+
+### The Unmount Lifecycle
+
+The `unmount` lifecycle lives outside of the main lifecycle, as it only comes
+into play when a component is removed from the DOM. This lifecycle is also far
+more limited, as the only lifecycle method it contains is
+`componentWillUnmount()`.
+
+#### componentWillUnmount()
+
+Exercise 4.04:
+
+```jsx nu fp=App.js
+import React, { Component } from "react"
+import Message from "./Message"
+
+class App extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      list: [
+        { id: 1, message: "Hello" },
+        { id: 2, message: "Everyone" },
+        { id: 3, message: "What" },
+        { id: 4, message: "Is" },
+        { id: 5, message: "Up" },
+      ],
+    }
+  }
+  removeItem(id) {
+    const newList = this.state.list.filter(item => item.id !== id)
+    this.setState({ list: newList })
+  }
+  render() {
+    return (
+      <div className="App">
+        <h1>My Items</h1>
+        {this.state.list.map(item => (
+          <Message
+            key={item.id}
+            id={item.id}
+            message={item.message}
+            removeItem={this.removeItem.bind(this)}
+          />
+        ))}
+      </div>
+    )
+  }
+}
+
+export default App
+```
+
+```jsx nu fp=Message.js
+import React, { Component } from "react"
+
+class Message extends Component {
+  componentWillUnmount() {
+    console.log("Removing item", this.props)
+  }
+  render() {
+    return (
+      <div className="Message">
+        <p>{this.props.message}</p>
+        <button onClick={() => this.props.removeItem(this.props.id)}>
+          Remove me
+        </button>
+      </div>
+    )
+  }
+}
+
+export default Message
+```
+
+Activity 4.01:
+
+```js nu fp=AjaxLibrary.js
+const SLEEP_FOR = 5000
+const users = {
+  testA: {
+    id: 1,
+    username: "testA",
+  },
+  testB: {
+    id: 2,
+    username: "testB",
+  },
+}
+const messages = {
+  1: ["Hello testA", "How are you doing today?"],
+  2: [],
+}
+
+function sleep(time) {
+  return new Promise(res => setTimeout(res, time))
+}
+
+const fetchUserCount = async () => {
+  await sleep(SLEEP_FOR)
+  return Object.keys(users).length
+}
+
+const fetchUser = async username => {
+  await sleep(SLEEP_FOR)
+  return users[username]
+}
+
+const fetchMessages = async userId => {
+  await sleep(SLEEP_FOR)
+  return messages[userId]
+}
+
+export { fetchUserCount, fetchUser, fetchMessages }
+```
+
+```jsx nu fp=App.js
+import React, { Component } from "react"
+import UserCountDisplay from "./UserCountDisplay"
+import LoginDisplay from "./LoginDisplay"
+
+class App extends Component {
+  render() {
+    return (
+      <div className="App">
+        <h1>Messaging App</h1>
+        <UserCountDisplay />
+        <LoginDisplay />
+      </div>
+    )
+  }
+}
+
+export default App
+```
+
+```jsx nu fp=UserCountDisplay.js
+import React, { Component } from "react"
+import { fetchUserCount } from "./AjaxLibrary"
+
+class UserCountDisplay extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { userCount: 0, loadingUserCount: false }
+  }
+  async componentDidMount() {
+    this.setState({ loadingUserCount: true })
+    const userCount = await fetchUserCount()
+    this.setState({ userCount, loadingUserCount: false })
+  }
+  render() {
+    if (this.state.loadingUserCount) {
+      return <p>Loading user count...</p>
+    } else {
+      return <p>Users in the app: {this.state.userCount}</p>
+    }
+  }
+}
+
+export default UserCountDisplay
+```
+
+```js nu fp=LoginDisplay.js
+import React, { Component } from "react"
+import { fetchUser } from "./AjaxLibrary"
+import UserDisplay from "./UserDisplay"
+
+class LoginDisplay extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { loginUsername: null, loadingLogin: false, user: null }
+    this.updateLoginForm = this.updateLoginForm.bind(this)
+    this.doLogin = this.doLogin.bind(this)
+    this.doLogout = this.doLogout.bind(this)
+  }
+  updateLoginForm(evt) {
+    const loginUsername = evt.target.value
+    this.setState({ loginUsername })
+  }
+  async doLogin() {
+    this.setState({ loadingLogin: true })
+    const user = await fetchUser(this.state.loginUsername)
+    this.setState({ user, loadingLogin: false })
+  }
+  doLogout() {
+    this.setState({ user: null })
+  }
+  loginForm() {
+    if (this.state.loadingLogin) {
+      return "Trying to login, please wait..."
+    } else {
+      if (!this.state.user) {
+        return (
+          <div className="Login">
+            Login Username:
+            <input type="text" onChange={this.updateLoginForm} />
+            <button onClick={this.doLogin}>Login</button>
+          </div>
+        )
+      } else {
+        return <button onClick={this.doLogout}>Logout</button>
+      }
+    }
+  }
+  render() {
+    return (
+      <div className="LoginDisplay">
+        {this.loginForm()}
+        <hr />
+        <UserDisplay user={this.state.user} />
+      </div>
+    )
+  }
+}
+
+export default LoginDisplay
+```
+
+```jsx nu fp=UserDisplay.js
+import React, { Component } from "react"
+import MessageDisplay from "./MessageDisplay"
+
+class UserDisplay extends Component {
+  render() {
+    if (!this.props.user) {
+      return null
+    }
+    return (
+      <div className="UserDisplay">
+        Logged in as {this.props.user.username}!
+        <MessageDisplay userId={this.props.user.id} />
+      </div>
+    )
+  }
+}
+
+export default UserDisplay
+```
+
+```jsx nu fp=MessageDisplay.js
+import React, { Component } from "react"
+import { fetchMessages } from "./AjaxLibrary"
+
+class MessageDisplay extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { loadingMessages: false, messages: [] }
+  }
+  async componentDidMount() {
+    this.setState({ loadingMessages: true })
+    const messages = await fetchMessages(this.props.userId)
+    this.setState({ messages, loadingMessages: false })
+  }
+  componentWillUnmount() {
+    console.log("Unmounting messages")
+  }
+  render() {
+    if (this.state.loadingMessages) {
+      return <p>Messages still loading...</p>
+    } else {
+      if (this.state.messages.length > 0) {
+        return (
+          <ul>
+            {this.state.messages.map((msg, index) => (
+              <li key={`m-${index}`}>{msg}</li>
+            ))}
+          </ul>
+        )
+      } else {
+        return <p>No messages for you!</p>
+      }
+    }
+  }
+}
+
+export default MessageDisplay
+```
+
 ## Class and Function Components
+
+### Building React Components
+
+#### Data Flow
+
+In React, the data typically flows from the root to the child components and is
+_unidirectional_.
+
+### Class Components
+
+Exercise 5.01:
+
+```jsx nu fp=src/App.js
+import React from "react"
+import "./App.css"
+import Profile from "./Profile"
+
+const user = {
+  name: "Brian",
+  interests: "Reading, Swimming, Technology",
+  age: 9,
+  image:
+    "https://images.unsplash.com/photo-1470071131384-001b85755536?auto=format&fit=crop&w=200&q=80",
+  color: "Red",
+  movie: "Star Wars",
+}
+
+function App() {
+  return (
+    <div className="App">
+      <Profile user={user} />
+    </div>
+  )
+}
+
+export default App
+```
+
+```jsx nu fp=src/Profile.js
+import React, { Component } from "react"
+import "./profile.css"
+
+class Profile extends Component {
+  render() {
+    const { name, image, age, interests, color, movie } = this.props.user
+    return (
+      <section className="profile">
+        <header>
+          <h1>{name}</h1>
+        </header>
+        <div className="profile-content">
+          <div className="profile-image">
+            <img src={image} alt={name} />
+          </div>
+          <div>
+            <p>
+              <strong>Age:</strong> {age}
+            </p>
+            <p>
+              <strong>Interests:</strong> {interests}
+            </p>
+            <p>
+              <strong>Favourite Color:</strong> {color}
+            </p>
+            <p>
+              <strong>Favourite Movie:</strong> {movie}
+            </p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+}
+export default Profile
+```
+
+```css nu fp=src/profile.css
+.profile {
+  max-width: 500px;
+  margin: 10%;
+  padding: 20px;
+  border: solid 1px #eee;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+}
+
+.profile-image {
+  margin-right: 20px;
+}
+
+.profile-content {
+  display: flex;
+}
+```
+
+### Function Component
+
+Exercise 5.02:
+
+```jsx nu fp=src/App.js
+import React from "react"
+import "./App.css"
+import Loader from "./Loader"
+
+function App() {
+  return (
+    <div className="App">
+      <Loader spinnerSize={60} isVisible={true} />,
+    </div>
+  )
+}
+
+export default App
+```
+
+```jsx nu fp=src/Loader.js
+import React from "react"
+import "./loader.css"
+
+const Loader = props => {
+  const { spinnerSize, isVisible } = props
+  if (!isVisible) {
+    return null
+  }
+  return (
+    <div className="spinner">
+      <svg
+        focusable="false"
+        width={spinnerSize}
+        height={spinnerSize}
+        viewBox={`0 0 ${spinnerSize} ${spinnerSize}`}
+      >
+        <circle
+          cx={spinnerSize / 2}
+          cy={spinnerSize / 2}
+          r={spinnerSize / 2 - 10}
+        />
+      </svg>
+    </div>
+  )
+}
+
+export default Loader
+```
+
+```css nu fp=src/loader.css
+.spinner {
+  margin: 20px;
+  text-align: center;
+}
+
+@keyframes spinnerAnimation {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner svg {
+  stroke: rgba(0, 0, 0, 0.4);
+  stroke-width: 7px;
+  fill: none;
+  stroke-dasharray: 100%;
+  stroke-linecap: round;
+  animation: 0.86s cubic-bezier(0.4, 0.15, 0.6, 0.85) infinite spinnerAnimation;
+}
+```
+
+### Differences between Class and Function Components
+
+When we create our components, we should try to use the function component where
+possible because not only is it simple to code, but it is also far more
+efficient.
+
+Activity 5.01:
+
+```json nu fp=comments.json
+{
+  "comments": [
+    {
+      "name": "John Smith",
+      "text": "This is an awesome page. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean scelerisque, purus ac feugiat eleifend, ex.",
+      "image": "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=200&q=80",
+      "time": "Oct 02, 2019",
+      "comments": [
+        {
+          "name": "Karen Michaels",
+          "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean scelerisque, purus ac feugiat eleifend, ex.",
+          "image": "https://images.unsplash.com/photo-1567336273898-ebbf9eb3c3bf?auto=format&fit=crop&w=200&q=80",
+          "time": "Oct 10, 2019"
+        },
+        {
+          "name": "Tim Parker",
+          "text": "Tullam elementum vulputate lectus sed pellentesque. Maecenas convallis orci at elit consectetur tempus ac id.",
+          "image": "https://images.unsplash.com/photo-1505247964246-1f0a90443c36?auto=format&fit=crop&w=200&q=80",
+          "time": "Oct 05, 2019"
+        }
+      ]
+    },
+    {
+      "name": "Sarah James",
+      "text": "Nice! Nullam elementum vulputate lectus sed pellentesque. Maecenas convallis orci at elit consectetur tempus ac id.",
+      "image": "https://images.unsplash.com/photo-1552607676-17f088307dce?auto=format&fit=crop&w=200&q=80",
+      "time": "Sept 22, 2019"
+    }
+  ]
+}
+```
+
+```jsx nu fp=src/App.js
+import React from "react"
+import "./App.css"
+import CommentSection from "./components/CommentSection/"
+import { comments } from "./comments.json"
+
+function App() {
+  return (
+    <div className="container">
+      <CommentSection comments={comments} />
+    </div>
+  )
+}
+
+export default App
+```
+
+```jsx nu fp=src/components/CommentSection/index.js
+import React, { Component } from "react"
+import "./styles.css"
+import { Comment } from "../Comment"
+
+class CommentSection extends Component {
+  render() {
+    const { comments } = this.props
+    if (!comments || comments.length === 0) {
+      return null
+    }
+    return (
+      <section className="comments">
+        <h1>Comments</h1>
+        {comments.map((comment, key) => (
+          <Comment key={`comment_${key}`} comment={comment} level={1} />
+        ))}
+      </section>
+    )
+  }
+}
+
+export default CommentSection
+```
+
+```css nu fp=src/components/CommentSection/styles.css
+.comments {
+  margin: 5% 0;
+}
+```
+
+```jsx nu fp=src/components/Comment/index.js
+import React from "react"
+import "./styles.css"
+
+export const Comment = ({ comment, level }) => (
+  <div className="comment">
+    <div className="comment_container">
+      <img className="comment_profile" src={comment.image} alt={comment.name} />
+      <div className="comment_content">
+        <h2 className="comment_name">{comment.name}</h2>
+        <strong className="comment_time">{comment.time}</strong>
+        <p>{comment.text}</p>
+        {level === 1 && <button className="comment_button">Reply</button>}
+      </div>
+    </div>
+
+    {comment.comments &&
+      comment.comments.map((comment, key) => (
+        <Comment key={`comment_${key}`} comment={comment} />
+      ))}
+  </div>
+)
+```
+
+```css nu fp=src/components/Comment/styles.css
+.comment .comment {
+  margin-left: 3rem;
+}
+
+.comment_container {
+  border: solid 1px #aaa;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+}
+
+.comment_name {
+  margin: 0;
+  font-weight: normal;
+}
+
+.comment_time {
+  color: #555;
+  font-size: 0.8rem;
+}
+
+.comment_content {
+  padding-left: 1rem;
+  flex: 1;
+}
+
+.comment_profile {
+  border-radius: 50%;
+  width: 100px;
+  height: 100%;
+}
+
+.comment_button {
+  border: solid 1px #999;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.comment_button:hover {
+  background: #eee;
+}
+```
 
 ## State and Props
 

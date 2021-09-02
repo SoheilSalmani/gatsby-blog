@@ -23,13 +23,15 @@ the (finite) _space of elementary events_ or the _sample space_.
 The choice of the space of elementary events is the _first step_ in formulating
 a _probabilistic model_ for an experiment.
 
-**Sampling with Replacement:** This is an experiment in which at each step one
-ball is drawn at random and returned again. The balls are numbered $1,\dots,M$,
-so that each sample of $n$ balls can be presented in the form $(a_1,\dots,a_n)$,
-where $a_i$ is the label of the ball drawn at the $i$th step. It is customary to
-distinguish two cases: _ordered_ samples and _unordered_ samples. To emphasize
-which kind of sample we are considering, we use the notation $(a_1,\dots,a_n)$
-for _ordered_ and $[a_1,\dots,a_n]$ for _unordered_ samples.
+#### Sampling with Replacement
+
+This is an experiment in which at each step one ball is drawn at random and
+returned again. The balls are numbered $1,\dots,M$, so that each sample of $n$
+balls can be presented in the form $(a_1,\dots,a_n)$, where $a_i$ is the label
+of the ball drawn at the $i$th step. It is customary to distinguish two cases:
+_ordered_ samples and _unordered_ samples. To emphasize which kind of sample we
+are considering, we use the notation $(a_1,\dots,a_n)$ for _ordered_ and
+$[a_1,\dots,a_n]$ for _unordered_ samples.
 
 Thus for _ordered_ samples _with replacement_ the sample space has the form
 
@@ -92,6 +94,53 @@ C^{l-1}_k + C^l_k = C^l_{k+1}
 $$
 
 of the _binomial coefficients_ $C^l_k$.
+
+#### Sampling Without Replacement
+
+Suppose that $n \le M$ and that the selected balls are not returned. In this
+case we again consider two possibilities, namely ordered and unordered samples.
+
+For _ordered_ samples _without replacement_ (called in combinatorics
+_arrangements_ of _n_ out of _M_ elements _without repetitions_) the sample
+space
+
+$$
+\Omega = \{\omega : \omega = (a_1,\dots,a_n), a_k \ne a_l, k \ne l, a_i=1,\dots,M\} \, ,
+$$
+
+consists of $M(M-1)\dots(M-n+1)$ elements. This number is denoted by $(M)_n$ or
+$A^n_M$ and is called the number of _arrangements of $n$ out of $M$ elements_.
+
+For _unordered_ samples _without replacement_ (called in combinatorics
+_combinations_ of $n$ out of $M$ elements _without repetitions_) the sample
+space
+
+$$
+\Omega = \{ \omega : \omega = [a_1,\dots,a_n], a_k \ne a_l, k \ne l, a_i=1,\dots,M \}
+$$
+
+consists of
+
+$$
+N(\Omega) = C^n_M
+$$
+
+elements. In fact, from each unordered sample $[a_1,\dots,a_n]$ consisting of
+distinct elements we can obtain $n!$ ordered samples. Consequently
+
+$$
+N(\Omega) \cdot n! = (M)_n
+$$
+
+and therefore
+
+$$
+N(\Omega) = \frac{(M)_n}{n!} = C^n_M \, .
+$$
+
+<Figure src="/media/sampling-with-and-without-replacement.png">
+  The results on the numbers of samples of size n from an urn with M balls.
+</Figure>
 
 ## Mathematical Foundations of Probability Theory
 

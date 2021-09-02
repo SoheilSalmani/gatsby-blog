@@ -1,22 +1,117 @@
 ---
 title: Redux Fundamentals (feat. React)
 resourceId: https://frontendmasters.com/courses/redux-fundamentals/
-stoppedAt: TODO
+stoppedAt: Setting initialState
 ---
-
-## Introduction
-
-### Introduction
 
 ## Redux Without React
 
 ### Redux API's & Compose
 
+```js nu fp=index.js
+import {
+  createStore,
+  compose,
+  applyMiddleware,
+  bindActionCreators,
+} from "redux"
+
+const makeLouder = string => string.toUpperCase()
+const repeatThreeTimes = string => string.repeat(3)
+const embolden = string => string.bold()
+
+const result = compose(embolden, repeatThreeTimes, makeLouder)
+console.log(result("hello"))
+```
+
 ### Redux Stores & Reducers
+
+<Figure src="/media/reducer-image-explanation.png">
+  Fancy explanation of what a reducer is.
+</Figure>
+
+```js nu fp=index.js
+import {
+  createStore,
+  compose,
+  applyMiddleware,
+  bindActionCreators,
+} from "redux"
+
+const initialState = { value: 0 }
+
+const incrementAction = { type: "INCREMENT", payload: 5 }
+
+const reducer = (state, action) => {
+  return state
+}
+
+const store = createStore(reducer)
+console.log(store)
+```
 
 ### Redux Stores & Dispatch
 
+<Figure src="/media/reducer-image-explanation.png">
+  Fancy explanation of what a reducer is.
+</Figure>
+
+```js nu fp=index.js hl=10,12,15..17
+import {
+  createStore,
+  compose,
+  applyMiddleware,
+  bindActionCreators,
+} from "redux"
+
+const initialState = { value: 0 }
+
+const INCREMENT = "INCREMENT"
+
+const incrementAction = { type: INCREMENT }
+
+const reducer = (state, action) => {
+  if (action.type === INCREMENT) {
+    return { value: state.value + 1 }
+  }
+}
+
+const store = createStore(reducer)
+console.log(store)
+```
+
 ### Action Creators
+
+```js nu fp=index.js hl=11,15,22..24
+import {
+  createStore,
+  compose,
+  applyMiddleware,
+  bindActionCreators,
+} from "redux"
+
+const initialState = { value: 0 }
+
+const INCREMENT = "INCREMENT"
+const ADD = "ADD"
+
+const incrementAction = { type: INCREMENT }
+
+const add = amount => ({ type: ADD, payload: amount })
+
+const reducer = (state, action) => {
+  if (action.type === INCREMENT) {
+    const value = state.value + 1
+    return { value }
+  }
+  if (action.type === ADD) {
+    return { value: state.value + action.payload }
+  }
+}
+
+const store = createStore(reducer)
+console.log(store)
+```
 
 ### Setting initialState
 

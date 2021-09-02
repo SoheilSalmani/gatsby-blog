@@ -1,7 +1,7 @@
 ---
 title: The Go Workshop
 resourceId: "9781838647940"
-stoppedAt: Operators
+stoppedAt: Comparing Values
 ---
 
 ## Variables and Operators
@@ -394,6 +394,105 @@ func main() {
 ```
 
 ### Operators
+
+Exercise 1.09:
+
+```go nu fp=main.go
+package main
+
+import "fmt"
+
+func main() {
+        // Main course
+        var total float64 = 2 * 13
+        fmt.Println("Sub  :", total)
+
+        // Drinks
+        total = total + (4 * 2.25)
+        fmt.Println("Sub  :", total)
+
+        // Discount
+        total = total - 5
+        fmt.Println("Sub  :", total)
+
+        // 10% Tip
+        tip := total * 0.1
+        fmt.Println("Tip  :", tip)
+        total = total + tip
+        fmt.Println("Total:", total)
+
+        // Split bill
+        split := total / 2
+        fmt.Println("Split:", split)
+
+        // Reward every 5th visit
+        visitCount := 24
+        visitCount = visitCount + 1
+        remainder := visitCount % 5
+        if remainder == 0 {
+                fmt.Println("With this visit, you've earned a reward.")
+        }
+}
+```
+
+```shell
+go run .
+```
+
+You can use the `+` symbol to join strings together.
+
+```go nu
+package main
+
+import "fmt"
+
+func main() {
+        givenName := "John"
+        familyName := "Smith"
+        fullName := givenName + " " + familyName
+        fmt.Println("Hello,", fullName)
+}
+```
+
+**Bitwise Operators:** Go has all the familiar bitwise operators you'd find in
+programming languages.
+
+### Shorthand Operators
+
+Exercise 1.10:
+
+```go nu fp=main.go
+package main
+
+import "fmt"
+
+func main() {
+        count := 5
+
+        // Add to itself
+        count += 5
+        fmt.Println(count)
+
+        // Increment by 1
+        count++
+        fmt.Println(count)
+
+        // Decrement by 1
+        count--
+        fmt.Println(count)
+
+        // Subtract from itself
+        count -= 5
+        fmt.Println(count)
+
+        // This one works for strings
+        name := "John"
+        name += " Smith"
+        fmt.Println("Hello,", name)
+}
+```
+
+### Comparing Values
 
 ## Logic and Loops
 

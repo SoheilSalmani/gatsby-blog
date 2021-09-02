@@ -1,7 +1,7 @@
 ---
 title: AWS Certified Developer - Associate Guide
 resourceId: "9781789617313"
-stoppedAt: Core AWS Services
+stoppedAt: The shared security responsibility model
 ---
 
 ## Overview of AWS Certified Developer - Associate Certification
@@ -146,6 +146,363 @@ mechanism to undo or get the data back. It is highly recommended that you back
 up important data to a secure and safe place before closing your AWS account.
 
 ### Core AWS Services
+
+#### AWS compute services
+
+- **EC2:** This provides scalable compute capacity, such as virtual servers.
+- **EC2 Container Service:** This is a highly scalable and high performance
+  container management service. This supports Docker and runs on a managed
+  cluster of EC2 instances.
+- **Lightsail:** This provides template-based computing; it is also called
+  Virtual Private Servers (VPS). This makes it possible to quickly launch VMs
+  from templates rather than selecting individual components in EC2.
+- **Elastic Beanstalk:** This helps developers by deploying and managing
+  applications in the AWS cloud very quickly. Developers just have to upload
+  their application, and the rest is taken care of by Elastic Beanstalk.
+- **Lambda:** This facilitates serverless computing by allowing you to run
+  functions or code without actually spinning servers. Unlike EC2 instances, you
+  are only charged for running the functions. AWS does not charge anything for
+  hosting the function.
+- **Batch:** This is used for running any amount of batch processing for
+  developers, scientists, and engineers in the AWS cloud.
+
+#### AWS storage devices
+
+- **S3:** This provides a highly scalable, reliable, and low-latency object
+  storage service.
+- **Elastic File System (EFS):** This is a fully managed, scalable, and sharable
+  storage service among thousands of EC2 instances.
+- **Glacier:** This offers secure, durable, and extremely low-cost solutions for
+  backups and archiving.
+- **Storage Gateway:** This seamlessly connects on-premises applications or
+  services with AWS cloud storage.
+
+#### AWS database services
+
+- **Relational Database Service (RDS):** This service manages RDSs. It supports
+  the Amazon Aurora, MySQL, MariaDB, Oracle, SQL Server, and PostgreSQL database
+  engines.
+- **DynamoDB:** This is a fast and flexible NoSQL database service; it provides
+  predictable performance.
+- **ElastiCache:** This service makes it easy for you to deploy Memcached or
+  Redis protocol-compliant server nodes in the cloud. Primarily, it improves
+  application performance by storing frequently accessed information into
+  memory.
+- **RedShift:** This is a fully managed petabyte-scale columnar data warehousing
+  service. It also provides **Open Database Connectivity (ODBC)** and **Java
+  Database Connectivity (JDBC)** connectivity and SQL-based retrieval.
+
+#### AWS networking and content delivery services
+
+- **Virtual Private Cloud (VPC):** This service logically isolates networks. It
+  allows us to define IP range selections, create subnets, configure routes, and
+  network gateways.
+- **CloudFront:** This provides a **Content Distribution Network (CDN)**
+  service. Here, content is distributed using edge locations, providing
+  low-latency and high data transfer speeds across the globe.
+- **Direct Connect:** This service provides dedicated network connectivity
+  between private data centers and the AWS cloud. It's useful for creating a
+  hybrid cloud.
+- **Route 53:** This is a highly available and scalable global DNS service.
+- **API Gateway:** This service allows developers to publish, monitor, and
+  maintain APIs in a secure and scalable manner.
+
+#### AWS migration services
+
+- **Database Migration Service (DMS):** This is a cross-schema conversion and
+  database migration tool for Oracle PL/SQL, SQL Server, and more.
+- **AWS Migration Hub:** This service provides a centralized location to track
+  and monitor the progress of application migrations. It also provides a set of
+  tools for facilitating the migration process.
+- **Application Discovery Service:** This service facilitates the application
+  migration process by quickly discovering an application's dependencies and
+  performance profile that are running on an instance.
+- **Server Migration Service:** This service provides an automated process to
+  migrate on-premises VMWare vSphere or Microsoft HyperV/SCVMM instances to the
+  AWS cloud.
+- **Snowball:** This is a physical storage device that accelerates the transfer
+  of TBs of data between on-premises data centers and AWS. It is available in
+  two sizes: 50 TB and 80 TB.
+- **Snowmobile:** This service is an exabyte-scale data transfer service. One
+  snowmobile can transfer up to 100 PB of data from a data center to AWS, and
+  vice-versa. It comes in a 45-foot long rugged shipping container.
+
+#### AWS developer tools
+
+- **CodeCommit:** This service provides a scalable and managed private Git
+  repository. Anything from code to binaries can be stored in it.
+- **CodeBuild:** This service is a fully managed build service. It can compile
+  and test source code, making it ready for deployment.
+- **CodeDeploy:** CodeDeploy can be used to automate code deployment to any
+  instance on AWS EC2 or on-premises.
+- **CodePipeline:** CodePipeline facilitates continued deployment on AWS. It can
+  be used to automate the software deployment process, allowing a developer to
+  quickly model, visualize, and deliver code for new feature updates.
+- **CodeStar:** AWS CodeStar facilitates the creation and management of software
+  development projects on AWS. It helps in rapidly developing, building, and
+  deploying applications on AWS. It easily integrates with other project
+  development toolchains on AWS, such as CodeCommit, CodeBuild, CodeDeploy,
+  CodePipeline, and more.
+- **Cloud9:** AWS Cloud9 is a browser-based **Integrated Development Environment
+  (IDE)**, which can be used to write, run, and debug your application code.
+- **X-Ray:** AWS X-Ray is a service that helps you see inside your applications
+  by collecting application request data and analyzing it. Using various tools
+  provided by X-Ray, you can identify issues and opportunities to optimize your
+  application.
+
+#### AWS management tools
+
+- **CloudWatch:** CloudWatch can be configured to monitor AWS resources. It can
+  collect metrics and logs to monitor and generate alerts.
+- **CloudFormation:** CloudFormation automates and simplifies repeated
+  infrastructure tasks, such as repeatedly creating the same infrastructure in
+  the same or different AZ or region.
+- **CloudTrail:** This service records each AWS API call and creates an audit
+  trail. It stores the audit trail/log files in an S3 bucket.
+- **AWS Config:** This service provides the AWS resource inventory,
+  configuration history, change notifications, and also helps in security and
+  governance.
+- **OpsWorks:** AWS OpsWorks is a configuration management service that uses
+  automation platforms, such as Chef and Puppet, and generates infrastructure,
+  as well as server configurations as code.
+- **Service Catalog:** The AWS Service Catalog allows organizations to manage
+  commonly deployed IT services centrally, and assists organizations in
+  achieving consistent governance to meet compliance requirements. It allows
+  users to quickly deploy a set of approved IT services using the governance
+  model set by the organization.
+- **Trusted Advisor:** This service helps to reduce monthly billing and increase
+  performance and security.
+- **Systems Manager:** This is an automated advisory service specific to an AWS
+  account, which inspects your AWS environment and provides suggestions to
+  reduce cost, improve system performance, and address security risks.
+- **Managed Services:** This is a service offered by AWS for the ongoing
+  management of your AWS infrastructure. If you opt for AWS Managed Services,
+  AWS implements best practices to manage your infrastructure, increase
+  operational efficiency, reduce the operational overhead, and minimize the
+  risk.
+
+#### AWS security, identity, and compliance services
+
+- **IAM:** IAM is an AWS service that allows you to create users, groups, and
+  roles to access AWS services and securely control access to various AWS
+  resources through specific permissions.
+- **Inspector:** Inspector is an automated security assessment service that is
+  used to test the security state of applications hosted on EC2.
+- **Certificate Manager:** This creates and manages **Secure Sockets Layer
+  (SSL)/ Transport Layer Security (TLS)** certificates. The service also makes
+  it easy to deploy these certificates across various AWS services.
+- **Directory Service:** This is an AWS directory service for Microsoft **Active
+  Directory (AD)**. It makes it easy to deploy directory-aware workloads on AWS
+  resources to use and manage AD in the AWS cloud.
+- **Web Application Firewall (WAF):** With this service, you can configure
+  various application firewall rules to allow, block, or just monitor web
+  requests over an application. It protects web applications from external
+  attacks.
+- **Shield:** This is an advance security shield for web applications. It is
+  provided as a managed service to protect web applications running on AWS
+  against **Distributed Denial of Service (DDoS)** attacks.
+- **Cognito:** This provides sign-up authentication tools to web and mobile
+  apps. It also provides the synchronization of data between various devices,
+  such as mobiles, tablets, laptops, and more.
+- **Secrets Manager:** This is a management service that facilitates access
+  protection for applications, services, and other IT resources. With the help
+  of Secrets Manager, you can simply manage, retrieve, and rotate database
+  credentials, API keys, and other secrets.
+- **GuardDuty:** GuardDuty provides a mechanism that allows you to intelligently
+  detect threats. It continuously monitors and protects the AWS account, as well
+  as the workloads associated with it.
+- **Macie:** Macie is an intelligent security service, which uses machine
+  learning for automatically discovering, classifying, and protecting sensitive
+  data on your AWS account.
+- **Single Sign-On:** AWS SSO provides a single sign-on service that allows
+  organizations to use their existing corporate authentication service to
+  provide access to all their applications from a centralized location.
+- **CloudHSM:** CloudHSM is an integrated security service offered by Amazon,
+  which provides isolated **Hardware Security Module (HSM)** appliances that can
+  be used by customers for an additional layer of protection for sensitive data
+  that is in line with the strict regulatory compliance requirement of an
+  organization.
+- **Artifact:** AWS Artifact provides an on-demand service to download AWS
+  security and compliance documents, which are generally required by auditors
+  and regulators. These artifacts, which are also called audit artifacts,
+  demonstrate the regulatory compliance of AWS infrastructures and services.
+  Some of the regulatory compliance artifacts provided by AWS include ISO, PCI
+  DSS, SOC, HIPPA, and more.
+
+#### AWS analytics services
+
+- **Athena:** Athena is an interactive query service that is used to analyze
+  data in Amazon S3 using SQL.
+- **Elastic Map Reduce (EMR):** EMR is a service based on the Hadoop framework
+  that provides easy and cost-effective big data solutions.
+- **CloudSearch:** CloudSearch is a fully managed and scalable textual search
+  solution for websites or applications.
+- **Elasticsearch:** Elasticsearch is a scalable managed service that can be
+  used for log analytics, full text search, application monitoring, and more.
+- **Kinesis:** Kinesis is an easy-to-use, real-time data collection, processing,
+  analysis, and data streaming service.
+- **Data Pipeline:** AWS Data Pipeline facilitates the automated movement and
+  transformation of data. It allows a user to define a data-driven workflow to
+  accomplish one or more tasks.
+- **QuickSight:** QuickSight is a fast, easy-to-use business analytics service,
+  which can build data visualization, perform ad hoc analysis, and provide
+  insights into your data.
+- **AWS Glue:** AWS Glue is an easy-to-use, cost-effective, and fully managed
+  **Extract, Transform, and Load (ETL)** service, which can be used to
+  categorize, clean, enrich, and reliably move data across multiple data stores.
+
+#### AWS machine learning services
+
+- **Lex:** Lex provides a platform to build text and voice-based conversational
+  interfaces, with high-quality speech recognition capabilities.
+- **Polly:** Polly is a powerful text-to-speech service provided by Amazon.
+- **Rekognition:** Rekognition is a fully managed image recognition service
+  powered by deep learning algorithms.
+- **Amazon Machine Learning:** Amazon ML is an easy-to-use machine learning
+  service that allows you to build, train, and test algorithm-based predictive
+  models.
+- **SageMaker:** SageMaker is a fully managed machine learning platform that can
+  be used by developers and data scientists for building, training, and
+  deploying machine learning models. SageMaker provides more flexibility and
+  features compared to Amazon Machine Learning.
+- **Amazon Comprehend:** Amazon Comprehend helps in building intelligent
+  applications by analyzing and understanding the intent and sentiment of any
+  unstructured text documents, search queries, and chat conversations.
+- **AWS DeepLens:** AWS DeepLens is a programmable video camera with tutorials,
+  example code, and pretrained models that can be used to build intelligent
+  applications.
+- **Amazon Transcribe:** Amazon Transcribe is an easy-to-use speech-to-text
+  service, based on **Automatic Speech Recognition (ASR)** technology.
+- **Amazon Translate:** Amazon Translate is an easy-to-use language translation
+  service.
+
+#### AWS IoT services
+
+- **IoT Core:** AWS IoT Core is a platform service that helps you in building
+  IoT applications. It does so by providing mechanisms that connect IoT devices
+  to AWS services and other IoT devices. It also helps in securing data and
+  device communications, making it easier to manage and process device data.
+- **IoT 1-Click:** AWS IoT 1-Click is a service that can be used by devices,
+  such as IoT buttons, to trigger Lambda functions at the click of a button.
+- **IoT Device Management:** AWS IoT Device Management is an easy-to-use
+  cloud-based device management service, which helps in securely managing IoT
+  devices.
+- **IoT Analytics:** AWS IoT Analytics is a fully managed IoT data analytics
+  service that supports petabyte-scale IoT data. It is based on a pay-as-you go
+  model.
+- **Greengrass:** AWS Greengrass is an IoT software that can be installed on IoT
+  devices to manage and run applications.
+- **FreeRTOS:** Amazon FreeRTOS is an OS for microcontrollers, which makes it
+  easy to connect to, securely deploy programs to, and manage low-powered edge
+  devices.
+
+#### AWS game development services
+
+- **GameLift:** GameLift is a fully managed service that is used to deploy,
+  operate, and scale session-based multiplayer game servers in the cloud.
+
+#### AWS mobile services
+
+- **Mobile Hub:** This service provides a platform to build, test, and monitor
+  mobile app usage.
+- **AppSync:** AWS AppSync is a fully managed data query language service that
+  provides real-time data synchronization and offline programming features. It
+  is based on GraphQL—a data query language developed by Facebook.
+- **Device Farm:** AWS Device Farm is an application testing service on AWS
+  Cloud, which provides real physical devices in an virtual environment to test
+  Android, iOS, and web applications on phones and tablets.
+- **Mobile Analytics:** Amazon Mobile Analytics is an analytics service for
+  mobile applications that can collect, visualize, and analyze application usage
+  data.
+
+#### AWS application integration services
+
+- **Step Functions:** AWS Step Functions is an application integration service
+  that helps in building distributed applications using visual workflows. As the
+  name suggests, you can build a series of steps for your application in visual
+  workflows that are executed in defined sequences with built-in error handling
+  mechanisms.
+- **Simple Workflow (SWF):** Amazon SWF is a workflow management service that
+  coordinates work between distributed application components in order to
+  accomplish tasks defined in an application workflow.
+- **Simple Queue Service (SQS):** Amazon SQS is a fully managed distributed
+  message queuing service. It makes it easier to decouple application components
+  and scale microservices, distributed systems, and serverless applications.
+- **Simple Notification Service (SNS):** As the name suggests, SNS is a
+  notification service that works on a pub-sub model, where you can publish or
+  subscribe to a specific notification. It can send a message to a subscribing
+  endpoint or a client based on a trigger.
+- **Amazon MQ:** Amazon MQ is a fully managed message broker service based on
+  Apache ActiveMQ. The purpose of a message broker is to make it easier for
+  application components to communicate using formal messaging protocols in a
+  number of programming languages.
+
+#### AWS desktop and app streaming services
+
+- **WorkSpace:** Amazon WorkSpace is a virtual desktop service on the cloud that
+  allows end users to connect to high-end desktops in the cloud using thin
+  clients.
+- **AppStream 2.0:** Amazon AppStream 2.0 is an easy-to-use, secure, and fully
+  managed application streaming service, which can stream desktop applications
+  from the AWS environment to HTML 5-compatible browsers.
+
+#### AWS business productivity services
+
+- **Alexa for Business:** Alexa for Business is an intelligent voice-enabled
+  assistant at work. People can ask questions to get answers to their query. It
+  can be integrated with a number of Alexa-enabled IoT devices and can be
+  controlled through voice.
+- **Amazon Chime:** Amazon Chime is a unified communication service that can be
+  used to conduct online meetings with high quality audio, video, and other
+  online meeting features.
+- **WorkMail:** Amazon WorkMail is a managed business emails, contacts, and
+  calendar service. It allows seamless access from mobile devices, web browsers,
+  and desktop clients.
+- **WorkDocs:** Amazon WorkDocs is an easy-to-use, fully managed, and secure
+  document storage and sharing service.
+
+#### AWS customer engagement services
+
+- **Amazon Connect:** Amazon Connect is a contact center solution over the
+  cloud. Apart from providing usual contact center features, it can be
+  integrated with some of the existing systems and business applications to
+  provide more insight into customer calls.
+- **Pinpoint:** Amazon Pinpoint is a customer engagement management solution
+  that can be used to send email, SMS, mobile push notifications, and more. It
+  can also be integrated in applications to get usage data to provide better
+  insights into application usage.
+- **Simple Email Service (SES)**: Amazon SES is a cloud-based email service that
+  can be used to send and receive emails.
+
+#### AWS media services
+
+- **Elastic Transcoder:** Elastic Transcoder is a media transcoding service that
+  helps in converting media files from one format into another. It is mainly
+  used for creating media files that are compatible with different mobile
+  devices, tablets, and personal computers.
+- **Kinesis Video Streams:** Amazon Kinesis Video Streams is a fully managed
+  live video streaming service that can be used to stream live video in the AWS
+  cloud. It also facilitates the development of real-time video processing
+  applications and video analytics.
+- **Elemental MediaConvert:** Elemental MediaConvert is a cloud-based media
+  transcoding service that can convert an input video format into multiple
+  output formats, which can be viewed on devices with different resolutions.
+- **Elemental MediaLive:** Elemental MediaLive is a cloud-based live video
+  processing service. It can create a video stream for broadcasting on a TV and
+  any other internet-connected device. It is helpful in compressing large video
+  files and distributing these files to viewers.
+- **Elemental MediaPackage:** Elemental MediaPackage is a cloud-based media
+  service that can prepare video streams for distribution over the internet. It
+  also protects the media by uThe shared security responsibility modelsing
+  **Digital Rights Management (DRM)**.
+- **Elemental MediaStore:** Elemental MediaStore is a storage service,
+  specifically designed to serve media content. It provides low latency,
+  consistency, and high performance for delivering live video streams.
+- **Elemental MediaTailor:** Elemental MediaTailor is a media service that can
+  embed targeted advertisements into live or on-demand video streams without
+  compromising the viewing experience of the user.
+
+###
 
 ## Identity and Access Management (IAM)
 

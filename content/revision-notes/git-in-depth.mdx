@@ -1,24 +1,202 @@
 ---
 title: Git In-Depth
 resourceId: https://frontendmasters.com/courses/git-in-depth/
-stoppedAt: TODO
+stoppedAt: Git Areas and Stashing
 ---
-
-## Git In-Depth
-
-### Introduction
-
-### Course Agenda
 
 ## Git Foundations
 
 ### Data Storage
 
+#### How Does Git Store Information?
+
+- At its core, git is like a key-value store.
+- The **Value = Data**.
+- The **Key = Hash of the Data**.
+- You can use the key to retrieve the content.
+
+#### The Key - SHA1
+
+- Is a cryptographic hash function.
+- Given a piece of data, it produces a 40-digit hexadecimal number.
+- This value should always be the same if the given input is the same.
+
 ### Git Blobs and Trees
+
+#### The Value - Blob
+
+git stores the **compressed** data in a blob, along with metadata in a header:
+
+- the identifier `blob`
+- the size of the content
+- `\0` delimiter
+- content
+
+<Figure src="/media/git-blob.png">A blob.</Figure>
+
+#### Under the Hood - git hash-object
+
+Asking Git for the SHA1 of contents:
+
+```shell
+echo 'Hello, World!' | git hash-object --stdin
+```
+
+Generating the SHA1 of the contents, with metadata:
+
+```shell
+printf 'blob 14\0Hello, World!\n' | openssl sha1
+```
+
+#### Where are blobs stored?
+
+```shell
+echo 'Hello, World!' | git hash-object -w --stdin
+tree .git
+```
+
+```tree
+.git
+├── HEAD
+├── branches
+├── config
+├── description
+├── info
+│   └── exclude
+├── objects
+│   ├── 8a
+│   │   └── b686eafeb1f44702738c8b0f24f2567c36da6d
+│   ├── info
+│   └── pack
+└── refs
+    ├── heads
+    └── tags
+```
+
+#### We need something else
+
+The blob is missing information!
+
+- filenames
+- directory structures
+
+Git stores this information in a **tree**.
+
+#### Tree
+
+A **tree** contains pointers (using SHA1):
+
+- to blobs
+- to other trees
+
+and metadata:
+
+- **_type_** of pointer (`blob` or `tree`)
+- **_filename_** or directory name
+- **_mode_** (executable file, symbolic link, ...)
+
+<Figure src="/media/git-tree.png">A tree.</Figure>
+
+#### Identical content is only stored one!
+
+<Figure src="/media/git-identical-content.png">
+  Identical content is only stored one!
+</Figure>
+
+#### Other Optimizations - Packfiles, Deltas
+
+- Git objects are compressed.
+- As files change, their contents remain mostly similar.
+- Git optimizes for this by compressing theses files together, into a Packfile.
+- The Packfile stores the object, and "deltas", or the differences between one
+  version of the file and the next.
+- Packfiles are generated when:
+  - you have too many objects, during gc, or during a push to a remote
 
 ### Git Commits
 
-### Simple Git Commit Exercise & Solution
+#### Commit Object
+
+A **commit** points to:
+
+- a tree
+
+and contains metadata:
+
+- **_author_** and **_comitter_**
+- **_date_**
+- **_message_**
+- **_parent commit_** (one or more)
+
+The SHA1 of the commit is the hash of all this information.
+
+<Figure src="/media/git-commit.png">A commit.</Figure>
+
+#### Commits point to parent commits and trees
+
+<Figure src="/media/git-commits-point-to.png">
+  Commits point to parent commits and trees.
+</Figure>
+
+A COMMIT IS A CODE SNAPSHOT!
+
+#### Commits Under the Hood - Make a Commit
+
+When we make a commit, the first status line that we'll see tells us what the
+hash of that commit is.
+
+#### Commits Under the Hood - Look In `.git/objects`
+
+```shell
+tree .git/objects
+```
+
+#### Commits Under the Hood - Look at Objects
+
+You can't inspect git objects using `cat` because these files are compressed.
+
+#### git cat-file -t (type) and -p (print the contents)
+
+```shell
+git cat-file -t [sha1]
+git cat-file -p [sha1]
+```
+
+#### Why Can't We "Change" Commits?
+
+- If you change any data about the commit, the commit will have a new SHA1 hash.
+- Even if the files don't change, the created date will.
+- Good for security, you can't inject malicious code without changing the SHA1.
+- Good for detecting file corruption.
+
+#### References - Pointers to Commits
+
+- Tags
+- Branches
+- HEAD - a pointer to the current commit
+
+<Figure src="/media/git-references.png">References.</Figure>
+
+Why is changing branches in Git lightning fast? Because just changing pointer.
+
+#### References - Under the Hood
+
+```tree
+.git/
+├── HEAD
+└── refs
+    ├── heads
+    │   └── master
+    └── tags
+```
+
+Branches stored in `.git/refs/heads`.
+
+```shell
+git log --oneline
+cat .git/refs/heads/master
+cat .git/HEAD
+```
 
 ## Git Areas and Stashing
 

@@ -1,0 +1,181 @@
+---
+title: Get Programming with Scala
+resourceId: "9781617295270"
+stoppedAt: TODO
+---
+
+## Hello Scala!
+
+### Why Scala?
+
+#### Why Scala?
+
+**A hybrid language:** Scala manages to combine two programming techniques that
+are considerably different: the object-oriented style with the functional one.
+When executing code on the JVM, the object-oriented approach can be more
+performant but prone to errors. When using mutable state, your program will
+re-allocate its memory: every time a change occurs, it will change the data in
+place. However, sharing state can cause your application to suffer from data
+inconsistency issues due to multiple processes accessing and modifying the same
+portion of data.
+
+A functional approach can be more readable and reusable but not as performant.
+Thanks to immutable data and structures, you can guarantee your program’s
+correctness when dealing with concurrency: your data never changes, so it is
+safe to share it. Your code will also be easier to understand and reuse because
+all its components will be independent of external factors outside its control.
+But recreating data rather than updating could be a memory-expensive operation,
+even though it has massively improved thanks to numerous optimizations and
+efficient garbage collection strategies in recent years.
+
+In Scala, you do not have to stick to a particular style, but you can take
+advantage of one or the other paradigm depending on the specific task you are
+solving.
+
+<Figure src="/media/comparison-oop-vs-fp-styles.png">
+  Comparison of the object-oriented and functional programming styles and how
+  they handle different programming tasks.
+</Figure>
+
+**Concise syntax:** Scala’s programming style is relatively concise,
+particularly when compared to other languages like Java. Having a compact syntax
+can increase both the productivity and readability of your program.
+
+**Flexibility:** Scala is extremely flexible: you can achieve the same goal in
+more than one way, making the language extremely fun and exciting to use. The
+opportunity to choose between different programming paradigms allows you to
+gradually shift your mindset from one approach to another without committing to
+a specific style since day one.
+
+**Concurrency:** Thanks to its use of immutable data structures and expressive
+type system, dealing with concurrency is less prone to errors than in other
+languages. As a result, Scala programs tend to utilize resources more
+efficiently, and they usually perform better under pressure.
+
+**Big data and Spark:** Thanks to Scala’s features and optimizations at its
+compile level, the community has developed new performant tools for big data
+processing. Apache Spark is the most popular of these tools. Thanks to Scala’s
+lazy evaluation Spark can perform optimizations at compile time that have huge
+impacts on its runtime performance.
+
+#### Scala and the JVM
+
+### The Scala environment
+
+### Scala Build Tool (sbt)
+
+## The Basics
+
+### Values and variables
+
+### Conditional constructs and loops
+
+### Function as the most fundamental block of code
+
+### Classes and subclasses to represent the world
+
+### The vending machine
+
+## Object-oriented fundamentals
+
+### Import and create packages
+
+### Scope your code with access modifiers
+
+### Singleton objects
+
+### Traits as interfaces
+
+### What time is it?
+
+## HTTP server
+
+### Pattern matching
+
+### Anonymous functions
+
+### Partial functions
+
+### HTTP API with http4s
+
+### The time HTTP server
+
+## Immutable data and structures
+
+### Case classes to structure your data
+
+### Higher order functions
+
+### What is purity?
+
+### Option
+
+### Working with Option: map and flatMap
+
+### Working with Option: For-comprehension
+
+### Tuple and unapply
+
+### Rock, Paper, Scissors, Lizard, Spock!
+
+## List
+
+### List
+
+### Working with List: map and flatMap
+
+### Working with List: Properties
+
+### Working with List: Element section
+
+### Working with List: Filtering
+
+### Working with List: Sorting and other operations
+
+### The movies dataset
+
+## Other collections and error handling
+
+### Set
+
+### Working with Set
+
+### Map
+
+### Working with Map
+
+### Either
+
+### Working with Either
+
+### Error handling with Try
+
+### The library application
+
+## Concurrency
+
+### Implicit and type classes
+
+### Future
+
+### Working with Future: map and flatMap
+
+### Working with Future: For-comprehension
+
+### Database queries with Quill
+
+### The quiz application: Part 1
+
+## JSON (de)serialization
+
+### JSON (de)serialization with circe
+
+### Lazy evaluation
+
+### The IO type
+
+### Working with the IO type
+
+### Testing with ScalaTest
+
+### The quiz application: Part 2

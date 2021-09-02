@@ -1,0 +1,275 @@
+---
+title: React Hooks in Action
+resourceId: "9781617297632"
+stoppedAt: React’s new publication channels
+---
+
+## React is evolving
+
+### What is React?
+
+#### Understanding component types
+
+The React team recommends the use of functions for components in new projects
+(although there is no plan to remove class components, so no need for big
+rewrites of existing projects).
+
+- **Stateless function component:** A JavaScript function that is passed
+  properties and returns UI.
+- **Function component:** A JavaScript function that is passed properties and
+  uses hooks to manage state and perform side effects, as well as returning UI.
+- **Class component:** A JavaScript class that includes a render method that
+  returns UI. It may also set up state in its constructor function and manage
+  state and perform side effects in its life-cycle methods.
+
+**Component side effects:** React components generally transform state into UI.
+When component code performs actions outside this main focus—perhaps fetching
+data like blog posts or stock prices from the network, setting up a subscription
+to an online service, or directly interacting with the DOM to focus form fields
+or measure element dimensions—we describe those actions as component _side
+effects_.
+
+We want our app and its components to behave predictably, so should make sure
+any necessary side effects are deliberate and visible.
+
+### What's new in React
+
+The words starting with _use_—`useState`, `useReducer`, `useContext`,
+`useEffect`, and `useTransition`—are examples of _React Hooks_. They are
+functions that you can call from React function components and that hook into
+key React functionality: state, life cycle, and context.
+
+### React Hooks can add state to function components
+
+The state could be local to a component, raised to a component higher in the
+tree, and shared among siblings via properties, or global and accessed via
+React’s Context mechanism or higher-order components (functions that take a
+component as an argument and return a new component that wraps the passed-in
+component but that has extra functionality).
+
+#### Stateful function components: Less code, better organization
+
+In JavaScript, functions can contain other functions, so the component can
+contain event handlers that react to user interactions with the UI.
+
+Here are some of the results of using the new function component approach rather
+than the older class-based approach:
+
+- Less code
+- Better code organization with related code kept together along with any
+  cleanup code
+- Extraction of features to external functions that can be reused and shared
+- More easily testable components
+- No need to call `super()` in a class constructor
+- No need to work with `this` and bind handlers
+- Simpler life-cycle model
+- Local state in scope for handlers, side effect functions, and the returned UI
+
+With class components, state was set up in the constructor function, event
+handlers were bound to `this`, and side-effect code was split across multiple
+life-cycle methods (`componentDidMount`, `componentWillUnmount`,
+`componentWillUpdate`, and so on).
+
+<Figure src="/media/react-class-component-function-component.png">
+  A class component with code spread across life-cycle methods, and a function
+  component with the same functionality but with less, better organized code.
+</Figure>
+
+Function components with hooks no longer need all the life-cycle methods because
+effects can be encapsulated into hooks.
+
+In fact, keeping a feature or effect’s code in one place makes it much easier to
+extract into an external function of its own.
+
+#### Custom hooks: Easier code reuse
+
+Function components with hooks encourage you to keep related side-effect logic
+in one place. If the side effect is a feature that many components will need,
+you can take the organization a step further and extract the code into its own
+external function; you can create what is called a _custom hook_.
+
+<Figure src="/media/react-extract-code-into-custom-hooks.png">
+  The code for fetching question data and for subscribing to a user service can
+  be extracted into custom hooks. The accompanying state can also be managed by
+  the hooks.
+</Figure>
+
+<Figure src="/media/react-hooks-quiz-and-chat.png">
+
+You can extract code into custom hooks for reuse and sharing. The `Quiz`
+component calls both the `useUsers` and `useFetch` hooks. The `Chat` component
+calls the `useUsers` hook.
+
+</Figure>
+
+Each custom hook can maintain its own state, whatever it needs to perform its
+duties. And because hooks are just functions, if components need access to any
+of the hook’s state, the hook can include the state in its return value.
+
+#### Third-party hooks provide ready-made, well-tested functionality
+
+Third-party libraries that work with React have been quick to release new
+versions that make the most of hooks’ simpler API and more direct methods of
+integration. We take a very brief look at three examples in this section:
+
+- React Router for page navigation
+- Redux as an application data store
+- React Spring for animation
+
+##### React Router
+
+_React Router_ provides components to help developers manage navigation between
+pages in their apps. Its custom hooks make it easy to access common objects
+involved in navigation: `useHistory`, `useLocation`, `useParams`, and
+`useRouteMatch`. For example, useParams gives access to any parameters matched
+in a page’s URL:
+
+```text
+URL:    /quiz/:title/:qnum
+Code:   const { title, qnum } = useParams()
+```
+
+##### Redux
+
+For some applications, a separate store for state might be appropriate. Redux is
+a popular library for creating such stores and it is often combined with React
+via the React Redux library. Since version 7.1, React Redux offers hooks to make
+interacting with the store easier: `useSelector`, `useDispatch`, and `useStore`.
+For example, `useDispatch` lets you dispatch an action to update the state in
+the store. Say you have an application to build question sets for quizzes and
+you want to add a question:
+
+```js
+const dispatch = useDispatch()
+dispatch({ type: "add question", payload: /* question data */ })
+```
+
+The new custom hooks remove some of the boilerplate code that was associated
+with connecting a React application to a Redux store. React also has a built-in
+hook, `useReducer`, which might provide a simpler model for dispatching actions
+to update state and remove the perceived need for Redux in some cases.
+
+##### React Spring
+
+_React Spring_ is a Spring-based animation library that currently provides five
+hooks to access its functionality: `useSpring`, `useSprings`, `useTrail`,
+`useTransition`, and `useChain`. For example, to animate between two values, you
+can opt for `useSpring`:
+
+```js
+const props = useSpring({ opacity: 1, from: { opacity: 0 } })
+```
+
+### Better UX with Concurrent Mode and Suspense
+
+A large part of the motivation for the rewrites of React for versions 16 and 17
+was to build the architecture to cope with the multiple demands put upon a user
+interface as it loads and manipulates data while users continue interacting with
+the application. Concurrent Mode is a core piece of that new architecture, and
+`Suspense` components fit the new mode naturally.
+
+<Figure src="/media/react-without-concurrent-mode.png">
+  Without Concurrent Mode, interactions like keystrokes are blocked by
+  long-running updates.
+</Figure>
+
+Wouldn’t it be great if the app could prioritize the text box updates and keep
+the user experience smooth, pausing and restarting the filtering duties around
+the typing? Say hello to Concurrent Mode!
+
+#### Concurrent Mode
+
+With _Concurrent Mode_, React can schedule tasks in a more granular way, pausing
+its work building elements, checking for differences, and updating the DOM for
+previous state changes to make sure it responds to user interactions, for
+example. In the preceding filtering app example, React can pause rendering of
+the filtered list to make sure the text that the user is typing appears in the
+text box.
+
+The new React architecture breaks its tasks into smaller units of work,
+providing regular points for the browser or operating system to inform the
+application that a user is trying to interact with it. React’s scheduler can
+then decide what jobs to do based on the priority of each. Reconciling and
+committing changes to one part of the component tree can be paused or abandoned
+to make sure components with higher priority are updated first.
+
+<Figure src="/media/react-with-concurrent-mode.png">
+  In Concurrent Mode, React can pause longer-running updates to quickly react to
+  user interactions.
+</Figure>
+
+It’s not just user interactions that can benefit from this intelligent
+scheduling; responses to incoming data, lazily loaded components or media, or
+other asynchronous processes can also enjoy a smoother user-interface upgrade.
+React can continue to display a fully interactive existing UI (rather than a
+spinner) while it renders the UI for updated state in memory, switching to the
+new UI when enough of it is ready. Concurrent Mode enables a couple of new
+hooks, `useTransition` and `useDeferredValue`, that improve the user experience,
+smoothing the change from one view to another or one state to another. It also
+goes hand in hand with `Suspense`, both a component for rendering fallback
+content and a mechanism for specifying that a component is waiting for
+something, like loading data.
+
+#### Suspense
+
+As you have seen, React applications are built from components in a hierarchical
+tree. To display the current state of your app onscreen (using the DOM, for
+instance), React traverses your components and creates _element trees_,
+descriptions of the intended UI, in memory. It compares the latest tree with the
+previous one and intelligently decides what DOM updates need to be made to
+realize the intended UI. Concurrent mode lets React pause processing of parts of
+the element tree, either to work on higher-priority tasks or because the current
+component isn’t ready to be processed.
+
+Components built to work with `Suspense` can now _suspend_ if they are not ready
+to return their UI (remember, components are either functions or have a render
+method and convert properties and state into UI). They might be waiting for
+component code or assets or data to load and just don’t yet have the information
+they need to fully describe their UI. React can pause processing of a suspended
+component and carry on traversing the element tree.
+
+In addition to specifying a mechanism for components to suspend, React provides
+a `Suspense` component that you can use to plug holes that suspended components
+have left in your user interface. Wrap sections of your UI in `Suspense`
+components and use their `fallback` properties to let React know what content to
+show if one or more of the wrapped components suspends:
+
+```jsx
+<Suspense fallback={<MySpinner />}>
+  <MyFirstComponent />
+  <MySecondComponent />
+</Suspense>
+```
+
+`Suspense` allows the developer to deliberately manage loading states for
+multiple components, either showing fallbacks for individual components, groups
+of components, or the app as a whole. It provides a mechanism for library
+authors to update their APIs to work with the `Suspense` component, so their
+asynchronous features can make full use of the loading state management that
+`Suspense` provides.
+
+### React’s new publication channels
+
+## Managing component state with the useState hook
+
+## Managing component state with the useReducer hook
+
+## Working with side effects
+
+## Managing component state with the useRef hook
+
+## Managing application state
+
+## Managing performance with useMemo
+
+## Managing state with the Context API
+
+## Creating your own hooks
+
+## Using third-party hooks
+
+## Code splitting with Suspense
+
+## Integrating data fetching with Suspense
+
+## Experimenting with useTransition, useDeferredValue, and SuspenseList

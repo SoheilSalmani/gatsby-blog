@@ -12,7 +12,7 @@ tags: []
    1. <Scr>Add project</Scr>, then enter a project name.
    2. If you are creating a new project, you can edit the **Project ID**.
    3. <Scr>&lt;/&gt;</Scr>, then enter the app's nickname.
-   4. Optionally, you can set up Firebase Hosting for your web app.
+   4. Click <Scr>Register app</Scr>.
 
    </Solution>
 
@@ -27,7 +27,7 @@ tags: []
       cd hello-world
       ```
    2. ```shell
-      npm install --save firebase@9.0.0-beta.7
+      npm install firebase
       ```
    3. ```js fp=src/services/firebase.js
       import { initializeApp } from "firebase/app"
@@ -75,5 +75,49 @@ tags: []
    4. ```shell
       firebase deploy
       ```
+
+   </Solution>
+
+4. Write a JavaScript file in which you use the Cloud Firestore Lite SDK to
+   retrieve a list of data.
+
+   <Solution>
+
+   ```js
+   import { initializeApp } from "firebase/app"
+   import { getFirestore, collection, getDocs } from "firebase/firestore/lite"
+   // Follow this pattern to import other Firebase services
+   // import { } from 'firebase/<service>';
+
+   // TODO: Replace the following with your app's Firebase project configuration
+   const firebaseConfig = {
+     //...
+   }
+
+   const app = initializeApp(firebaseConfig)
+   const db = getFirestore(app)
+
+   // Get a list of cities from your database
+   async function getCities(db) {
+     const citiesCol = collection(db, "cities")
+     const citySnapshot = await getDocs(citiesCol)
+     const cityList = citySnapshot.docs.map(doc => doc.data())
+     return cityList
+   }
+   ```
+
+   </Solution>
+
+5. Import the Firebase Admin SDK to a Node project.
+
+   <Solution>
+
+   ```shell
+   npm install firebase-admin --save
+   ```
+
+   ```js
+   import * as admin from "firebase-admin"
+   ```
 
    </Solution>

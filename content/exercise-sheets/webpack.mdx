@@ -1,5 +1,79 @@
 ---
 title: webpack
-relatedResources: []
+relatedResources:
+  - https://webpack.js.org/guides/getting-started/
 tags: []
 ---
+
+1. Transform the following code to create a bundle which will be processed by
+   webpack:
+
+   ```js nu fp=src/index.js
+   function component() {
+     const element = document.createElement("div")
+
+     // Lodash, currently included via a script, is required for this line to work
+     element.innerHTML = _.join(["Hello", "webpack"], " ")
+
+     return element
+   }
+
+   document.body.appendChild(component())
+   ```
+
+   ```js nu fp=index.html
+   <!DOCTYPE html>
+   <html>
+     <head>
+       <meta charset="utf-8" />
+       <title>Getting Started</title>
+       <script src="https://unpkg.com/lodash@4.17.20"></script>
+     </head>
+     <body>
+       <script src="./src/index.js"></script>
+     </body>
+   </html>
+   ```
+
+   <Solution>
+
+   ```shell
+   npm install --save lodash
+   ```
+
+   ```diff nu fp=src/index.js
+   +import _ from 'lodash';
+   +
+    function component() {
+      const element = document.createElement('div');
+
+   -  // Lodash, currently included via a script, is required for this line to work
+   +  // Lodash, now imported by this script
+      element.innerHTML = _.join(['Hello', 'webpack'], ' ');
+
+      return element;
+    }
+
+    document.body.appendChild(component());
+   ```
+
+   ```diff nu fp=dist/index.html
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>Getting Started</title>
+   -    <script src="https://unpkg.com/lodash@4.17.20"></script>
+      </head>
+      <body>
+   -    <script src="./src/index.js"></script>
+   +    <script src="main.js"></script>
+      </body>
+    </html>
+   ```
+
+   ```shell
+   npx webpack
+   ```
+
+   </Solution>

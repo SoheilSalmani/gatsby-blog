@@ -1,18 +1,100 @@
 ---
 title: Hypermodern Python
 resourceId: https://cjolowicz.github.io/posts/hypermodern-python-01-setup/
-stoppedAt: TODO
+stoppedAt: Managing virtual environments with Poetry
 ---
 
 ## Setup
 
 ### Setting up a GitHub repository
 
+Create a repository, and populate it with `README.md` and `LICENSE` (MIT
+license) files.
+
 ### Installing Python with pyenv
+
+Install Python releases through pyenv:
+
+```shell
+pyenv install 3.8.2
+pyenv install 3.7.7
+```
+
+Make your fresh Python installations available inside the repository:
+
+```shell
+pyenv local 3.8.2 3.7.5
+```
+
+Python 3.8.2 is the default version and can be invoked as `python`, but both
+versions are accessible as `python3.7` and `python3.8`, respectively.
+
+```shell
+python --version
+python3.8 --version
+python3.7 --version
+```
 
 ### Setting up a Python project using Poetry
 
+Poetry is a tool to manage Python packaging and dependencies. Its ease of use
+and support for modern workflows make it the ideal successor to the venerable
+setuptools.
+
+Install Poetry and source `~/.poetry/env` in your current shell.
+
+Initialize your Python project:
+
+```shell
+poetry init --no-interaction
+```
+
+This command will create a `pyproject.toml` file, the new Python package
+configuration file specified in PEP 517 and 518. It's a declarative file in TOML
+syntax, containing the entire package configuration.
+
+Add some metadata to the package:
+
+```toml fp=pyproject.toml
+[tool.poetry]
+...
+description = "The hypermodern Python project"
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/<your-username>/hypermodern-python"
+repository = "https://github.com/<your-username>/hypermodern-python"
+keywords = ["hypermodern"]
+```
+
+Poetry added a dependency on Python 3.8, because this is the Python version you
+ran it in. Support the previous release as well by changing this to Python 3.7:
+
+```toml fp=pyproject.toml hl=2
+[tool.poetry.dependencies]
+python = "^3.7"
+```
+
+The caret (`^`) in front of the version number means “up to the next major
+release”. In other words, you are promising that your package won’t break when
+users upgrade to Python 3.8 or 3.9, but you’re giving no guarantees for its use
+with a future Python 4.0.
+
 ### Creating a package in src layout
+
+```tree
+.
+├── pyproject.toml
+└── src
+    └── hypermodern_python
+        └── __init__.py
+```
+
+```python nu fp=src/hypermodern_python/__init__.py
+__version__ = "0.1.0"
+```
+
+Use snake case for the package name `hypermodern_python`, as opposed to the
+kebab case used for the repository name `hypermodern-python`.
 
 ### Managing virtual environments with Poetry
 

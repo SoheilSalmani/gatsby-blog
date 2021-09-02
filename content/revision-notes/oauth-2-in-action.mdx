@@ -1,11 +1,66 @@
 ---
 title: OAuth 2 in Action
 resourceId: "9781617293276"
+stoppedAt: "The bad old days: credential sharing (and credential theft)"
 ---
 
 ## First steps
 
 ### What is OAuth 2.0 and why should you care?
+
+OAuth 2.0 is a delegation protocol, a means of letting someone who controls a
+resource allow a software application to access that resource on their behalf
+without impersonating them. The application requests authorization from the
+owner of the resource and receives _tokens_ that it can use to access the
+resource. OAuth tokens can limit the client’s access to only the actions that
+the resource owner has delegated.
+
+Although OAuth is largely indifferent to what kind of resource it is protecting,
+it does fit nicely with today’s RESTful web services, and it works well for both
+web and native client applications. It can be scaled from a small single-user
+application up to a multimillion-user internet API.
+
+> The OAuth 2.0 authorization framework enables a third-party application to
+> obtain limited access to an HTTP service, either on behalf of a resource owner
+> by orchestrating an approval interaction between the resource owner and the
+> HTTP service, or by allowing the third-party application to obtain access on
+> its own behalf.
+
+As an _authorization framework_, OAuth is all about getting the right of access
+from one component of a system to another. In particular, in the OAuth world, a
+client application wants to gain access to a protected resource on behalf of a
+resource owner (usually an end user).
+
+- The _resource owner_ has access to an API and can delegate access to that API.
+  The resource owner is usually a person and is generally assumed to have access
+  to a web browser.
+- The _protected resource_ is the component that the resource owner has access
+  to. This can take many different forms, but for the most part it’s a web API
+  of some kind. Even though the name “resource” makes it sound as though this is
+  something to be downloaded, these APIs can allow read, write, and other
+  operations just as well.
+- The _client_ is the piece of software that accesses the protected resource on
+  behalf of the resource owner. In OAuth, the client is whatever software
+  consumes the API that makes up the protected resource.
+
+We need to realize that we’ve got one goal in this whole setup: getting the
+client to access the protected resource for the resource owner.
+
+<Figure src="/media/connecting-client-on-behalf-resource-owner.png">
+  Connecting the client on behalf of the resource owner.
+</Figure>
+
+Let’s say you’ve uploaded your vacation photos to the photo-storage site, and
+now you want to have them printed. The storage site’s API is the resource, and
+the printing service is the client of that API. You, as the resource owner, need
+to be able to delegate part of your authority to the printer so that it can read
+your photos. You probably don’t want the printer to be able to read all of your
+photos, nor do you want the printer to be able to delete photos or upload new
+ones of its own. Ultimately, what you’re interested in is getting certain photos
+printed, and if you’re like most users, you’re not going to be thinking about
+the security architectures of the systems you’re using to get that done.
+
+#### The bad old days: credential sharing (and credential theft)
 
 ### The OAuth dance
 

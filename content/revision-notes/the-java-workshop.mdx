@@ -1,7 +1,7 @@
 ---
 title: The Java Workshop
 resourceId: "9781838986698"
-stoppedAt: Learn the Basics
+stoppedAt: Using Arithmetic Operators in an if Condition
 ---
 
 ## Getting Started
@@ -166,6 +166,130 @@ public class Main {
 ```
 
 ## Learning the Basics
+
+### Controlling the Flow of Your Programs
+
+Exercise 1:
+
+```java nu fp=src/Main.java
+public class Main {
+    public static void main(String[] args) {
+        boolean happy = true;
+        boolean sad = false;
+        if (happy)
+            System.out.println("I am happy.");
+        if (sad) {
+            System.out.println("The variable sad is true.");
+        }
+
+    }
+}
+```
+
+#### Comparison Operators
+
+Exercise 2:
+
+```java nu fp=src/Main.java
+public class Main {
+    public static void main(String[] args) {
+        int maxDistance = 10;
+        int distanceToHome = 11;
+        if (distanceToHome > maxDistance) {
+            System.out.println("That is too far for free delivery.");
+        }
+        if (distanceToHome <= maxDistance) {
+            System.out.println("You get free delivery!");
+        }
+    }
+}
+```
+
+#### Nested if Statements
+
+Exercise 3:
+
+```java nu fp=src/Main.java
+public class Main {
+    public static void main(String[] args) {
+        int speed = 75;
+        int maxSpeed = 60;
+        int speedForFine = 70;
+        if (speed >= maxSpeed) {
+            System.out.println("You're over the speed limit");
+            if (speed >= speedForFine) {
+                System.out.println("You are eligible for a fine!");
+            }
+        }
+    }
+}
+```
+
+#### Branching Two Ways with if and else
+
+```java nu fp=src/Main.java
+if (speed > maxSpeed) {
+    System.out.println("Your speed is greater than the max. speed limit");
+} else if (speed < maxSpeed) {
+    System.out.println("Your speed is less than the max. speed limit");
+} else {
+    System.out.println("Your speed is equal to the max. speed limit");
+}
+```
+
+Exercise 4:
+
+```java nu fp=src/Main.java
+public class Main {
+    public static void main(String[] args) {
+        int smallDiscount = 0;
+        int mediumDiscount = 10;
+        int largeDiscount = 15;
+        int mediumThreshold = 5;
+        int largeThreshold = 50;
+        int purchaseAmount = 40;
+        if (purchaseAmount >= largeThreshold) {
+            System.out.println("You get a discount of " + largeDiscount + "%");
+        } else if (purchaseAmount >= mediumThreshold) {
+            System.out.println("You get a discount of " + mediumDiscount + "%");
+        } else {
+            System.out.println("You get a discount of " + noDiscount + "%");
+        }
+    }
+}
+```
+
+#### Using Complex Conditionals
+
+Exercise 5:
+
+```java nu fp=src/Main.java
+public class Main {
+    public static void main(String[] args) {
+        int age = 30;
+        int bpm = 150;
+        if (age == 30) {
+            if (bpm >= 95 && bpm <= 162) {
+                System.out.println("Heart rate is normal.");
+            } else if (bpm < 95) {
+                System.out.println("Heart rate is very low.");
+            } else {
+                System.out.println("Heart rate is very high.");
+            }
+        } else if (age == 60) {
+            if (bpm >= 80 && bpm <= 136) {
+                System.out.println("Heart rate is normal.");
+            } else if (bpm < 80) {
+                System.out.println("Heart rate is very low.");
+            } else {
+                System.out.println("Heart rate is very high.");
+            }
+        }
+    }
+}
+```
+
+#### Using Arithmetic Operators in an if Condition
 
 ## Object-Oriented Programming
 

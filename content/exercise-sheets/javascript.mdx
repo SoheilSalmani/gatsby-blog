@@ -90,3 +90,142 @@ tags: []
    `<script>` elements in the order you want the browser to execute them.
 
    </Solution>
+
+4. Build a number guessing game.
+
+   <Solution>
+
+   ```html nu fp=index.html
+   <!DOCTYPE html>
+   <html>
+     <head>
+       <meta charset="utf-8" />
+       <title>Number guessing game</title>
+       <style>
+         html {
+           font-family: sans-serif;
+         }
+
+         body {
+           width: 50%;
+           max-width: 800px;
+           min-width: 480px;
+           margin: 0 auto;
+         }
+
+         .lastResult {
+           color: white;
+           padding: 3px;
+         }
+       </style>
+     </head>
+
+     <body>
+       <h1>Number guessing game</h1>
+
+       <p>
+         We have selected a random number between 1 and 100. See if you can
+         guess it in 10 turns or fewer. We'll tell you if your guess was too
+         high or too low.
+       </p>
+
+       <form class="guess-form">
+         <p>
+           <label for="guess-field"
+             >Enter a guess:
+             <input type="text" id="guess-field" class="guess-field"
+           /></label>
+         </p>
+         <p><button class="guess-submit">Submit guess</button></p>
+       </form>
+
+       <div class="feedback-section">
+         <p class="previous-guesses"></p>
+         <p class="last-result"></p>
+         <p class="lower-or-higher"></p>
+       </div>
+
+       <script>
+         const previousGuessesElement =
+           document.querySelector(".previous-guesses")
+         const lastResultElement = document.querySelector(".last-result")
+         const lowerOrHigherElement = document.querySelector(".lower-or-higher")
+         const guessFormElement = document.querySelector(".guess-form")
+         const guessSubmitElement = document.querySelector(".guess-submit")
+         const guessFieldElement = document.querySelector(".guess-field")
+
+         let randomNumber
+         let guessCount
+
+         const resetButtonElement = document.createElement("button")
+         resetButtonElement.textContent = "Start new game"
+
+         resetGame()
+
+         function checkGuess() {
+           guessCount++
+           let userGuess = Number(guessFieldElement.value)
+
+           if (guessCount === 1) {
+             previousGuessesElement.textContent = "Previous guesses:"
+           }
+
+           previousGuessesElement.textContent += " " + userGuess
+
+           if (userGuess === randomNumber) {
+             lastResultElement.textContent =
+               "Congratulations! You got it right!"
+             lastResultElement.style.backgroundColor = "green"
+             lowerOrHigherElement.textContent = ""
+             setGameOver()
+           } else if (guessCount === 10) {
+             lastResultElement.textContent = "GAME OVER!"
+             lowerOrHigherElement.textContent = ""
+             setGameOver()
+           } else {
+             lastResultElement.textContent = "Wrong!"
+             lastResultElement.style.backgroundColor = "red"
+             if (userGuess < randomNumber) {
+               lowerOrHigherElement.textContent = "Last guess was too low!"
+             } else if (userGuess > randomNumber) {
+               lowerOrHigherElement.textContent = "Last guess was too high!"
+             }
+           }
+
+           guessFieldElement.value = ""
+           guessFieldElement.focus()
+         }
+
+         guessFormElement.addEventListener("submit", function (e) {
+           e.preventDefault()
+           checkGuess()
+         })
+
+         function setGameOver() {
+           guessFormElement.appendChild(resetButtonElement)
+           resetButtonElement.addEventListener("click", resetGame)
+           guessFieldElement.disabled = true
+           guessSubmitElement.disabled = true
+         }
+
+         function resetGame() {
+           previousGuessesElement.textContent = ""
+           lastResultElement.textContent = ""
+           lowerOrHigherElement.textContent = ""
+           if (resetButtonElement.parentNode) {
+             resetButtonElement.parentNode.removeChild(resetButtonElement)
+           }
+           guessFieldElement.disabled = false
+           guessSubmitElement.disabled = false
+           guessFieldElement.value = ""
+           guessFieldElement.focus()
+           lastResultElement.style.backgroundColor = "white"
+           guessCount = 0
+           randomNumber = Math.floor(Math.random() * 100) + 1
+         }
+       </script>
+     </body>
+   </html>
+   ```
+
+   </Solution>

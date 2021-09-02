@@ -18,3 +18,69 @@ tags: []
    ```
 
    </Solution>
+
+2. Using DVC, download the `get-started/data.xml` file from the following repo:
+   [https://github.com/iterative/dataset-registry](https://github.com/iterative/dataset-registry).
+
+   <Solution>
+
+   ```shell
+   mkdir data
+   dvc get https://github.com/iterative/dataset-registry get-started/data.xml -o data/data.xml
+   ```
+
+   </Solution>
+
+3. Track the file using DVC, then make a commit for the relevant files.
+
+   <Solution>
+
+   ```shell
+   dvc add data/data.xml
+   git add data/data.xml.dvc data/.gitignore
+   git commit -m "Add raw data"
+   ```
+
+   </Solution>
+
+4. Upload the DVC-tracked data to Google Drive. Commit the relevant file.
+
+   <Solution>
+
+   ```shell
+   dvc remote add -d storage gdrive://google-drive-folder-id
+   git add .dvc/config
+   git commit -m "Configure remote storage"
+   ```
+
+   ```shell
+   dvc push
+   ```
+
+   </Solution>
+
+5. Same but this time to a local remote. Commit the relevant file.
+
+   <Solution>
+
+   ```shell
+   mkdir -p /tmp/dvcstore
+   dvc remote add -d myremote /tmp/dvcstore
+   git commit .dvc/config -m "Configure local remote"
+   ```
+
+   ```shell
+   dvc push
+   ```
+
+   </Solution>
+
+6. Check the data stored in the local remote.
+
+   <Solution>
+
+   ```shell
+   ls -R /tmp/dvcstore
+   ```
+
+   </Solution>

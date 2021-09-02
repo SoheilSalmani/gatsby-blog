@@ -1,8 +1,89 @@
 ---
 title: Docker
-relatedResources: ["9781839213403"]
+relatedResources:
+  - "9781839213403"
+  -
 tags: ["Docker", "DevOps"]
 ---
+
+## Docker in Action
+
+1. Get help for the `docker` command-line program, and for the `docker cp`
+   command.
+
+   <Solution>
+
+   ```shell
+   docker help
+   ```
+
+   ```shell
+   docker help cp
+   ```
+
+   </Solution>
+
+## Kubernetes in Action
+
+1. Create a trivial Node.js app, then build a container image of your app using
+   a Dockerfile, and push it to Docker Hub.
+
+   <Solution>
+
+   ```js nu fp=app.js
+   const http = require("http")
+   const os = require("os")
+
+   console.log("Kubia server starting...")
+
+   var handler = function (request, response) {
+     console.log("Received request from " + request.connection.remoteAddress)
+     response.writeHead(200)
+     response.end("You've hit " + os.hostname() + "\n")
+   }
+
+   var www = http.createServer(handler)
+   www.listen(8080)
+   ```
+
+   ```dockerfile
+   FROM node:7
+   ADD app.js /app.js
+   ENTRYPOINT ["node", "app.js"]
+   ```
+
+   ```shell
+   docker build -t kubia .
+   docker tag kubia luksa/kubia
+   docker login
+   docker push luksa/kubia
+   ```
+
+   </Solution>
+
+2. Run the container, test it, stop it and delete it.
+
+   <Solution>
+
+   ```shell
+   docker run --name kubia-container -p 8080:8080 -d kubia
+   ```
+
+   ```shell
+   curl localhost:8080
+   ```
+
+   ```shell
+   docker stop kubia-container
+   ```
+
+   ```shell
+   docker rm kubia-container
+   ```
+
+   </Solution>
+
+## Kubernetes and Docker - An Enterprise Guide
 
 1. A single Docker image can be used on any Docker host, regardless of the
    architecture used.

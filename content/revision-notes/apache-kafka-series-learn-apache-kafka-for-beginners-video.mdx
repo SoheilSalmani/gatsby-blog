@@ -1,7 +1,7 @@
 ---
 title: Apache Kafka Series - Learn Apache Kafka for Beginners [Video]
 resourceId: "9781789342604"
-stoppedAt: Command Line Interface (CLI) 101
+stoppedAt: Kafka Java Programming 101
 ---
 
 ## Kafka Introduction
@@ -321,6 +321,143 @@ ls /usr/local/var/lib/
 ```
 
 ### Command Line Interface (CLI) 101
+
+#### Kafka Topics Command Line Interface (CLI)
+
+Create a topic:
+
+```shell
+kafka-topics --bootstrap-server localhost:9092 --topic first_topic --create --partitions 3 --replication-factor 1
+```
+
+**Note:** `kafka-topics --zookeeper localhost:2181 ...` is deprecated.
+
+List all topics:
+
+```shell
+kafka-topics --bootstrap-server localhost:9092 --list
+```
+
+Describe a topic:
+
+```shell
+kafka-topics --bootstrap-server localhost:9092 --topic first_topic --describe
+```
+
+Delete a topic:
+
+```shell
+kafka-topics --bootstrap-server localhost:9092 --topic first_topic --delete
+```
+
+#### Kafka Console Producer Command Line Interface (CLI)
+
+```shell
+kafka-console-producer --broker-list localhost:9092 --topic first_topic
+> Hello, Soheil!
+> Awesome course!
+> I am learning Kafka.
+> Just another message :)
+```
+
+```shell
+kafka-console-producer --broker-list localhost:9092 --topic first_topic --producer-property acks=all
+```
+
+If we send a message to topic that doesn't exist, Kafka will create it (and send
+us a warning message).
+
+```shell
+kafka-console-producer --broker-list localhost:9092 --topic new_topic
+> Message!
+kafka-topics --bootstrap-server localhost:9092 --list
+kafka-topics --bootstrap-server localhost:9092 --topic first_topic --describe
+```
+
+**Recommendation:** Always create a topic before producing to it.
+
+Change defaults:
+
+```properties fp=/usr/local/etc/kafka/server.properties
+...
+num.partitions=3
+...
+```
+
+#### Kafka Console Consumer Command Line Interface (CLI)
+
+Consume new messages:
+
+```shell
+kafka-console-consumer --bootstrap-server localhost:9092 --topic first_topic
+```
+
+Consume message from beginning:
+
+```shell
+kafka-console-consumer --bootstrap-server localhost:9092 --topic first_topic --from-beginning
+```
+
+**Important Note:** As you can see, the order of the messages in this consumer
+is not "total", the order is per partition. If you try with a topic with 1
+partition, you will see total ordering.
+
+#### Kafka Consumers in a Group
+
+Tab 1:
+
+```shell
+kafka-console-consumer --bootstrap-server localhost:9092 --topic first_topic --group my-first-application
+```
+
+Tab 2:
+
+```shell
+kafka-console-consumer --bootstrap-server localhost:9092 --topic first_topic --group my-first-application
+```
+
+Tab 3:
+
+```shell
+kafka-console-producer --broker-list localhost:9092 --topic first_topic
+> Message 1
+> Message 2
+> Message 3
+```
+
+Consumer groups commit offsets!
+
+`--from-beginning`: If the consumer does not already have an established offset
+to consume from, start with the earliest message present in the log rather than
+the latest message.
+
+#### Kafka Consumer Group Command Line Interface (CLI)
+
+```shell
+kafka-consumer-groups --bootstrap-server localhost:9092 --list
+```
+
+```shell
+kafka-consumer-groups --bootstrap-server localhost:9092 --describe --group my-first-application
+```
+
+#### Resetting Offsets
+
+Reset to the earliest offset:
+
+```shell
+kafka-consumer-groups --bootstrap-server localhost:9092 --group my-first-application --reset-offsets --to-earliest --execute --topic first_topic
+```
+
+```shell
+kafka-console-consumer --bootstrap-server localhost:9092 --topic first_topic --group my-first-application
+```
+
+Reset by shifting by -2:
+
+```shell
+kafka-consumer-groups --bootstrap-server localhost:9092 --group my-first-application --reset-offsets --shift-by -2 --execute --topic first_topic
+```
 
 ### Kafka Java Programming 101
 

@@ -1,60 +1,34 @@
 ---
 title: Getting started with Firebase
 resourceId: https://firebase.google.com/docs/web/setup
-stoppedAt: Add Firebase to a server
+stoppedAt: Firebase Video
 ---
 
 ## Add Firebase to an app
 
-### Add Firebase to your iOS project
-
-_Not now..._
-
-### Add Firebase to your Android project
-
-_Not now..._
-
 ### Add Firebase to your JavaScript project
 
-#### Step 1: Create a Firebase project
+#### Step 1: Create a Firebase project and register your app
 
 1. <Scr>Add project</Scr>, then enter a project name.
 2. If you are creating a new project, you can edit the **Project ID**.
 
-#### Step 2: Register your app with Firebase
-
 After you have a Firebase project, you can add your web app to it.
 
 1. <Scr>&lt;/&gt;</Scr>, then enter the app's nickname.
-2. Optionally, you can set up Firebase Hosting for your web app.
+2. Click <Scr>Register app</Scr>.
 
-#### Step 3: Add Firebase SDKs and initialize Firebase
+#### Step 2: Install the SDK and initialize Firebase
 
-How you add Firebase SDKs to your Web app depends on whether you've chosen to
-use Firebase Hosting for your app, what tooling you're using with your app (like
-a module bundler), or if you're configuring a Node.js app.
-
-With npm:
+This workflow uses npm and requires module bundlers or JavaScript framework
+tooling because the v9 SDK is optimized to work with module bundlers to
+eliminate unused code (tree-shaking) and decrease SDK size.
 
 1. ```shell
-   npm init
-   ```
-2. ```shell
-   npm install --save firebase@9.0.0-beta.7
-   ```
-3. To include only specific Firebase products (like Authentication and Cloud
-   Firestore), import Firebase modules:
-
-   ```js
-   // Firebase App (the core Firebase SDK) is always required and must be listed first
-   import { initializeApp } from "firebase/app"
-
-   // Add the Firebase products that you want to use
-   import { getAuth } from "firebase/auth"
-   import { getFirestore } from "firebase/firestore"
+   npm install firebase
    ```
 
-4. Initialize Firebase in your app:
+2. Initialize Firebase in your app and create a Firebase App object:
 
    ```js
    import { initializeApp } from "firebase/app"
@@ -67,48 +41,82 @@ With npm:
    const firebaseApp = initializeApp(firebaseConfig)
    ```
 
-To initialize Firebase in your app, you need to provide your app's Firebase
-project configuration.
-
-- If you use reserved Hosting URLs, your Firebase config is automatically pulled
-  from your Firebase project, so you don't need to explicitly provide your
-  config object in your code.
-- If you enabled Google Analytics in your Firebase project, your config object
-  contains the field `measurementId`.
+A Firebase App is a container-like object that stores common configuration and
+shares authentication across Firebase services. After you initialize a Firebase
+App object in your code, you can add and start using Firebase services.
 
 **Note:** The Firebase config object contains unique, but non-secret identifiers
 for your Firebase project.
 
-#### Step 4: (Optional) Install CLI and deploy to Firebase Hosting
+#### Step 3: Access Firebase in your app
 
-1. ```shell
-   npm install -g firebase-tools
-   ```
-2. ```shell
-   firebase login
-   ```
-3. ```shell
-   firebase init
-   ```
+Firebase services (like Cloud Firestore, Authentication, Realtime Database,
+Remote Config, and more) are available to import within individual sub-packages.
 
-By default, every Firebase project has free subdomains on the `web.app` and
-`firebaseapp.com` domains (`PROJECT_ID.web.app` and
-`PROJECT_ID.firebaseapp.com`).
+The example below shows how you could use the Cloud Firestore Lite SDK to
+retrieve a list of data.
 
-Run the following command from your app's root directory:
+```js
+import { initializeApp } from "firebase/app"
+import { getFirestore, collection, getDocs } from "firebase/firestore/lite"
+// Follow this pattern to import other Firebase services
+// import { } from 'firebase/<service>';
 
-```shell
-firebase deploy
+// TODO: Replace the following with your app's Firebase project configuration
+const firebaseConfig = {
+  //...
+}
+
+const app = initializeApp(firebaseConfig)
+const db = getFirestore(app)
+
+// Get a list of cities from your database
+async function getCities(db) {
+  const citiesCol = collection(db, "cities")
+  const citySnapshot = await getDocs(citiesCol)
+  const cityList = citySnapshot.docs.map(doc => doc.data())
+  return cityList
+}
 ```
 
-## Add Firebase to a game
+#### Step 4: Use a module bundler (webpack/Rollup) for size reduction
 
-_Not now..._
+The Firebase Web SDK is designed to work with module bundlers to remove any
+unused code (tree-shaking). We strongly recommend using this approach for
+production apps. Tools such as the Angular CLI, Next.js, Vue CLI, or Create
+React App automatically handle module bundling for libraries installed through
+npm and imported into your codebase.
 
 ## Add Firebase to a server
 
-## Use Firebase with a framework
+The Admin SDK is a set of server libraries that lets you interact with Firebase
+from privileged environments to perform actions like:
 
-_Not now..._
+- Read and write Realtime Database data with full admin privileges.
+- Programmatically send Firebase Cloud Messaging messages using a simple,
+  alternative approach to the Firebase Cloud Messaging server protocols.
+- Generate and verify Firebase auth tokens.
+- Access Google Cloud resources like Cloud Storage buckets and Cloud Firestore
+  databases associated with your Firebase projects.
+- Create your own simplified admin console to do things like look up user data
+  or change a user's email address for authentication.
+
+### Set up a Firebase project and service account
+
+To use the Firebase Admin SDK, you'll need the following:
+
+- A Firebase project
+- A service account to communicate with Firebase
+- A configuration file with your service account's credentials
+
+### Add the SDK
+
+```shell
+npm install firebase-admin --save
+```
+
+```js
+import * as admin from "firebase-admin"
+```
 
 ## Set up project programmatically

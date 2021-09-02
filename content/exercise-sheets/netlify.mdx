@@ -3,3 +3,73 @@ title: Netlify
 relatedResources: []
 tags: []
 ---
+
+1. Create a web project using React, React-JSS and Parcel. Publish it
+   usingNetlify.
+
+   <Solution>
+
+   ```shell
+   yarn init
+   yarn add react react-dom react-jss
+   yarn add --dev parcel-bundler prettier
+   ```
+
+   ```html nu fp=index.html
+   <!DOCTYPE html>
+   <html lang="en">
+     <head>
+       <meta charset="UTF-8" />
+       <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+       <title>Hello, World!</title>
+       <script src="./src/app.js" defer></script>
+     </head>
+     <body id="root"></body>
+   </html>
+   ```
+
+   ```jsx nu fp=src/app.js
+   import React from "react"
+   import { render } from "react-dom"
+   import { createUseStyles } from "react-jss"
+
+   const useStyles = createUseStyles({
+     paragraph: {
+       color: "darkred",
+     },
+   })
+
+   const App = () => {
+     const classes = useStyles()
+     return <p className={classes.paragraph}>Hello, World!</p>
+   }
+
+   render(<App />, document.getElementById("root"))
+   ```
+
+   ```json fp=package.json
+   {
+     // ...
+     "scripts": {
+       "format": "prettier --write index.html src/*.js",
+       "build": "parcel build index.html",
+       "develop": "parcel index.html"
+     }
+     // ...
+   }
+   ```
+
+   ```gitignore fp=.gitignore
+   /.cache/
+   /dist/
+   /node_modules/
+   ```
+
+   Push the code to GitHub. Then, use this basic build settings in Netlify:
+
+   - **Base directory:** _Nothing_.
+   - **Build command:** `yarn build`.
+   - **Publish directory:** `dist`.
+
+   </Solution>

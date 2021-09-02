@@ -1,5 +1,1294 @@
 ---
 title: React
-relatedResources: []
+relatedResources:
+  - "9781838645564"
 tags: []
 ---
+
+1. Get help for Create React App via `npx`. Print the intalled version of Create
+   React App.
+
+   <Solution>
+
+   ```shell
+   npx create-react-app --help
+   npx create-react-app --version
+   ```
+
+   </Solution>
+
+2. Test different flags in the Create React App CLI.
+
+   <Solution>
+
+   Some flags: `--verbose`, `--info`,`--scripts-version`, `--use-npm`,
+   `--use-pnp` (default `yarn`), `--typescript`.
+
+   </Solution>
+
+3. Create a project called `hello-react` with Create React App.
+
+   <Solution>
+
+   ```shell
+   npx create-react-app hello-react
+   ```
+
+   </Solution>
+
+4. Create a new component which is a `div` element. Give it a CSS class named
+   `greeting`. Give the `div` element a black background and white text. Next,
+   fill the body with the text of `Hello World`. Finally, display a `hello`
+   alert when the `div` is clicked on.
+
+   <Solution>
+
+   ```jsx nu fp=src/App.js
+   import React from "react"
+
+   const App = () => (
+     <div
+       className="greeting"
+       style={{ background: "black", color: "white" }}
+       onClick={() => alert("hello")}
+     >
+       Hello World
+     </div>
+   )
+
+   export default App
+   ```
+
+   </Solution>
+
+5. Using a class component, build a form which prints something in the console
+   when submitting. Add form validation and use constructor bind statements for
+   event handlers.
+
+   <Solution>
+
+   ```jsx nu
+   import React, { Component } from "react"
+
+   class App extends Component {
+     constructor(props) {
+       super(props)
+       this.state = {
+         username: "",
+         password: "",
+         passwordConfirmation: "",
+         email: "",
+         errors: [],
+       }
+       this.validateUsernameOnBlur = this.validateUsernameOnBlur.bind(this)
+       this.validatePasswordOnBlur = this.validatePasswordOnBlur.bind(this)
+       this.validatePasswordConfirmationOnBlur =
+         this.validatePasswordConfirmationOnBlur.bind(this)
+       this.validateEmailOnBlur = this.validateEmailOnBlur.bind(this)
+     }
+     displayForm() {
+       return (
+         <div>
+           <p>
+             <label>
+               Username:{" "}
+               <input type="text" onBlur={this.validateUsernameOnBlur} />
+             </label>
+           </p>
+           <p>
+             <label>
+               Password:{" "}
+               <input type="password" onBlur={this.validatePasswordOnBlur} />
+             </label>
+           </p>
+           <p>
+             <label>
+               Password Confirmation:{" "}
+               <input
+                 type="password"
+                 onBlur={this.validatePasswordConfirmationOnBlur}
+               />
+             </label>
+           </p>
+           <p>
+             <label>
+               Email: <input type="text" onBlur={this.validateEmailOnBlur} />
+             </label>
+           </p>
+           <p>
+             <button onClick={this.submitForm}>Submit</button>
+           </p>
+         </div>
+       )
+     }
+     displayErrors() {
+       return (
+         <div className="errors">
+           {this.state.errors.map((err, i) => (
+             <p key={`err-${i}`}>{err}</p>
+           ))}
+         </div>
+       )
+     }
+     validateNotEmpty(fieldName, value) {
+       if (value.length <= 0) {
+         return `${fieldName} must be filled out!`
+       }
+     }
+     validateUsernameOnBlur(event) {
+       const username = event.target.value
+       const errors = this.state.errors
+       errors.push(this.validateNotEmpty("Username", username))
+       this.setState({ username, errors })
+     }
+     validatePasswordOnBlur(event) {
+       const password = event.target.value
+       const errors = this.state.errors
+       errors.push(this.validateNotEmpty("Password", password))
+       this.setState({ password, errors })
+     }
+     validateEmailOnBlur(event) {
+       const email = event.target.value
+       const errors = this.state.errors
+       errors.push(this.validateEmailFormat("Email", email))
+       this.setState({ email, errors })
+     }
+     validateEmailFormat(fieldName, value) {
+       let [lhs, rhs] = value.split("@")
+       lhs = lhs || ""
+       rhs = rhs || ""
+       if (lhs.length <= 0 || rhs.length <= 0) {
+         return `${fieldName} must be in a standard email format!`
+       }
+     }
+     validatePasswordConfirmationOnBlur(event) {
+       const passwordConfirmation = event.target.value
+       const errors = this.state.errors
+       if (passwordConfirmation !== this.state.password) {
+         errors.push("Password must match password confirmation!")
+       }
+       this.setState({ passwordConfirmation, errors })
+     }
+     submitForm(event) {
+       event.preventDefault()
+       console.log("Submitting the form now...")
+       console.log(event)
+     }
+     render() {
+       return (
+         <div className="App">
+           <h1>Create Account</h1>
+           {this.displayErrors()}
+           <hr />
+           {this.displayForm()}
+         </div>
+       )
+     }
+   }
+
+   export default App
+   ```
+
+   </Solution>
+
+6. Transform the preceding code to use in-line bind statements.
+
+   <Solution>
+
+   ```jsx nu hl=22,31,40,49
+   import React, { Component } from "react"
+
+   class App extends Component {
+     constructor(props) {
+       super(props)
+       this.state = {
+         username: "",
+         password: "",
+         passwordConfirmation: "",
+         email: "",
+         errors: [],
+       }
+     }
+     displayForm() {
+       return (
+         <div>
+           <p>
+             <label>
+               Username:{" "}
+               <input
+                 type="text"
+                 onBlur={this.validateUsernameOnBlur.bind(this)}
+               />
+             </label>
+           </p>
+           <p>
+             <label>
+               Password:{" "}
+               <input
+                 type="password"
+                 onBlur={this.validatePasswordOnBlur.bind(this)}
+               />
+             </label>
+           </p>
+           <p>
+             <label>
+               Password Confirmation:{" "}
+               <input
+                 type="password"
+                 onBlur={this.validatePasswordConfirmationOnBlur.bind(this)}
+               />
+             </label>
+           </p>
+           <p>
+             <label>
+               Email:{" "}
+               <input
+                 type="text"
+                 onBlur={this.validateEmailOnBlur.bind(this)}
+               />
+             </label>
+           </p>
+           <p>
+             <button onClick={this.submitForm}>Submit</button>
+           </p>
+         </div>
+       )
+     }
+     displayErrors() {
+       return (
+         <div className="errors">
+           {this.state.errors.map((err, i) => (
+             <p key={`err-${i}`}>{err}</p>
+           ))}
+         </div>
+       )
+     }
+     validateNotEmpty(fieldName, value) {
+       if (value.length <= 0) {
+         return `${fieldName} must be filled out!`
+       }
+     }
+     validateUsernameOnBlur(event) {
+       const username = event.target.value
+       const errors = this.state.errors
+       errors.push(this.validateNotEmpty("Username", username))
+       this.setState({ username, errors })
+     }
+     validatePasswordOnBlur(event) {
+       const password = event.target.value
+       const errors = this.state.errors
+       errors.push(this.validateNotEmpty("Password", password))
+       this.setState({ password, errors })
+     }
+     validateEmailOnBlur(event) {
+       const email = event.target.value
+       const errors = this.state.errors
+       errors.push(this.validateEmailFormat("Email", email))
+       this.setState({ email, errors })
+     }
+     validateEmailFormat(fieldName, value) {
+       let [lhs, rhs] = value.split("@")
+       lhs = lhs || ""
+       rhs = rhs || ""
+       if (lhs.length <= 0 || rhs.length <= 0) {
+         return `${fieldName} must be in a standard email format!`
+       }
+     }
+     validatePasswordConfirmationOnBlur(event) {
+       const passwordConfirmation = event.target.value
+       const errors = this.state.errors
+       if (passwordConfirmation !== this.state.password) {
+         errors.push("Password must match password confirmation!")
+       }
+       this.setState({ passwordConfirmation, errors })
+     }
+     submitForm(event) {
+       event.preventDefault()
+       console.log("Submitting the form now...")
+       console.log(event)
+     }
+     render() {
+       return (
+         <div className="App">
+           <h1>Create Account</h1>
+           {this.displayErrors()}
+           <hr />
+           {this.displayForm()}
+         </div>
+       )
+     }
+   }
+
+   export default App
+   ```
+
+   </Solution>
+
+7. Transform the preceding code to not use any bind statements. Do not use a
+   constructor in this version.
+
+   <Solution>
+
+   ```jsx nu hl=4..10,60,66,72,86
+   import React, { Component } from "react"
+
+   class App extends Component {
+     state = {
+       username: "",
+       password: "",
+       passwordConfirmation: "",
+       email: "",
+       errors: [],
+     }
+     displayForm() {
+       return (
+         <div>
+           <p>
+             <label>
+               Username:{" "}
+               <input type="text" onBlur={this.validateUsernameOnBlur} />
+             </label>
+           </p>
+           <p>
+             <label>
+               Password:{" "}
+               <input type="password" onBlur={this.validatePasswordOnBlur} />
+             </label>
+           </p>
+           <p>
+             <label>
+               Password Confirmation:{" "}
+               <input
+                 type="password"
+                 onBlur={this.validatePasswordConfirmationOnBlur}
+               />
+             </label>
+           </p>
+           <p>
+             <label>
+               Email: <input type="text" onBlur={this.validateEmailOnBlur} />
+             </label>
+           </p>
+           <p>
+             <button onClick={this.submitForm}>Submit</button>
+           </p>
+         </div>
+       )
+     }
+     displayErrors() {
+       return (
+         <div className="errors">
+           {this.state.errors.map((err, i) => (
+             <p key={`err-${i}`}>{err}</p>
+           ))}
+         </div>
+       )
+     }
+     validateNotEmpty(fieldName, value) {
+       if (value.length <= 0) {
+         return `${fieldName} must be filled out!`
+       }
+     }
+     validateUsernameOnBlur = event => {
+       const username = event.target.value
+       const errors = this.state.errors
+       errors.push(this.validateNotEmpty("Username", username))
+       this.setState({ username, errors })
+     }
+     validatePasswordOnBlur = event => {
+       const password = event.target.value
+       const errors = this.state.errors
+       errors.push(this.validateNotEmpty("Password", password))
+       this.setState({ password, errors })
+     }
+     validateEmailOnBlur = event => {
+       const email = event.target.value
+       const errors = this.state.errors
+       errors.push(this.validateEmailFormat("Email", email))
+       this.setState({ email, errors })
+     }
+     validateEmailFormat(fieldName, value) {
+       let [lhs, rhs] = value.split("@")
+       lhs = lhs || ""
+       rhs = rhs || ""
+       if (lhs.length <= 0 || rhs.length <= 0) {
+         return `${fieldName} must be in a standard email format!`
+       }
+     }
+     validatePasswordConfirmationOnBlur = event => {
+       const passwordConfirmation = event.target.value
+       const errors = this.state.errors
+       if (passwordConfirmation !== this.state.password) {
+         errors.push("Password must match password confirmation!")
+       }
+       this.setState({ passwordConfirmation, errors })
+     }
+     submitForm(event) {
+       event.preventDefault()
+       console.log("Submitting the form now...")
+       console.log(event)
+     }
+     render() {
+       return (
+         <div className="App">
+           <h1>Create Account</h1>
+           {this.displayErrors()}
+           <hr />
+           {this.displayForm()}
+         </div>
+       )
+     }
+   }
+
+   export default App
+   ```
+
+   </Solution>
+
+8. Build a form which allows to write a blog post. Print the number of
+   characters, and disable the submit button if the post is not longer than 100
+   characters.
+
+   <Solution>
+
+   ```jsx nu
+   import React, { Component } from "react"
+
+   class App extends Component {
+     constructor(props) {
+       super(props)
+       this.state = { field: "", submitDisabled: true }
+     }
+     renderFieldLength() {
+       return <p>{`${this.state.field.length} character(s)!`}</p>
+     }
+     updateFieldLength(event) {
+       const field = event.target.value
+       this.setState({ field }, () => {
+         this.validateFieldLength()
+       })
+     }
+     validateFieldLength() {
+       if (this.state.submitDisabled && this.state.field.length > 100) {
+         this.setState({ submitDisabled: false })
+       } else if (
+         !this.state.submitDisabled &&
+         this.state.field.length <= 100
+       ) {
+         this.setState({ submitDisabled: true })
+       }
+     }
+     submitForm(event) {
+       event.preventDefault()
+       alert("Submitting the blog post!")
+     }
+     render() {
+       return (
+         <div className="App">
+           <h1>Blog Post Writer</h1>
+           <hr />
+           <form>
+             <label>
+               <h2>Write your post here</h2>
+               <p>Must be at least 100 characters!</p>
+               <textarea
+                 cols="80"
+                 rows="25"
+                 onChange={this.updateFieldLength.bind(this)}
+               ></textarea>
+             </label>
+             {this.renderFieldLength()}
+             <button
+               disabled={this.state.submitDisabled}
+               onClick={this.submitForm}
+             >
+               Submit Post
+             </button>
+           </form>
+         </div>
+       )
+     }
+   }
+
+   export default App
+   ```
+
+   </Solution>
+
+9. Build an app which display a button. The button should show and hide a secret
+   message.
+
+   <Solution>
+
+   ```jsx nu fp=src/App.js
+   import React, { Component } from "react"
+
+   class App extends Component {
+     constructor(props) {
+       super(props)
+       this.state = {
+         showSecret: false,
+       }
+     }
+     secretMessage() {
+       if (!this.state.showSecret) {
+         return
+       }
+       return <div className="secret-message">I am the secret message!</div>
+     }
+     toggleSecretMessage() {
+       this.setState({
+         showSecret: !this.state.showSecret,
+       })
+     }
+     render() {
+       return (
+         <div className="App">
+           <button onClick={this.toggleSecretMessage.bind(this)}>
+             Click to {this.state.showSecret ? "hide" : "show"} show the secret
+             message!
+           </button>
+           {this.secretMessage()}
+         </div>
+       )
+     }
+   }
+
+   export default App
+   ```
+
+   </Solution>
+
+10. Build a simple quiz app.
+
+   <Solution>
+   
+   ```jsx nu fp=src/App.js
+   import React, { Component } from "react"
+   import "./App.css"
+   
+   class App extends Component {
+     constructor(props) {
+       super(props)
+       this.state = {
+         playerScore: 0,
+         questions: [
+           {
+             question: "What animal barks?",
+             possibleAnswers: ["Dog", "Cat"],
+             rightAnswer: "Dog",
+             playerChoice: null,
+           },
+           {
+             question: "What animal is more closely related to a tiger?",
+             possibleAnswers: ["Dog", "Cat"],
+             rightAnswer: "Cat",
+             playerChoice: null,
+           },
+           {
+             question: "What animal is more closely related to a wolf?",
+             possibleAnswers: ["Dog", "Cat"],
+             rightAnswer: "Dog",
+             playerChoice: null,
+           },
+           {
+             question: "What animal is best known for playing fetch?",
+             possibleAnswers: ["Dog", "Cat"],
+             rightAnswer: "Dog",
+             playerChoice: null,
+           },
+         ],
+       }
+       this.answerQuestion = this.answerQuestion.bind(this)
+     }
+     answerQuestion(index, choice) {
+       const answeredQuestion = this.state.questions[index]
+       answeredQuestion.playerChoice = choice
+       const allQuestions = this.state.questions
+       allQuestions[index] = answeredQuestion
+       this.setState(
+         {
+           questions: allQuestions,
+         },
+         () => {
+           this.updatePlayerScore()
+         }
+       )
+     }
+     updatePlayerScore() {
+       const playerScore = this.state.questions.filter(
+         q => q.rightAnswer === q.playerChoice
+       ).length
+       this.setState({ playerScore })
+       console.log("New player score:", playerScore)
+     }
+     displayResult(index) {
+       const question = this.state.questions[index]
+       if (!question.playerChoice) {
+         return
+       }
+       if (question.playerChoice === question.rightAnswer) {
+         return <p className="result-correct">Your answer is correct!</p>
+       } else {
+         return <p className="result-incorrect">Your answer is incorrect!</p>
+       }
+     }
+     displayQuestion(index) {
+       if (this.state.playerScore < index) {
+         return
+       }
+       const question = this.state.questions[index]
+       return (
+         <div className="question-display">
+           <p className="question">{question.question}</p>
+           {question.possibleAnswers.map((answer, answerIndex) => (
+             <button
+               key={`q-${index}-a-${answerIndex}`}
+               className="question-choice"
+               onClick={() => this.answerQuestion(index, answer)}
+             >
+               {answer}
+             </button>
+           ))}
+           {this.displayResult(index)}
+         </div>
+       )
+     }
+     renderQuestions() {
+       return this.state.questions.map((question, index) =>
+         this.displayQuestion(index)
+       )
+     }
+     render() {
+       return (
+         <div className="App">
+           <h1>Quiz Show!</h1>
+           <hr />
+           {this.renderQuestions()}
+         </div>
+       )
+     }
+   }
+   
+   export default App
+   ```
+   
+   
+   ```css nu fp=src/App.css
+   .question-display {
+     background: #ddd;
+     border: 2px solid #ccc;
+     margin: 20px;
+     padding: 10px;
+   }
+   
+   .question {
+     font-weight: bold;
+   }
+   
+   .question-choice {
+     height: 5em;
+     width: 20em;
+     margin: 10px;
+   }
+   
+   .result-correct {
+     color: #272;
+   }
+   
+   .result-incorrect {
+     color: #922;
+   }
+   ```
+   
+   </Solution>
+   
+11. Build a memory game.
+
+   <Solution>
+   
+   ```jsx nu fp=src/App.js
+   import React, { Component } from "react"
+   import "./App.css"
+   
+   const TILE_COUNT = 24
+   
+   class App extends Component {
+     constructor(props) {
+       super(props)
+       this.state = {
+         tiles: [],
+         lastFlipped: null,
+         clicks: 0,
+       }
+       this.resetTiles = this.resetTiles.bind(this)
+       this.flipTile = this.flipTile.bind(this)
+     }
+     flipAllBackOver(tiles) {
+       tiles.forEach(tile => {
+         if (!tile.matched) {
+           tile.flipped = true
+         }
+       })
+       return tiles
+     }
+     flipTile(index) {
+       let tiles = this.state.tiles
+       let tile = tiles[index]
+       let clicks = this.state.clicks + 1
+       let lastFlipped = this.state.lastFlipped
+       if (lastFlipped === null) {
+         tiles = this.flipAllBackOver(tiles)
+         tile.flipped = !tile.flipped
+         lastFlipped = index
+       } else {
+         tile.flipped = !tile.flipped
+         let lastFlippedTile = this.state.tiles[lastFlipped]
+         if (lastFlippedTile.number === tile.number) {
+           lastFlippedTile.matched = true
+           tile.matched = true
+           tiles[lastFlipped] = lastFlippedTile
+         }
+         lastFlipped = null
+       }
+       tiles[index] = tile
+       this.setState({ clicks, tiles, lastFlipped })
+     }
+     resetTiles() {
+       let tiles = []
+       let number = 0
+       for (let i = 0; i < TILE_COUNT; i += 2) {
+         number++
+         let tileOne = { flipped: true, matched: false, number }
+         let tileTwo = { flipped: true, matched: false, number }
+         tiles = [...tiles, tileOne, tileTwo]
+       }
+       for (let i = 0; i < tiles.length; i++) {
+         const swapWith = Math.floor(Math.random() * tiles.length)
+         ;[tiles[i], tiles[swapWith]] = [tiles[swapWith], tiles[i]]
+       }
+       this.setState({ clicks: 0, tiles })
+     }
+     renderTile(tile, index) {
+       let classes = ["Tile"]
+       if (tile.flipped) {
+         classes = [...classes, "flipped"]
+       }
+       if (tile.matched) {
+         classes = [...classes, "matched"]
+       }
+       let key = `tile-${index}`
+       return (
+         <div
+           key={key}
+           className={classes.join(" ")}
+           onClick={() => this.flipTile(index)}
+         >
+           {!tile.flipped && tile.number}
+         </div>
+       )
+     }
+     render() {
+       return (
+         <div className="App">
+           <h1>Memory Game</h1>
+           <strong>Clicks: {this.state.clicks}</strong>
+           <br />
+           <button onClick={this.resetTiles} className="reset">
+             New Game
+           </button>
+           <hr />
+           {this.state.tiles.map((tile, index) => this.renderTile(tile, index))}
+         </div>
+       )
+     }
+   }
+   
+   export default App
+   ```
+   
+   ```css nu fp=src/App.css
+   .Tile {
+     width: 200px;
+     height: 200px;
+     font-size: 64pt;
+     border: 2px solid #aaa;
+     text-align: center;
+     margin: 10px;
+     padding: 10px;
+     float: left;
+     cursor: pointer;
+   }
+   
+   .Tile:hover {
+     border: 2px solid #f00;
+   }
+   
+   .Tile.flipped {
+     background: #aaa;
+   }
+   
+   .Tile.matched {
+     border: 2px solid #040;
+     background: #afa;
+   }
+   
+   button.reset {
+     padding: 10px;
+     width: 200px;
+   }
+   ```
+   
+   </Solution>
+
+12. Write a component which log a message at the most important steps in its
+    lifecycle.
+
+    <Solution>
+
+    ```jsx nu
+    import React, { Component } from "react"
+
+    class App extends Component {
+      constructor(props) {
+        super(props)
+        console.log("Constructor")
+        this.state = { cycle: 0 }
+        setInterval(() => this.setState({ cycle: this.state.cycle + 1 }), 1000)
+      }
+      componentDidMount() {
+        console.log("Component Did Mount")
+      }
+      componentDidUpdate() {
+        console.log("Component Did Update")
+      }
+      render() {
+        console.log("Render")
+        return (
+          <div className="App">Hello Lifecycle: Cycle {this.state.cycle}</div>
+        )
+      }
+    }
+
+    export default App
+    ```
+
+    </Solution>
+
+13. Write an app which render conditionally a component. Log the most important
+    steps of the mount lifecycle of the conditionally rendered component.
+
+    <Solution>
+
+    ```jsx nu
+    import React, { Component } from "react"
+
+    class App extends Component {
+      constructor(props) {
+        super(props)
+        console.log("Constructor")
+        this.state = { cycle: 0 }
+        setInterval(() => this.setState({ cycle: this.state.cycle + 1 }), 1000)
+      }
+      componentDidMount() {
+        console.log("Component Did Mount")
+      }
+      componentDidUpdate() {
+        console.log("Component Did Update")
+      }
+      render() {
+        console.log("Render")
+        return (
+          <div className="App">Hello Lifecycle: Cycle {this.state.cycle}</div>
+        )
+      }
+    }
+
+    export default App
+    ```
+
+    </Solution>
+
+14. Write an app which render conditionally a component. Log the most important
+    steps of the mount lifecycle of the conditionally rendered component.
+
+    <Solution>
+
+    ```jsx nu fp=App.js
+    import React, { Component } from "react"
+    import LifecycleTest from "./LifecycleTest"
+
+    class App extends Component {
+      render() {
+        return (
+          <div className="App">
+            Hello Conditional
+            {true && <LifecycleTest />}
+          </div>
+        )
+      }
+    }
+
+    export default App
+    ```
+
+    ```jsx nu fp=LifecycleTest.js
+    import React, { Component } from "react"
+
+    class LifecycleTest extends Component {
+      constructor(props) {
+        super(props)
+        console.log("LifecycleTest Constructor")
+      }
+      render() {
+        return <p>I only show up if the conditional is true!</p>
+      }
+    }
+
+    export default LifecycleTest
+    ```
+
+    </Solution>
+
+15. Using component lifecycle methods, write a app which simulate the load of
+    user messages.
+
+    <Solution>
+
+    ```jsx nu
+    import React, { Component } from "react"
+
+    class App extends Component {
+      constructor(props) {
+        super(props)
+        // State will be messages: ["Hello World", "How are you"]
+        this.state = { messages: [], loading: true }
+      }
+      componentDidUpdate(prevProps, prevState) {
+        console.log("prevProps:", prevProps)
+        console.log("prevState:", prevState)
+      }
+      componentDidMount() {
+        setTimeout(
+          () =>
+            this.setState({
+              messages: ["Hello World", "How are you?"],
+              loading: false,
+            }),
+          10000 // 10 seconds
+        )
+      }
+      componentWillUnmount() {
+        alert("I've been removed!")
+      }
+      renderProfile() {
+        if (this.state.loading) {
+          return <div>Loading...</div>
+        }
+        if (this.state.messages && this.state.messages.length > 0) {
+          return (
+            <div>
+              <ul>
+                {this.state.messages.map((msg, index) => (
+                  <li key={`msg-${index}`}>{msg}</li>
+                ))}
+              </ul>
+            </div>
+          )
+        } else {
+          return <div>No messages!</div>
+        }
+      }
+      render() {
+        return (
+          <div className="App">
+            User Profile
+            <hr />
+            {this.renderProfile()}
+          </div>
+        )
+      }
+    }
+
+    export default App
+    ```
+
+    </Solution>
+
+16. Same but add the possibility to remove messages.
+
+    <Solution>
+
+    ```jsx nu fp=App.js
+    import React, { Component } from "react"
+    import Message from "./Message"
+
+    class App extends Component {
+      constructor(props) {
+        super(props)
+        this.state = {
+          list: [
+            { id: 1, message: "Hello" },
+            { id: 2, message: "Everyone" },
+            { id: 3, message: "What" },
+            { id: 4, message: "Is" },
+            { id: 5, message: "Up" },
+          ],
+        }
+      }
+      removeItem(id) {
+        const newList = this.state.list.filter(item => item.id !== id)
+        this.setState({ list: newList })
+      }
+      render() {
+        return (
+          <div className="App">
+            <h1>My Items</h1>
+            {this.state.list.map(item => (
+              <Message
+                key={item.id}
+                id={item.id}
+                message={item.message}
+                removeItem={this.removeItem.bind(this)}
+              />
+            ))}
+          </div>
+        )
+      }
+    }
+
+    export default App
+    ```
+
+    ```jsx nu fp=Message.js
+    import React, { Component } from "react"
+
+    class Message extends Component {
+      componentWillUnmount() {
+        console.log("Removing item", this.props)
+      }
+      render() {
+        return (
+          <div className="Message">
+            <p>{this.props.message}</p>
+            <button onClick={() => this.props.removeItem(this.props.id)}>
+              Remove me
+            </button>
+          </div>
+        )
+      }
+    }
+
+    export default Message
+    ```
+
+    </Solution>
+
+17. Build a new app which simulate AJAX calls. The app should contain a user
+    login form, a user counter, a component indicating which user is logged, and
+    the user's messages.
+
+    <Solution>
+
+    ```js nu fp=AjaxLibrary.js
+    const SLEEP_FOR = 5000
+    const users = {
+      testA: {
+        id: 1,
+        username: "testA",
+      },
+      testB: {
+        id: 2,
+        username: "testB",
+      },
+    }
+    const messages = {
+      1: ["Hello testA", "How are you doing today?"],
+      2: [],
+    }
+
+    function sleep(time) {
+      return new Promise(res => setTimeout(res, time))
+    }
+
+    const fetchUserCount = async () => {
+      await sleep(SLEEP_FOR)
+      return Object.keys(users).length
+    }
+
+    const fetchUser = async username => {
+      await sleep(SLEEP_FOR)
+      return users[username]
+    }
+
+    const fetchMessages = async userId => {
+      await sleep(SLEEP_FOR)
+      return messages[userId]
+    }
+
+    export { fetchUserCount, fetchUser, fetchMessages }
+    ```
+
+    ```jsx nu fp=App.js
+    import React, { Component } from "react"
+    import UserCountDisplay from "./UserCountDisplay"
+    import LoginDisplay from "./LoginDisplay"
+
+    class App extends Component {
+      render() {
+        return (
+          <div className="App">
+            <h1>Messaging App</h1>
+            <UserCountDisplay />
+            <LoginDisplay />
+          </div>
+        )
+      }
+    }
+
+    export default App
+    ```
+
+    ```jsx nu fp=UserCountDisplay.js
+    import React, { Component } from "react"
+    import { fetchUserCount } from "./AjaxLibrary"
+
+    class UserCountDisplay extends Component {
+      constructor(props) {
+        super(props)
+        this.state = { userCount: 0, loadingUserCount: false }
+      }
+      async componentDidMount() {
+        this.setState({ loadingUserCount: true })
+        const userCount = await fetchUserCount()
+        this.setState({ userCount, loadingUserCount: false })
+      }
+      render() {
+        if (this.state.loadingUserCount) {
+          return <p>Loading user count...</p>
+        } else {
+          return <p>Users in the app: {this.state.userCount}</p>
+        }
+      }
+    }
+
+    export default UserCountDisplay
+    ```
+
+    ```js nu fp=LoginDisplay.js
+    import React, { Component } from "react"
+    import { fetchUser } from "./AjaxLibrary"
+    import UserDisplay from "./UserDisplay"
+
+    class LoginDisplay extends Component {
+      constructor(props) {
+        super(props)
+        this.state = { loginUsername: null, loadingLogin: false, user: null }
+        this.updateLoginForm = this.updateLoginForm.bind(this)
+        this.doLogin = this.doLogin.bind(this)
+        this.doLogout = this.doLogout.bind(this)
+      }
+      updateLoginForm(evt) {
+        const loginUsername = evt.target.value
+        this.setState({ loginUsername })
+      }
+      async doLogin() {
+        this.setState({ loadingLogin: true })
+        const user = await fetchUser(this.state.loginUsername)
+        this.setState({ user, loadingLogin: false })
+      }
+      doLogout() {
+        this.setState({ user: null })
+      }
+      loginForm() {
+        if (this.state.loadingLogin) {
+          return "Trying to login, please wait..."
+        } else {
+          if (!this.state.user) {
+            return (
+              <div className="Login">
+                Login Username:
+                <input type="text" onChange={this.updateLoginForm} />
+                <button onClick={this.doLogin}>Login</button>
+              </div>
+            )
+          } else {
+            return <button onClick={this.doLogout}>Logout</button>
+          }
+        }
+      }
+      render() {
+        return (
+          <div className="LoginDisplay">
+            {this.loginForm()}
+            <hr />
+            <UserDisplay user={this.state.user} />
+          </div>
+        )
+      }
+    }
+
+    export default LoginDisplay
+    ```
+
+    ```jsx nu fp=UserDisplay.js
+    import React, { Component } from "react"
+    import MessageDisplay from "./MessageDisplay"
+
+    class UserDisplay extends Component {
+      render() {
+        if (!this.props.user) {
+          return null
+        }
+        return (
+          <div className="UserDisplay">
+            Logged in as {this.props.user.username}!
+            <MessageDisplay userId={this.props.user.id} />
+          </div>
+        )
+      }
+    }
+
+    export default UserDisplay
+    ```
+
+    ```jsx nu fp=MessageDisplay.js
+    import React, { Component } from "react"
+    import { fetchMessages } from "./AjaxLibrary"
+
+    class MessageDisplay extends Component {
+      constructor(props) {
+        super(props)
+        this.state = { loadingMessages: false, messages: [] }
+      }
+      async componentDidMount() {
+        this.setState({ loadingMessages: true })
+        const messages = await fetchMessages(this.props.userId)
+        this.setState({ messages, loadingMessages: false })
+      }
+      componentWillUnmount() {
+        console.log("Unmounting messages")
+      }
+      render() {
+        if (this.state.loadingMessages) {
+          return <p>Messages still loading...</p>
+        } else {
+          if (this.state.messages.length > 0) {
+            return (
+              <ul>
+                {this.state.messages.map((msg, index) => (
+                  <li key={`m-${index}`}>{msg}</li>
+                ))}
+              </ul>
+            )
+          } else {
+            return <p>No messages for you!</p>
+          }
+        }
+      }
+    }
+
+    export default MessageDisplay
+    ```
+
+    </Solution>

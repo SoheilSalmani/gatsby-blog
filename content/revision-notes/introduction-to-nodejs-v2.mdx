@@ -1,7 +1,7 @@
 ---
 title: Introduction to Node.js, v2
 resourceId: https://frontendmasters.com/courses/node-js-v2/
-stoppedAt: Basic Components
+stoppedAt: File System
 ---
 
 ## Introduction
@@ -15,6 +15,8 @@ Node.js.
 
 Install NVM.
 
+Install the latest LTS version of Node.js:
+
 ```shell
 nvm install --lts
 ```
@@ -23,7 +25,71 @@ nvm install --lts
 
 ### Globals
 
+- `global`: Think of this as like `window` but for Node.js.
+- `__dirname` This global is a `String` value that points the the directory name
+  of the file it's used in.
+- `__filename` Like `__dirname`, it too is relative to the file it's written in.
+  A `String` value that points the the file name.
+- `process` A swiss army knife global. An `Object` that contains all the context
+  you need about the current program being executed. Things from env vars, to
+  what machine you're on.
+- `exports`, `module`, `require`: These globals are used for creating and
+  exposing modules throughout your app.
+
 ### Modules
+
+#### What is a module
+
+A module is a reusable chunk of code that has its own context. That way modules
+can't interfere with or polute the global scope.
+
+#### Two module types
+
+By default, Node.js uses CommonJS modules. With newer versions of Node.js we can
+now take advantage of ES6 modules. To opt into using this syntax, you can use
+the `.mjs` extension instead of `.js`. We'll be using the ES6 module syntax
+going forward as they are the standard now with browsers adding support now.
+
+#### Module syntax
+
+```js nu fp=utils.mjs
+export const action = () => {}
+
+export const run = () => {}
+```
+
+```js nu fp=app.mjs
+import { action, run } from "./utils.mjs"
+```
+
+Here we're using the export keyword before the variable declartion. This creates
+a named export. With the name being whatever the variable name is. Now in
+`app.js`, we import the action module from the `utils` file. The path to the
+file is relative to the file you're importing from. You also have to prefix your
+path with a `'./'`. If you don't, Node will think you're trying to import a
+built in module or npm module. Because this wa a named export, we have to import
+with brackets `{ action, run }` with the exact name of the modules exported.
+
+Usually if you only have to expose one bit of code, you should use the
+`default ` keyword. This allows you to import the module with whatever name you
+want.
+
+```js nu fp=utils.mjs
+export default function () {
+  console.log("did action")
+}
+```
+
+```js nu fp=app.mjs
+import whateverIWant from "./utils.mjs"
+```
+
+#### Internal Modules
+
+- `fs` - useful for interacting with the file system.
+- `path` - lib to assit with manipulating file paths and all their nuances.
+- `child_process` - spawn subprocesses in the background.
+- `http` - interact with OS level networking. Useful for creating servers.
 
 ### File System
 

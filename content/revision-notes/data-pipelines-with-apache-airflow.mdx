@@ -1,7 +1,7 @@
 ---
 title: Data Pipelines with Apache Airflow
 resourceId: "9781617296901"
-stoppedAt: Inspecting the Airflow UI
+stoppedAt: Best practices for designing tasks
 ---
 
 ## Getting started
@@ -231,7 +231,7 @@ Schedule intervals become even more powerful when combined with the concept of
 _backfilling_, which allows you to execute a new DAG for historical schedule
 intervals that occurred in the past. This feature allows you to easily create
 (or _backfill_) new data sets with historical data simply by running your DAG
-for these past schedule intervals.Moreover, by clearing the results of past
+for these past schedule intervals. Moreover, by clearing the results of past
 runs, you can also use this Airflow feature to easily rerun any historical tasks
 if you make changes to your task code, allowing you to easily reprocess an
 entire data set when needed.
@@ -463,21 +463,422 @@ scheduler, and metastore in separate containers.
 
 ##### Inspecting the Airflow UI
 
+<Figure src="/media/airflow-graph-view-2.png">Airflow graph view.</Figure>
+
+First, the DAG needs to be “on” in order to be run.
+
 #### Running at regular intervals
 
+In Airflow, we can schedule a DAG to run at certain intervals, for example once
+an hour, day, or month. This is controlled on the DAG by setting the
+`schedule_interval` argument.
+
+```python fp=download_rocket_launches.py hl=6
+...
+
+dag = DAG(
+    dag_id="download_rocket_launches",
+    start_date=airflow.utils.dates.days_ago(14),
+    schedule_interval="@daily",
+)
+
+...
+```
+
+When we set the `schedule_interval` to `@daily`, Airflow knew it had to run this
+DAG once a day. Given the `start_date` provided to the DAG of 14 days ago, that
+means the time from 14 days ago up to now can be divided into 14 equal intervals
+of one day. Since both the start and end date of these 14 intervals lie in the
+past, they will start running once we provide a `schedule_interval` to Airflow.
+
 #### Handling failing tasks
+
+**Note:** It is unnecessary to restart the entire workflow. A nice feature of
+Airflow is that you can restart from the point of failure and onward, without
+having to restart any previously succeeded tasks.
+
+Click the failed task, and then click the <Scr>Clear</Scr> button in the pop-up
+(figure 2.17). It will show you the tasks you’re about to clear, meaning you
+will reset the state of these tasks and Airflow will rerun them,
+
+Click <Scr>OK!</Scr> and the failed task and its successive tasks will be
+cleared.
+
+Assuming the connectivity issues are resolved, the tasks will now run
+successfully and make the whole tree view green.
+
+After clearing the failed tasks, Airflow will automatically rerun these tasks.
 
 ### Scheduling in Airflow
 
 #### An example: Processing user events
 
+```python nu hl=18..20,27..30,42
+from datetime import datetime
+from pathlib import Path
+
+import pandas as pd
+from airflow import DAG
+from airflow.operators.bash import BashOperator
+from airflow.operators.python import PythonOperator
+
+dag = DAG(
+    dag_id="01_unscheduled",
+    start_date=datetime(2019, 1, 1),
+    schedule_interval=None
+)
+
+fetch_events = BashOperator(
+    task_id="fetch_events",
+    bash_command=(
+        "mkdir -p /data/events && "
+        "curl -o /data/events.json "
+        "http://events_api:5000/events"
+    ),
+    dag=dag,
+)
+
+def _calculate_stats(input_path, output_path):
+    """Calculates event statistics."""
+    events = pd.read_json(input_path)
+    stats = events.groupby(["date", "user"]).size().reset_index()
+    Path(output_path).parent.mkdir(exist_ok=True)
+    stats.to_csv(output_path, index=False)
+
+calculate_stats = PythonOperator(
+    task_id="calculate_stats",
+    python_callable=_calculate_stats,
+    op_kwargs={
+      "input_path": "/data/events.json",
+      "output_path": "/data/stats.csv"
+    },
+    dag=dag,
+)
+
+fetch_events >> calculate_stats
+```
+
 #### Running at regular intervals
+
+By default, the value of the `schedule_interval` argument is `None`, which means
+the DAG will not be scheduled and will be run only when triggered manually from
+the UI or the API.
+
+##### Defining scheduling intervals
+
+Airflow provides the convenient macro `@daily` for defining a daily scheduled
+interval, which runs our DAG once every day at midnight.
+
+Airflow also needs to know when we want to start executing the DAG, specified by
+its start date. Based on this start date, Airflow will schedule the first
+execution of our DAG to run at the first schedule interval _after_ the start
+date (start + interval). Subsequent runs will continue executing at schedule
+intervals following this first interval.
+
+**Note:** Pay attention to the fact that Airflow starts tasks in an interval at
+the end of the interval. If developing a DAG on January 1, 2019 at 13:00, with a
+`start_date` of 01-01-2019 and `@daily` interval, this means it first starts
+running at midnight. At first, nothing will happen if you run the DAG on January
+1 at 13:00 until midnight is reached.
+
+If we already know that our project has a fixed duration, we can tell Airflow to
+stop running our DAG after a certain date using the `end_date` parameter.
+
+##### Cron-based intervals
+
+To support more complicated scheduling intervals, Airflow allows us to define
+scheduling intervals using the same syntax as used by cron, a time-based job
+scheduler used by Unix-like computer operating systems such as macOS and Linux.
+This syntax consists of five components and is defined as follows:
+
+```text
+# ┌─────── minute (0 - 59)
+# │ ┌────── hour (0 - 23)
+# │ │ ┌───── day of the month (1 - 31)
+# │ │ │ ┌───── month (1 - 12)
+# │ │ │ │ ┌──── day of the week (0 - 6) (Sunday to Saturday;
+# │ │ │ │ │ 7 is also Sunday on some systems)
+# * * * * *
+```
+
+Asterisks (`*`) can be used instead of numbers to define unrestricted fields,
+meaning we don’t care about the value of that field.
+
+Examples:
+
+- `0 * * * *` = hourly (running on the hour)
+- `0 0 * * *` = daily (running at midnight)
+- `0 0 * * 0` = weekly (running at midnight on Sunday)
+- `0 0 1 * *` = midnight on the first of every month
+- `45 23 * * SAT` = 23:45 every Saturday
+
+Additionally, cron expressions allow you to define collections of values using a
+comma (`,`) to define a list of values or a dash (`-`) to define a range of
+values.
+
+Examples:
+
+- `0 0 * * MON,WED,FRI` = run every Monday, Wednesday, Friday at midnight
+- `0 0 * * MON-FRI` = run every weekday at midnight
+- `0 0,12 * * *` = run every day at 00:00 and 12:00
+
+Airflow also provides support for several macros that represent shorthand for
+commonly used scheduling intervals:
+
+- `@once`: Schedule once and only once.
+- `@hourly`: Run once an hour at the beginning of the hour.
+- `@daily`: Run once a day at midnight.
+- `@weekly`: Run once a week at midnight on Sunday morning.
+- `@monthly`: Run once a month at midnight on the first day of the month.
+- `@yearly`: Run once a year at midnight on January 1.
+
+##### Frequency-based intervals
+
+An important limitation of cron expressions is that they are unable to represent
+certain frequency-based schedules. For example, how would you define a cron
+expression that runs a DAG once every three days?
+
+This limitation of cron stems from the nature of cron expressions, as they
+define a pattern that is continuously matched against the current time to
+determine whether a job should be executed. This has the advantage of making the
+expressions stateless, meaning that you don’t have to remember when a previous
+job was run to calculate the next interval. However, as you can see, this comes
+at the price of some expressiveness. To use such a frequency-based schedule, you
+can pass a `timedelta` instance (from the `datetime` module in the standard
+library) as a schedule interval.
+
+```python hl=3
+dag = DAG(
+    dag_id="04_time_delta",
+    schedule_interval=dt.timedelta(days=3),
+    start_date=dt.datetime(year=2019, month=1, day=1),
+    end_date=dt.datetime(year=2019, month=1, day=5),
+)
+```
+
+Of course, you can also use this approach to run your DAG every 10 minutes
+(using `timedelta(minutes=10)`) or every two hours (using `timedelta(hours=2)`).
 
 #### Processing data incrementally
 
+Although we now have our DAG running at a daily interval (assuming we stuck with
+the `@daily` schedule), we haven’t quite achieved our goal. For one, our DAG is
+downloading and calculating statistics for the entire catalog of user events
+every day, which is hardly efficient. Moreover, this process is only downloading
+events for the past 30 days, which means we are not building any history for
+earlier dates.
+
+##### Fetching events incrementally
+
+```shell
+curl -O http:/ /localhost:5000/events?start_date=2019-01-01&end_date=2019-01-02
+```
+
+Note that in this example `start_date` is inclusive, while `end_date` is
+exclusive, meaning we are effectively fetching events that occur between
+2019-01-01 00:00:00 and 2019-01-01 23:59:59.
+
+##### Dynamic time references using execution dates
+
+Airflow provides tasks with extra parameters. The most important of these
+parameters is called the `execution_date`, which represents the date and time
+for which our DAG is being executed. The end time of the schedule interval is
+indicated by another parameter called the `next_execution_date`. Airflow also
+provides a previous_execution_date parameter, which describes the start of the
+previous schedule interval.
+
+<Figure src="/media/airflow-execution-dates.png">
+  Execution dates in Airflow.
+</Figure>
+
+In Airflow, we can use these execution dates by referencing them in our
+operators. For example, in the `BashOperator`, we can use Airflow’s Jinja-based
+templating functionality to include the execution dates dynamically in our Bash
+command.
+
+```python nu hl=7..8
+fetch_events = BashOperator(
+    task_id="fetch_events",
+    bash_command=(
+        "mkdir -p /data && "
+        "curl -o /data/events.json "
+        "http://events_api:5000/events?"
+        "start_date={{execution_date.strftime('%Y-%m-%d')}}&"
+        "end_date={{next_execution_date.strftime('%Y-%m-%d')}}"
+    ),
+    dag=dag,
+)
+```
+
+Airflow also provides several shorthand parameters for common date formats. For
+example, the `ds` and `ds_nodash` parameters are different representations of
+the `execution_date`, formatted as `YYYY-MM-DD` and `YYYYMMDD`, respectively.
+Similarly, `next_ds`, `next_ds_nodash`, `prev_ds`, and `prev_ds_nodash` provide
+shorthand notations for the next and previous execution dates, respectively.
+
+```python hl=7..8
+fetch_events = BashOperator(
+    task_id="fetch_events",
+    bash_command=(
+        "mkdir -p /data && "
+        "curl -o /data/events.json "
+        "http://events_api:5000/events?"
+        "start_date={{ds}}&"
+        "end_date={{next_ds}}"
+    ),
+    dag=dag,
+)
+```
+
+##### Partitioning your data
+
+```python hl=5
+fetch_events = BashOperator(
+    task_id="fetch_events",
+    bash_command=(
+        "mkdir -p /data/events && "
+        "curl -o /data/events/{{ds}}.json "
+        "http://events_api:5000/events?"
+        "start_date={{ds}}&"
+        "end_date={{next_ds}}"
+    ),
+    dag=dag,
+)
+```
+
+This practice of dividing a data set into smaller, more manageable pieces is a
+common strategy in data storage and processing systems and is commonly referred
+to as _partitioning_, with the smaller pieces of a data set the _partitions_.
+
+```python nu hl=1,3..4,17..18
+def _calculate_stats(**context):
+    """Calculates event statistics."""
+    input_path = context["templates_dict"]["input_path"]
+    output_path = context["templates_dict"]["output_path"]
+
+    events = pd.read_json(input_path)
+    stats = events.groupby(["date", "user"]).size().reset_index()
+
+    Path(output_path).parent.mkdir(exist_ok=True)
+    stats.to_csv(output_path, index=False)
+
+
+calculate_stats = PythonOperator(
+    task_id="calculate_stats",
+    python_callable=_calculate_stats,
+    templates_dict={
+        "input_path": "/data/events/{{ds}}.json",
+        "output_path": "/data/stats/{{ds}}.csv",
+    },
+    dag=dag,
+)
+```
+
+To achieve this templating in the `PythonOperator`, we need to pass any
+arguments that should be templated using the operator’s `templates_dict`
+parameter. We then can retrieve the templated values inside our function from
+the context object that is passed to our `_calculate_stats` function by Airflow.
+
 #### Understanding Airflow's execution dates
 
+##### Executing work in fixed-length intervals
+
+Airflow runs a DAG with three parameters: a start date, a schedule interval, and
+an (optional) end date. Airflow uses these three parameters to divide time into
+a series of schedule intervals, starting from the given start date and
+optionally ending at the end date
+
+<Figure src="/media/airflow-scheduling-intervals.png">
+  Time represented in terms of Airflow’s scheduling intervals. Assumes a daily
+  interval with a start date of 2019-01-01.
+</Figure>
+
+A DAG is executed for a given interval as soon as the time slot of that interval
+has passed.
+
+An advantage of using this interval-based approach is that it is ideal for
+performing the type of incremental data processing we saw in the previous
+sections, as we know exactly for which interval of time a task is executing
+for—the start and end of the corresponding interval. This is in stark contrast
+to, for example, a time point–based scheduling system such as cron, where we
+only know the current time for which our task is being executed.
+
+<Figure src="/media/interval-based-vs-time-point-based-scheduling.png">
+  Incremental processing in interval-based scheduling windows (e.g., Airflow)
+  versus windows derived from time point–based systems (e.g., cron). For
+  incremental (data) processing, time is typically divided into discrete time
+  intervals that are processed as soon as the corresponding interval has passed.
+  Interval-based scheduling approaches (such as Airflow) explicitly schedule
+  tasks to run for each interval while providing exact information to each task
+  concerning the start and the end of the interval. In contrast, time
+  point–based scheduling approaches only execute tasks at a given time, leaving
+  it up to the task itself to determine for which incremental interval the task
+  is executing.
+</Figure>
+
+Airflow defines the execution date of a DAG as the start of the corresponding
+interval. Conceptually, this makes sense if we consider that the execution date
+marks our schedule interval rather than the moment our DAG is actually executed.
+
+When executing a task, the start and end of the corresponding interval are
+defined by the `execution_date` (the start of the interval) and the
+`next_execution` date (the start of the next interval) parameters. Similarly,
+the previous schedule interval can be derived using the
+`previous_execution_date` and `execution_date` parameters.
+
+However, one caveat to keep in mind when using the `previous_execution_date` and
+`next_execution_date` parameters in your tasks is that these are only defined
+for DAG runs following the schedule interval. As such, the values of these
+parameters will be undefined for any runs that are triggered manually using
+Airflow UI or CLI because Airflow cannot provide information about next or
+previous schedule intervals if you are not following a schedule interval.
+
 #### Using backfilling to fill in past gaps
+
+##### Executing work back in time
+
+By default, Airflow will schedule and run any past schedule intervals that have
+not been run. As such, specifying a past start date and activating the
+corresponding DAG will result in all intervals that have passed before the
+current time being executed. This behavior is controlled by the DAG `catchup`
+parameter and can be disabled by setting `catchup` to false.
+
+```python hl=6
+dag = DAG(
+    dag_id="09_no_catchup",
+    schedule_interval="@daily",
+    start_date=dt.datetime(year=2019, month=1, day=1),
+    end_date=dt.datetime(year=2019, month=1, day=5),
+    catchup=False,
+)
+```
+
+With this setting, the DAG will only be run for the most recent schedule
+interval rather than executing all open past intervals. The default value for
+catchup can be controlled from the Airflow configuration file by setting a value
+for the `catchup_by_default` configuration setting.
+
+<Figure src="/media/airflow-catchup-parameter.png">
+
+Backfilling in Airflow. By default, Airflow will run tasks for all past
+intervals up to the current time. This behavior can be disabled by setting the
+`catchup` parameter of a DAG to false, in which case Airflow will only start
+executing tasks from the current interval.
+
+</Figure>
+
+Although backfilling is a powerful concept, it is limited by the availability of
+data in source systems. For example, in our example use case we can load past
+events from our API by specifying a start date up to 30 days in the past.
+However, as the API only provides up to 30 days of history, we cannot use
+backfilling to load data from earlier days.
+
+Backfilling can also be used to reprocess data after we have made changes in our
+code. For example, say we make a change to our `calc_statistics` function to add
+a new statistic. Using backfilling, we can clear past runs of our
+`calc_statistics` task to reanalyze our historical data using the new code. Note
+that in this case we aren’t limited by the 30-day limit of our data source, as
+we have already loaded these earlier data partitions as part of our past runs.
 
 #### Best practices for designing tasks
 

@@ -4,7 +4,70 @@ relatedResources:
   - "9781801074063"
 ---
 
-1. Create a `HelloWorld` Groovy class in a package named `com.javaeasily.demos`.
+1. List all Groovy versions available through SDKMAN!.
+
+   <Solution>
+
+   ```shell
+   sdk ls groovy
+   ```
+
+   </Solution>
+
+2. Install two different versions of Groovy through SDKMAN!.
+
+   <Solution>
+
+   ```shell
+   sdk i groovy
+   sdk i groovy 4.0.0-alpha-3
+   groovy --version
+   ```
+
+   </Solution>
+
+3. Check the default Groovy version set.
+
+   <Solution>
+
+   ```shell
+   sdk d groovy
+   ```
+
+   </Solution>
+
+4. Use a different version of Groovy in the current shell.
+
+   <Solution>
+
+   ```shell
+   sdk u 4.0.0-alpha-3
+   groovy --version
+   ```
+
+   </Solution>
+
+5. Locate the Groovy installation in the SDKMAN! folder.
+
+   <Solution>
+
+   ```shell
+   ls -l ~/.sdkman/candidates/groovy/
+   ```
+
+   </Solution>
+
+6. Get the full catalog of SDKs available through SDKMAN!.
+
+   <Solution>
+
+   ```shell
+   sdk ls
+   ```
+
+   </Solution>
+
+7. Create a `HelloWorld` Groovy class in a package named `com.javaeasily.demos`.
 
    <Solution>
 

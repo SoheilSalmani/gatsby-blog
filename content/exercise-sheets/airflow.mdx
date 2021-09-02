@@ -5,7 +5,7 @@ relatedResources:
 tags: []
 ---
 
-1. Build an Airflow DAG which get data data from this endpoint
+1. Build an Airflow DAG which get data from this endpoint
    `https://ll.thespacedevs.com/2.0.0/launch/upcoming`, download all pictures in
    a local folder, and notify the number of images in the output folder.
 
@@ -70,3 +70,377 @@ tags: []
    ```
 
    </Solution>
+
+2. In a Docker container, install Airflow, start it by initializing the
+   metastore (a database in which all Airflow state is stored), creating a user,
+   copying the rocket launch DAG into the DAGs directory, and starting the
+   scheduler and webserver.
+
+   <Solution>
+
+   ```airflow
+   docker run \
+       -ti \
+       -p 8080:8080 \
+       -v /path/to/dag/download_rocket_launches.py:/opt/airflow/dags/   download_rocket_launches.py \
+       --entrypoint=/bin/bash \
+       --name airflow \
+       apache/airflow:latest \
+       -c '( \
+               airflow db init && \
+               airflow users create --username admin --password admin --firstname    Anonymous --lastname Admin --role Admin --email admin@example.org \
+           ); \
+           airflow webserver & \
+           airflow scheduler \
+          '
+   ```
+
+   </Solution>
+
+3. Inspect the logs of a completed tasks
+
+   <Solution>
+     Click on a completed task, then go to <Scr>Log</Scr>.
+   </Solution>
+
+4. Configure the DAG to run once a day.
+
+   <Solution>
+
+   ```python fp=download_rocket_launches.py hl=6
+   ...
+
+   dag = DAG(
+       dag_id="download_rocket_launches",
+       start_date=airflow.utils.dates.days_ago(14),
+       schedule_interval="@daily",
+   )
+
+   ...
+   ```
+
+   </Solution>
+
+5. Build an API which returns fake data. We want to simulate a service which
+   tracks user behavior on our website and allows us to analyze which pages
+   users (identified by an IP address) accessed. For marketing purposes, we
+   would like to know how many different pages users access and how much time
+   they spend during each visit. For practical reasons, the external tracking
+   service does not store data for more than 30 days.
+
+   <Solution>
+
+   ```python nu fp=app.py
+   from datetime import date, datetime, timedelta
+   import time
+
+   from numpy import random
+   import pandas as pd
+   from faker import Faker
+
+   from flask import Flask, jsonify, request
+
+   def _generate_events(end_date):
+       """Generates a fake dataset with events for 30 days before end date."""
+       events = pd.concat(
+           [
+               _generate_events_for_day(date=end_date - timedelta(days=(30 - i)))
+               for i in range(30)
+           ],
+           axis=0,
+       )
+       return events
+
+   def _generate_events_for_day(date):
+       """Generates events for a given day."""
+       # Use date as seed.
+       seed = int(time.mktime(date.timetuple()))
+
+       Faker.seed(seed)
+       random_state = random.RandomState(seed)
+
+       # Determine how many users and how many events we will have.
+       n_users = random_state.randint(low=50, high=100)
+       n_events = random_state.randint(low=200, high=2000)
+
+       # Generate a bunch of users.
+       fake = Faker()
+       users = [fake.ipv4() for _ in range(n_users)]
+
+       return pd.DataFrame(
+           {
+               "user": random_state.choice(users, size=n_events, replace=True),
+               "date": pd.to_datetime(date),
+           }
+       )
+
+   app = Flask(__name__)
+   app.config["events"] = _generate_events(end_date=date(year=2019, month=1, day=5))
+
+   @app.route("/events")
+   def events():
+       start_date = _str_to_datetime(request.args.get("start_date", None))
+       end_date = _str_to_datetime(request.args.get("end_date", None))
+       events = app.config.get("events")
+       if start_date is not None:
+           events = events.loc[events["date"] >= start_date]
+       if end_date is not None:
+           events = events.loc[events["date"] < end_date]
+       return jsonify(events.to_dict(orient="records"))
+
+   def _str_to_datetime(value):
+       if value is None:
+           return None
+       return datetime.strptime(value, "%Y-%m-%d")
+
+   if __name__ == "__main__":
+       app.run(host="0.0.0.0", port=5000)
+   ```
+
+   ```dockerfile nu fp=Dockerfile
+   FROM python:latest
+
+   COPY requirements.txt /tmp/requirements.txt
+   RUN pip install -r /tmp/requirements.txt && rm -f /tmp/requirements.txt
+
+   COPY app.py /
+
+   EXPOSE 5000
+
+   ENTRYPOINT ["python"]
+   CMD ["/app.py"]
+   ```
+
+   ```shell
+   docker build -t fake-api .
+   docker run -dP fake-api
+   ```
+
+   </Solution>
+
+6. Build an Airflow DAG which gets data from the local API using a
+   `BashOperator`, and then calculates event statistics.
+
+   <Solution>
+
+   ```python nu fp=dag_event_statistics.py
+   from datetime import datetime
+   from pathlib import Path
+
+   import pandas as pd
+   from airflow import DAG
+   from airflow.operators.bash import BashOperator
+   from airflow.operators.python import PythonOperator
+
+   dag = DAG(
+       dag_id="01_unscheduled",
+       start_date=datetime(2019, 1, 1),
+       schedule_interval=None
+   )
+
+   fetch_events = BashOperator(
+       task_id="fetch_events",
+       bash_command=(
+           "mkdir -p /data/events && "
+           "curl -o /data/events.json "
+           "http://events_api:5000/events"
+       ),
+       dag=dag,
+   )
+
+   def _calculate_stats(input_path, output_path):
+       """Calculates event statistics."""
+       events = pd.read_json(input_path)
+       stats = events.groupby(["date", "user"]).size().reset_index()
+       Path(output_path).parent.mkdir(exist_ok=True)
+       stats.to_csv(output_path, index=False)
+
+   calculate_stats = PythonOperator(
+       task_id="calculate_stats",
+       python_callable=_calculate_stats,
+       op_kwargs={
+         "input_path": "/data/events.json",
+         "output_path": "/data/stats.csv"
+       },
+       dag=dag,
+   )
+
+   fetch_events >> calculate_stats
+   ```
+
+   </Solution>
+
+7. Give the cron expressions to schedule a job:
+
+   1. hourly (running on the hour)
+   2. daily (running at midnight)
+   3. weekly (running at midnight on Sunday)
+   4. midnight on the first of every month
+   5. 23:45 every Saturday
+   6. every Monday, Wednesday, Friday at midnight
+   7. every weekday at midnight
+   8. every day at 00:00 and 12:00
+
+   <Solution>
+
+   1. `0 * * * *`
+   2. `0 0 * * *`
+   3. `0 0 * * 0`
+   4. `0 0 1 * *`
+   5. `45 23 * * SAT`
+   6. `0 0 * * MON,WED,FRI`
+   7. `0 0 * * MON-FRI`
+   8. `0 0,12 * * *`
+
+   </Solution>
+
+8. What are the macros supported by Airflow for scheduling:
+
+   <Solution>
+
+   - `@once`: Schedule once and only once.
+   - `@hourly`: Run once an hour at the beginning of the hour.
+   - `@daily`: Run once a day at midnight.
+   - `@weekly`: Run once a week at midnight on Sunday morning.
+   - `@monthly`: Run once a month at midnight on the first day of the month.
+   - `@yearly`: Run once a year at midnight on January 1.
+
+   </Solution>
+
+9. Schedule a DAG to run every three days, then every ten minutes, and then
+   every two hours.
+
+   <Solution>
+
+   ```python nu hl=7
+   import datetime as dt
+
+   # ...
+
+   dag = DAG(
+       # ...
+       schedule_interval=dt.timedelta(days=3),
+       # ...
+   )
+
+   # ...
+   ```
+
+   ```python nu hl=7
+   import datetime as dt
+
+   # ...
+
+   dag = DAG(
+       # ...
+       schedule_interval=dt.timedelta(minutes=10),
+       # ...
+   )
+
+   # ...
+   ```
+
+   ```python nu hl=7
+   import datetime as dt
+
+   # ...
+
+   dag = DAG(
+       # ...
+       schedule_interval=dt.timedelta(hours=2),
+       # ...
+   )
+
+   # ...
+   ```
+
+   </Solution>
+
+10. Airflow to stop running our DAG after a certain date.
+
+    <Solution>
+
+    ```python nu hl=6
+    # ...
+
+    dag = DAG(
+        # ...
+        start_date=dt.datetime(year=2019, month=1, day=1),
+        end_date=dt.datetime(year=2019, month=1, day=5),
+    )
+
+    # ...
+    ```
+
+    </Solution>
+
+11. Update the code to process data incrementally.
+
+    <Solution>
+
+    ```python hl=7,9..10,15,17..18,31..32
+    # ...
+
+    fetch_events = BashOperator(
+        task_id="fetch_events",
+        bash_command=(
+            "mkdir -p /data/events && "
+            "curl -o /data/events/{{ds}}.json "
+            "http://events_api:5000/events?"
+            "start_date={{ds}}&"
+            "end_date={{next_ds}}"
+        ),
+        dag=dag,
+    )
+
+    def _calculate_stats(**context):
+        """Calculates event statistics."""
+        input_path = context["templates_dict"]["input_path"]
+        output_path = context["templates_dict"]["output_path"]
+
+        events = pd.read_json(input_path)
+        stats = events.groupby(["date", "user"]).size().reset_index()
+
+        Path(output_path).parent.mkdir(exist_ok=True)
+        stats.to_csv(output_path, index=False)
+
+    calculate_stats = PythonOperator(
+        task_id="calculate_stats",
+        python_callable=_calculate_stats,
+        templates_dict={
+            "input_path": "/data/events/{{ds}}.json",
+            "output_path": "/data/stats/{{ds}}.csv",
+        },
+        dag=dag,
+    )
+
+    # ...
+    ```
+
+    </Solution>
+
+12. Check the values of `execution_date`, `previous_execution_date`,
+    `next_execution_date`, `ds`, `prev_ds` and `next_ds` when you trigger the
+    DAG manually.
+
+    <Solution>TODO</Solution>
+
+13. Change the start date of the DAG to have past gaps, and fill them using
+    backfilling.
+
+    <Solution>
+
+    ```python hl=5
+    dag = DAG(
+        dag_id="09_no_catchup",
+        schedule_interval="@daily",
+        start_date=dt.datetime(year=2019, month=1, day=1), # Past date
+        catchup=True, # Optional as it's the default value
+    )
+    ```
+
+    </Solution>
+
+14. Disable the backfilling behavior in the Airflow configuration file.
+
+    <Solution>TODO</Solution>

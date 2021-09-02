@@ -7,9 +7,12 @@ import theme from "prism-react-renderer/themes/nightOwl"
 import React from "react"
 ;(typeof global !== "undefined" ? global : window).Prism = Prism
 
+require("prismjs/components/prism-csharp")
+require("prismjs/components/prism-docker")
 require("prismjs/components/prism-groovy")
 require("prismjs/components/prism-java")
 require("prismjs/components/prism-properties")
+require("prismjs/components/prism-toml")
 
 const Code = styled.div`
   padding: 0.5rem 0 0.5rem 0;
