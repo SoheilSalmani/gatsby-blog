@@ -135,8 +135,7 @@ tags: []
        try:
            data = wikipedia.random_page(language=language)
        except requests.RequestException as error:
-           message = str(error)
-           raise click.ClickException(message)
+           raise click.ClickException(str(error)) from error
 
        title = data["title"]
        extract = data["extract"]
@@ -381,26 +380,120 @@ tags: []
 
     </Solution>
 
-1. Configure Black, Flake8 and Safety in the project.
+14. Configure Black, Flake8 and Safety in the project.
 
-<Solution>
+    <Solution>
 
+    ```shell
+    poetry add --dev \
+        black \
+        flake8 \
+        flake8-bandit \
+        flake8-black \
+        flake8-bugbear \
+        flake8-import-order \
+        safety
+    ```
 
+    ```toml nu fp=flake8
+    [flake8]
+    select = B,B9,BLK,C,E,F,I,S,W
+    ignore = E203, E501, W503
+    max-complexity = 10
+    max-line-length = 80
+    application-import-names = wikipedia_cli,tests
+    import-order-style = google
+    per-file-ignores = tests/*:S101
+    ```
 
-</Solution>
+    ```python fp=noxfile.py
+    ...
 
-1. Install an insecure package, and check that Safety detect it.
+    locations = "src", "tests", "noxfile.py"
+    nox.options.sessions = "lint", "safety", "tests"
 
-<Solution>
+    ...
 
+    @nox.session(python=["3.9", "3.8"])
+    def lint(session):
+        args = session.posargs or locations
+        install(
+            session,
+            "flake8",
+            "flake8-bandit",
+            "flake8-black",
+            "flake8-bugbear",
+            "flake8-import-order",
+        )
+        session.run("flake8", *args)
 
+    @nox.session(python=["3.9"])
+    def safety(session):
+        poetry = Poetry(session)
+        with poetry.export("--dev") as requirements:
+            install(session, "safety")
+            session.run("safety", "check", f"--file={requirements}", "--bare")
 
-</Solution>
+    ...
 
-1. Configure pre-commit to run Black and Flake8 during a commit. Apply checks to all files.
+    @nox.session(python=["3.9"])
+    def black(session):
+        args = session.posargs or locations
+        install(session, "black")
+        session.run("black", *args)
+    ```
 
-<Solution>
+    </Solution>
 
+15. Install an insecure package, and check that Safety detect it.
 
+    <Solution>
 
-</Solution>
+    ```shell
+    poetry add insecure-package
+    nox -rs safety
+    poetry remove insecure-package
+    ```
+
+    </Solution>
+
+16. Configure pre-commit to run Black and Flake8 during a commit. Apply checks
+    to all files.
+
+    <Solution>
+
+    ```shell
+    pip install pre-commit
+    ```
+
+    ```yaml nu fp=.pre-commit-config.yaml
+    repos:
+      - repo: https://github.com/pre-commit/pre-commit-hooks
+        rev: v4.0.1
+        hooks:
+          - id: trailing-whitespace
+          - id: end-of-file-fixer
+          - id: check-yaml
+      - repo: local
+        hooks:
+          - id: black
+            name: black
+            entry: poetry run black
+            language: system
+            types: [python]
+          - id: flake8
+            name: flake8
+            entry: poetry run flake8
+            language: system
+            types: [python]
+    ```
+
+    ```shell
+    pre-commit install
+    ```
+
+    ```shell
+    pre-commit run --all-files
+    ```
+
+    </Solution>
