@@ -1,7 +1,7 @@
 ---
 title: React Hooks in Action
 resourceId: "9781617297632"
-stoppedAt: React’s new publication channels
+stoppedAt: Calling useState multiple times to work with multiple values
 ---
 
 ## React is evolving
@@ -250,7 +250,453 @@ asynchronous features can make full use of the loading state management that
 
 ### React’s new publication channels
 
+- _Latest_—Stable semver release
+- _Next_—Tracks the master branch of React development
+- _Experimental_—Includes experimental APIs and features
+
 ## Managing component state with the useState hook
+
+### Setting up the bookings manager app
+
+#### Generating the app skeleton with create-react-app
+
+```shell
+npx create-react-app react-hooks-in-action
+```
+
+From the `public` folder, remove all but `index.html`. From the `src` folder,
+remove all but `App.css`, `App.js`, and `index.js`.
+
+#### Editing the four key files
+
+- `/public/index.html`—The web page that contains the app
+- `/src/App.css`—Some styles to organize elements on the page
+- `/src/components/App.js`—The root component that contains all the others
+- `/src/index.js`—The file that imports the `App` component and renders it to
+  the `index.html` page
+
+```html nu fp=public/index.html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bookings App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+```
+
+The router shows the appropriate page to the user by matching the URL with a
+page component.
+
+```jsx nu fp=src/components/App.js
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom"
+
+import "../App.css"
+
+import { FaCalendarAlt, FaDoorOpen, FaUsers } from "react-icons/fa"
+
+import BookablesPage from "./Bookables/BookablesPage"
+import BookingsPage from "./Bookings/BookingsPage"
+import UsersPage from "./Users/UsersPage"
+import UserPicker from "./Users/UserPicker"
+
+export default function App() {
+  return (
+    <Router>
+      <div className="App">
+        <header>
+          <nav>
+            <ul>
+              <li>
+                <Link to="/bookings" className="btn btn-header">
+                  <FaCalendarAlt />
+                  <span>Bookings</span>
+                </Link>
+              </li>
+              <li>
+                <Link to="/bookables" className="btn btn-header">
+                  <FaDoorOpen />
+                  <span>Bookables</span>
+                </Link>
+              </li>
+              <li>
+                <Link to="/users" className="btn btn-header">
+                  <FaUsers />
+                  <span>Users</span>
+                </Link>
+              </li>
+            </ul>
+          </nav>
+          <UserPicker />
+        </header>
+        <Routes>
+          <Route path="/bookings" element={<BookingsPage />} />
+          <Route path="/bookables" element={<BookablesPage />} />
+          <Route path="/users" element={<UsersPage />} />
+        </Routes>
+      </div>
+    </Router>
+  )
+}
+```
+
+Notice that there is no `import React from "react"` at the top of the listing.
+React components used to need that line so they would work when the JSX in them
+was converted into regular JavaScript. But the tools that compile React, like
+`create-react-app`, can transform JSX in the latest versions of React without
+needing the import statement.
+
+```jsx nu fp=src/index.js
+import ReactDOM from "react-dom"
+import App from "./components/App"
+
+ReactDOM.render(<App />, document.getElementById("root"))
+```
+
+#### Adding a database file for the application
+
+```json nu fp=src/static.json
+{
+  "bookables": [
+    {
+      "id": 1,
+      "group": "Rooms",
+      "title": "Meeting Room",
+      "notes": "The one with the big table and interactive screen. Seats 12. See Colin if you need the tea and coffee trolley.",
+      "sessions": [1, 2, 3],
+      "days": [1, 2, 3, 4, 5, 0]
+    },
+    {
+      "id": 2,
+      "group": "Rooms",
+      "title": "Lecture Hall",
+      "notes": "For more formal 'sage-on-the-stage' presentations. Seats 100. See Sandra for help with AV setup.",
+      "sessions": [1, 3, 4],
+      "days": [0, 1, 2, 3, 4]
+    },
+    {
+      "id": 3,
+      "group": "Rooms",
+      "title": "Games Room",
+      "notes": "Table tennis, table football, pinball! There's also a selection of board games. Please tidy up!",
+      "sessions": [0, 2, 4],
+      "days": [0, 2, 3, 4, 5, 6]
+    },
+    {
+      "id": 4,
+      "group": "Rooms",
+      "title": "Lounge",
+      "notes": "A relaxing place to hang out. Ideal for bean bag wranglers and sofa surfers. Help yourself to a beer after hours.",
+      "sessions": [0, 1, 2, 3, 4],
+      "days": [0, 1, 2, 3, 4, 5, 6]
+    },
+    {
+      "id": 5,
+      "group": "Kit",
+      "title": "Projector",
+      "notes": "Portable but powerful. Keep it with the case. Be careful, it gets quite hot after a while!",
+      "sessions": [1, 2, 3, 4],
+      "days": [0, 2, 3, 4, 5]
+    },
+    {
+      "id": 6,
+      "group": "Kit",
+      "title": "Wireless mics",
+      "notes": "Really handy but don't forget to switch them off when you pop out of the room.",
+      "sessions": [1, 3, 4],
+      "days": [0, 2, 3, 4, 5, 6]
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "name": "Mark",
+      "img": "user1.png",
+      "title": "Envisioning Sculptor",
+      "notes": "With the company for 15 years, Mark has consistently sculpted innovative and compelling narratives for enforwarding the mutual ethos of all stakeholders."
+    },
+    {
+      "id": 2,
+      "name": "Simon",
+      "img": "user2.png",
+      "title": "Outreach Samurai",
+      "notes": "Simon wrangles social networks, elegantly employing bleeding-katana psycho-tools to leverage what he likes to call 'News Technology'."
+    },
+    {
+      "id": 3,
+      "name": "Clarisse",
+      "img": "user3.png",
+      "title": "Quantum Explorator",
+      "notes": "Surfing a higher plane of understanding, Clarisse value-adds the latest 'beyond fullstack' platforms, libraries and universes, collapsing realities to find the one truth."
+    },
+    {
+      "id": 4,
+      "name": "Sanjiv",
+      "img": "user4.png",
+      "title": "Devil's Advocate Advocate",
+      "notes": "Sanjiv lives your life to better understand your power-tantrums and architect empathic growth journeys that break the shell and distribute the yoke company-wide."
+    }
+  ],
+  "bookings": [],
+  "sessions": ["Breakfast", "Morning", "Lunch", "Afternoon", "Evening"],
+  "days": [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday"
+  ]
+}
+```
+
+#### Creating page components and a UserPicker.js file
+
+```jsx fp=src/components/Bookables/BookablesPage.js
+export default function BookablesPage() {
+  return (
+    <main className="bookables-page">
+      <p>Bookables!</p>
+    </main>
+  )
+}
+```
+
+```jsx fp=src/components/Users/UserPicker.js
+export default function UserPicker() {
+  return (
+    <select>
+      <option>Users</option>
+    </select>
+  )
+}
+```
+
+```shell
+npm start
+```
+
+### Storing, using, and setting values with useState
+
+#### Assigning new values to variables doesn't update the UI
+
+Just because you change the value of a variable within your component function
+doesn’t mean React will notice.
+
+<Figure src="/media/directly-changing-variable-doesn-t-update-ui.png">
+  Directly changing a variable in our component code doesn’t update the UI.
+</Figure>
+
+#### Calling useState returns a value and an updater function
+
+<Figure src="/media/using-an-updater-function-updates-ui.png">
+  Rather than changing a value directly, we call an updater function. The
+  updater function changes the value, and React updates the display with the
+  recalculated UI from the component.
+</Figure>
+
+The `useState` function returns an array with two elements: a value and an
+updater function.
+
+If you want to set an initial value for the variable, pass the initial value as
+an argument to the `useState` function.
+
+```jsx nu fp=src/components/Bookables/BookablesList.js
+import { useState } from "react"
+import { bookables } from "../../static.json"
+
+export default function BookablesList() {
+  const group = "Rooms"
+  const bookablesInGroup = bookables.filter(b => b.group === group)
+  const [bookableIndex, setBookableIndex] = useState(1)
+
+  return (
+    <ul className="bookables items-list-nav">
+      {bookablesInGroup.map((b, i) => (
+        <li key={b.id} className={i === bookableIndex ? "selected" : null}>
+          <button className="btn" onClick={() => setBookableIndex(i)}>
+            {b.title}
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
+}
+```
+
+Challenge 2.1:
+
+```jsx nu fp=src/components/Users/UsersList.js
+import { useState } from "react"
+import { users } from "../../static.json"
+
+export default function UsersList() {
+  const [userIndex, setUserIndex] = useState(0)
+
+  return (
+    <ul className="users items-list-nav">
+      {users.map((u, i) => (
+        <li key={u.id} className={i === userIndex ? "selected" : null}>
+          <button className="btn" onClick={() => setUserIndex(i)}>
+            {u.name}
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
+}
+```
+
+```jsx nu fp=src/components/Users/UsersPage.js
+import UsersList from "./UsersList"
+
+export default function UsersPage() {
+  return (
+    <main className="users-page">
+      <UsersList />
+    </main>
+  )
+}
+```
+
+Challenge 2.2
+
+```jsx nu fp=src/components/Users/UsersPicker.js
+import { users } from "../../static.json"
+
+export default function UserPicker() {
+  return (
+    <select>
+      {users.map(u => (
+        <option key={u.id}>{u.name}</option>
+      ))}
+    </select>
+  )
+}
+```
+
+#### Calling the updater function replaces the previous state value
+
+##### The class component approach
+
+React merges the object you passed to `setState` with the existing state.
+
+##### The function component approach
+
+The updater function _replaces_ the previous state value with the value you pass
+to the function.
+
+So, if you really need to use an object with the `useState` hook, copy across
+all the properties from the old object when you set a new property value:
+
+```jsx
+function handleClick(index) {
+  setState({
+    ...state,
+    bookableIndex: index,
+  })
+}
+```
+
+Notice how the spread operator, `...state`, is used in the preceding snippet to
+copy all of the properties from the old state to the new. In fact, to ensure
+that you have the latest state when setting new values based on old, you can
+pass a function as the argument to the updater function, like this:
+
+```jsx
+function handleClick(index) {
+  setState(state => {
+    return {
+      ...state,
+      bookableIndex: index,
+    }
+  })
+}
+```
+
+React will pass in the latest state as the first argument.
+
+#### Passing a function to useState as the initial value
+
+```jsx
+function ShinyComponent({ tangledWeb }) {
+  const [shiny, setShiny] = useState(untangle(tangledWeb))
+  ...
+}
+```
+
+Whenever `ShinyComponent` runs, maybe in response to setting another piece of
+state, the expensive `untangle` function runs as well.
+
+Luckily, the `useStat`e hook accepts a function as its argument, a _lazy initial
+state_.
+
+```jsx hl=2
+function ShinyComponent({ tangledWeb }) {
+  const [shiny, setShiny] = useState(() => untangle(tangledWeb))
+  ...
+}
+```
+
+Use the lazy initial state if you need to undertake expensive work to generate
+an initial value for a piece of state.
+
+#### Using the previous state when setting the new state
+
+```jsx nu fp=src/components/Bookables/BookablesList.js hl=3,10..12,15,25..31
+import { useState } from "react"
+import { bookables } from "../../static.json"
+import { FaArrowRight } from "react-icons/fa"
+
+export default function BookablesList() {
+  const group = "Rooms"
+  const bookablesInGroup = bookables.filter(b => b.group === group)
+  const [bookableIndex, setBookableIndex] = useState(1)
+
+  function nextBookable() {
+    setBookableIndex(i => (i + 1) % bookablesInGroup.length)
+  }
+
+  return (
+    <div>
+      <ul className="bookables items-list-nav">
+        {bookablesInGroup.map((b, i) => (
+          <li key={b.id} className={i === bookableIndex ? "selected" : null}>
+            <button className="btn" onClick={() => setBookableIndex(i)}>
+              {b.title}
+            </button>
+          </li>
+        ))}
+      </ul>
+      <p>
+        <button className="btn" onClick={nextBookable} autoFocus>
+          <FaArrowRight />
+          <span>Next</span>
+        </button>
+      </p>
+    </div>
+  )
+}
+```
+
+By using hooks to hand over management of our state values to React, we don’t
+just ask it to update values and trigger re-renders; we also give it permission
+to efficiently schedule when any updates take place. React can intelligently
+batch updates together and ignore redundant updates.
+
+When we want to update a state value based on its previous value, as in our Next
+button example, instead of passing the updater function a value to set, we can
+pass it a function. React will pass that function the current state value and
+will use the return value of that function as the new state value. By passing a
+function, we ensure that any new values that are based on old values have the
+latest information with which to work.
+
+### Calling useState multiple times to work with multiple values
 
 ## Managing component state with the useReducer hook
 

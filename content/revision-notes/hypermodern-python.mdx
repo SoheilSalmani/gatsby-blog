@@ -17,7 +17,7 @@ Install Python releases through pyenv:
 
 ```shell
 pyenv install 3.8.2
-pyenv install 3.7.7
+pyenv install 3.7.5
 ```
 
 Make your fresh Python installations available inside the repository:
@@ -98,49 +98,1080 @@ kebab case used for the repository name `hypermodern-python`.
 
 ### Managing virtual environments with Poetry
 
+Poetry manages virtual environments for your projects.
+
+Install the skeleton package:
+
+```shell
+poetry install
+```
+
+Poetry has now created a virtual environment dedicated to your project, and
+installed your initial package into it. It has also created a so-called _lock_
+file, named `poetry.lock`.
+
+Run a Python session inside thew new virtual environment:
+
+```shell
+poetry run python
+```
+
+```python
+>>> import hypermodern_python
+>>> hypermodern_python.__version__
+```
+
 ### Managing dependencies with Poetry
+
+The `click` package allows you to create beautiful command-line interfaces in a
+composable way with as little code as necessary.
+
+```shell
+poetry add click
+```
+
+Several things are happening here:
+
+- The package is downloaded and installed into the virtual environment.
+- The installed version is registered in the lock file `poetry.lock`.
+- A more general version constraint is added to `pyproject.toml`.
+
+Upgrading the dependency to a new minor or patch release:
+
+```shell
+poetry update click
+```
+
+To upgrade to a new major release, you need to update the version constraint
+explicitly.
+
+```shell
+poetry add click^7.0
+```
 
 ### Command-line interfaces with click
 
+```python nu fp=src/hypermodern_python/console.py
+import click
+
+from . import __version__
+
+@click.command()
+@click.version_option(version=__version__)
+def main():
+    """The hypermodern Python project."""
+    click.echo("Hello, world!")
+```
+
+The `console` module defines a minimal command-line application, supporting
+`--help` and `--version` options.
+
+Register the script in `pyproject.toml`.
+
+```toml fp=pyproject.toml
+[tool.poetry.scripts]
+hypermodern-python = "hypermodern_python.console:main"
+```
+
+Finally, install the package into the virtual environment:
+
+```shell
+poetry install
+```
+
+Run the script:
+
+```shell
+poetry run hypermodern-python
+```
+
+You can also pass options to your script:
+
+```shell
+poetry run hypermodern-python --help
+```
+
 ### Example: Consuming a REST API with requests
+
+Install the `requests` package, the _de facto_ standard for making HTTP requests
+in Python:
+
+```shell
+poetry add requests
+```
+
+```python nu fp=src/hypermodern_python/console.py
+import textwrap
+
+import click
+import requests
+
+from . import __version__
+
+API_URL = "https://en.wikipedia.org/api/rest_v1/page/random/summary"
+
+@click.command()
+@click.version_option(version=__version__)
+def main():
+    """The hypermodern Python project."""
+    with requests.get(API_URL) as response:
+        response.raise_for_status()
+        data = response.json()
+
+    title = data["title"]
+    extract = data["extract"]
+
+    click.secho(title, fg="green")
+    click.echo(textwrap.fill(extract))
+```
+
+The `textwrap` module from the standard library allows you to wrap lines when
+printing text to the console.
+
+Blank lines serve to group imports as recommended in PEP 8 (standard
+library–third party packages–local imports).
+
+The `API_URL` constant points to the REST API of the English Wikipedia, or more
+specifically, its `/page/random/summary` endpoint, which returns the summary of
+a random Wikipedia article.
+
+The `with` statement ensures that the HTTP connection is closed at the end of
+the block. Before looking at the response body, we check the HTTP status code
+and raise an exception if it signals an error.
+
+Finally, we print the title and extract to the console, using the `click.echo`
+and `click.secho` functions. The latter function allows you to specify the
+foreground color using the `fg` keyword attribute. The `textwrap.fill` function
+wraps the text in extract so that every line is at most 70 characters long.
+
+Feel free to play around with this a little. Here are some things you might want
+to try:
+
+- Display a friendly error message when the API is not reachable.
+- Add an option to select the Wikipedia edition for another language.
+- If you feel adventurous: auto-detect the user’s preferred language edition,
+  using locale.
 
 ## Testing
 
 ### Unit testing with pytest
 
+Unit tests, as the name says, verify the functionality of a _unit of code_, such
+as a single function or class. While the unittest framework is part of the
+Python standard library, pytest has become somewhat of a _de facto_ standard.
+
+Add `pytest` as a development dependency:
+
+```shell
+poetry add --dev pytest
+```
+
+Organize tests in a separate file hierarchy next to `src`, named `tests`:
+
+```tree
+.
+├── src
+└── tests
+    ├── __init__.py
+    └── test_console.py
+```
+
+The file `__init__.py` is empty and serves to declare the test suite as a
+package. While this is not strictly necessary, it allows your test suite to
+mirror the source layout of the package under test, even when modules in
+different parts of the source tree have the same name. Furthermore, it gives you
+the option to import modules from within your tests package.
+
+```python nu fp=tests/test_console.py
+import click.testing
+
+from hypermodern_python import console
+
+@pytest.fixture
+def runner():
+    return click.testing.CliRunner()
+
+def test_main_succeeds(runner):
+    result = runner.invoke(console.main)
+    assert result.exit_code == 0
+```
+
+```shell
+poetry run pytest
+```
+
 ### Code coverage with Coverage.py
+
+_Code coverage_ is a measure of the degree to which the source code of your
+program is executed while running its test suite. The code coverage of Python
+programs can be determined using a tool called Coverage.py. Install it with the
+`pytest-cov` plugin, which integrates Coverage.py with `pytest`:
+
+```shell
+poetry add --dev coverage[toml] pytest-cov
+```
+
+You can configure Coverage.py using the `pyproject.toml` configuration file,
+provided it was installed with the `toml` extra. Update this file to inform the
+tool about your package name and source tree layout. The configuration also
+enables branch analysis and the display of line numbers for missing coverage:
+
+```toml fp=pyproject.toml
+[tool.coverage.paths]
+source = ["src", "*/site-packages"]
+
+[tool.coverage.run]
+branch = true
+source = ["hypermodern_python"]
+
+[tool.coverage.report]
+show_missing = true
+```
+
+To enable coverage reporting:
+
+```shell
+poetry run pytest --cov
+```
+
+You can configure Coverage.py to require full test coverage (or any other target
+percentage) using the `fail_under` option:
+
+```toml fp=pyproject.toml
+[tool.coverage.report]
+fail_under = 100
+```
 
 ### Test automation with Nox
 
+Nox is a successor to the venerable tox. At its core, the tool automates testing
+in multiple Python environments. Nox makes it easy to run any kind of job in an
+isolated environment, with only those dependencies installed that the job needs.
+
+```shell
+pip install --user --upgrade nox
+```
+
+Unlike tox, Nox uses a standard Python file for configuration:
+
+```python nu fp=noxfile.py
+import nox
+
+@nox.session(python=["3.8", "3.7"])
+def tests(session):
+    session.run("poetry", "install", external=True)
+    session.run("pytest", "--cov")
+```
+
+This file defines a session named `tests`, which installs the project
+dependencies and runs the test suite. Poetry is not a part of the environment
+created by Nox, so we specify `external` to avoid warnings about external
+commands leaking into the isolated test environments.
+
+Nox creates virtual environments for the listed Python versions (3.8 and 3.7),
+and runs the session inside each environment:
+
+```shell
+nox
+```
+
+Nox recreates the virtual environments from scratch on each invocation (a
+sensible default). You can speed things up by passing the
+`--reuse-existing-virtualenvs` (`-r`) option:
+
+```shell
+nox -r
+```
+
+Change the session to allow overriding the options passed to `pytest`:
+
+```python nu fp=noxfile.py hl=5
+import nox
+
+@nox.session(python=["3.8", "3.7"])
+def tests(session):
+    args = session.posargs or ["--cov"]
+    session.run("poetry", "install", external=True)
+    session.run("pytest", *args)
+```
+
+```shell
+nox -- tests/test_console.py
+```
+
 ### Mocking with pytest-mock
+
+Unit tests should be fast, isolated, and repeatable. The test for `console.main`
+is neither of these:
+
+- It is not fast, because it takes a full round-trip to the Wikipedia API to
+  complete.
+- It does not run in an isolated environment, because it sends out an actual
+  request over the network.
+- It is not repeatable, because its outcome depends on the health, reachability,
+  and behavior of the API. In particular, the test fails whenever the network is
+  down.
+
+The `unittest.mock` standard library allows you to replace parts of your system
+under test with mock objects. Use it via the `pytest-mock` plugin, which
+integrates the library with `pytest`:
+
+```shell
+poetry add --dev pytest-mock
+```
+
+The plugin provides a `mocker` fixture, which functions as a thin wrapper around
+the standard mocking library. Use `mocker.patch` to replace the `requests.get`
+function by a mock object. The mock object will be useful for any test case
+involving the Wikipedia API, so let’s create a test fixture for it:
+
+```python fp=tests/test_console.py
+@pytest.fixture
+def mock_requests_get(mocker):
+    return mocker.patch("requests.get")
+
+def test_main_succeeds(runner, mock_requests_get):
+    ...
+```
+
+If you run Nox now, the test fails because click expects to be passed a string
+for console output, and receives a mock object instead. Simply “knocking out”
+`requests.get` is not quite enough. The mock object also needs to return
+something meaningful, namely a response with a valid JSON object.
+
+When a mock object is called, or when an attribute is accessed, it returns
+another mock object. Sometimes this is sufficient to get you through a test
+case. When it is not, you need to _configure_ the mock object. To configure an
+attribute, you simply set the attribute to the desired value. To configure the
+return value for when the mock is called, you set `return_value` on the mock
+object as if it were an attribute.
+
+```python
+with requests.get(API_URL) as response:
+    response.raise_for_status()
+    data = response.json()
+```
+
+The code above uses the response as a context manager. The `with` statement is
+syntactic sugar for the following slightly simplified pseudocode:
+
+```python
+context = requests.get(API_URL)
+response = context.__enter__()
+
+try:
+    response.raise_for_status()
+    data = response.json()
+finally:
+    context.__exit__(...)
+```
+
+So what you have is essentially a chain of function calls:
+
+```python
+data = requests.get(API_URL).__enter__().json()
+```
+
+Rewrite the fixture, and mirror this call chain when you configure the mock:
+
+```python fp=tests/test_console.py hl=4..7
+@pytest.fixture
+def mock_requests_get(mocker):
+    mock = mocker.patch("requests.get")
+    mock.return_value.__enter__.return_value.json.return_value = {
+        "title": "Lorem Ipsum",
+        "extract": "Lorem ipsum dolor sit amet",
+    }
+    return mock
+```
+
+```python fp=tests/test_console.py
+def test_main_prints_title(runner, mock_requests_get):
+    result = runner.invoke(console.main)
+    assert "Lorem Ipsum" in result.output
+```
+
+Additionally, mocks can be inspected to see if they were called, using the
+mock’s `called` attribute. This provides you with a way to check that
+`requests.get` was invoked to send a request to the API:
+
+```python fp=tests/test_console.py
+def test_main_invokes_requests_get(runner, mock_requests_get):
+    runner.invoke(console.main)
+    assert mock_requests_get.called
+```
+
+Mock objects also allow you to inspect the arguments they were called with,
+using the `call_args` attribute. This allows you to check the URL passed to
+`requests.get`:
+
+```python fp=tests/test_console.py
+def test_main_uses_en_wikipedia_org(runner, mock_requests_get):
+    runner.invoke(console.main)
+    args, _ = mock_requests_get.call_args
+    assert "en.wikipedia.org" in args[0]
+```
+
+You can configure a mock to raise an exception instead of returning a value by
+assigning the exception instance or class to the `side_effect` attribute of the
+mock. Let’s check that the program exits with a status code of 1 on request
+errors:
+
+```python fp=tests/test_console.py
+def test_main_fails_on_request_error(runner, mock_requests_get):
+    mock_requests_get.side_effect = Exception("Boom")
+    result = runner.invoke(console.main)
+    assert result.exit_code == 1
+```
+
+Tests for a feature or bugfix should be written _before_ implementation. This is
+also known as “writing a failing test". The reason for this is that it provides
+confidence that the tests are actually testing something, and do not simply pass
+because of a flaw in the tests themselves.
 
 ### Example CLI: Refactoring
 
+Let’s move the Wikipedia client to a separate module. Create a file
+`src/hypermodern-python/wikipedia.py` with the following contents:
+
+```python nu fp=src/hypermodern_python/wikipedia.py
+import requests
+
+API_URL = "https://en.wikipedia.org/api/rest_v1/page/random/summary"
+
+def random_page():
+    with requests.get(API_URL) as response:
+        response.raise_for_status()
+        return response.json()
+```
+
+The `console` module can now simply invoke `wikipedia.random_page`:
+
+```python nu fp=src/hypermodern_python/console.py hl=11
+import textwrap
+
+import click
+
+from . import __version__, wikipedia
+
+@click.command()
+@click.version_option(version=__version__)
+def main():
+    """The hypermodern Python project."""
+    data = wikipedia.random_page()
+
+    title = data["title"]
+    extract = data["extract"]
+
+    click.secho(title, fg="green")
+    click.echo(textwrap.fill(extract))
+```
+
 ### Example CLI: Handling exceptions gracefully
+
+If you run the example application without an Internet connection, your terminal
+will be filled with a long traceback. This is what happens when the Python
+interpreter is terminated by an unhandled exception. For common errors such as
+this, it would be better to print a friendly, informative message to the screen.
+
+Let’s express this as a test case, by configuring the mock to raise a
+`RequestException`. (The `requests` library has more specific exception classes,
+but for the purposes of this example, we will only deal with the base class.)
+
+```python fp=tests/test_console.py
+import requests
+
+def test_main_prints_message_on_request_error(runner, mock_requests_get):
+    mock_requests_get.side_effect = requests.RequestException
+    result = runner.invoke(console.main)
+    assert "Error" in result.output
+```
+
+The simplest way to get this test to pass is by converting the
+`RequestException` into a `ClickException`. When click encounters this
+exception, it prints the exception message to standard error and exits the
+program with a status code of 1. You can reuse the exception message by
+converting the original exception to a string.
+
+```python nu fp=src/hypermodern_python/wikipedia.py hl=1,7,11..13
+import click
+import requests
+
+API_URL = "https://en.wikipedia.org/api/rest_v1/page/random/summary"
+
+def random_page():
+    try:
+        with requests.get(API_URL) as response:
+            response.raise_for_status()
+            return response.json()
+    except requests.RequestException as error:
+        message = str(error)
+        raise click.ClickException(message)
+```
 
 ### Example CLI: Selecting the Wikipedia language edition
 
+```python fp=tests/test_wikipedia.py
+from hypermodern_python import wikipedia
+
+def test_random_page_uses_given_language(mock_requests_get):
+    wikipedia.random_page(language="de")
+    args, _ = mock_requests_get.call_args
+    assert "de.wikipedia.org" in args[0]
+```
+
+The `mock_requests_get` fixture is now used by two test modules. You could move
+it to a separate module and import from there, but Pytest offers a more
+convenient way: Fixtures placed in a `conftest.py` file are discovered
+automatically, and test modules at the same directory level can use them without
+explicit import. Create the new file at the top-level of your tests package, and
+move the fixture there:
+
+```python nu fp=tests/conftest.py
+import pytest
+
+@pytest.fixture
+def mock_requests_get(mocker):
+    mock = mocker.patch("requests.get")
+    mock.return_value.__enter__.return_value.json.return_value = {
+        "title": "Lorem Ipsum",
+        "extract": "Lorem ipsum dolor sit amet",
+    }
+    return mock
+```
+
+```python nu fp=src/hypermodern-python/wikipedia.py hl=4,6..7,9
+import click
+import requests
+
+API_URL = "https://{language}.wikipedia.org/api/rest_v1/page/random/summary"
+
+def random_page(language="en"):
+    url = API_URL.format(language=language)
+    try:
+        with requests.get(url) as response:
+            response.raise_for_status()
+            return response.json()
+    except requests.RequestException as error:
+        message = str(error)
+        raise click.ClickException(message)
+```
+
+As the second step, we make the new functionality accessible from the command
+line, adding a `--language` option. The test case mocks the
+`wikipedia.random_page` function, and uses the `assert_called_with` method on
+the mock to check that the language specified by the user is passed on to the
+function:
+
+```python fp=tests/test_console.py
+@pytest.fixture
+def mock_wikipedia_random_page(mocker):
+    return mocker.patch("hypermodern_python.wikipedia.random_page")
+
+def test_main_uses_specified_language(runner, mock_wikipedia_random_page):
+    runner.invoke(console.main, ["--language=pl"])
+    mock_wikipedia_random_page.assert_called_with(language="pl")
+```
+
+```python nu fp=src/hypermodern-python/console.py hl=8..15,17,19
+import textwrap
+
+import click
+
+from . import __version__, wikipedia
+
+@click.command()
+@click.option(
+    "--language",
+    "-l",
+    default="en",
+    help="Language edition of Wikipedia",
+    metavar="LANG",
+    show_default=True,
+)
+@click.version_option(version=__version__)
+def main(language):
+    """The hypermodern Python project."""
+    data = wikipedia.random_page(language=language)
+
+    title = data["title"]
+    extract = data["extract"]
+
+    click.secho(title, fg="green")
+    click.echo(textwrap.fill(extract))
+```
+
 ### Using fakes
 
+Mocks help you test code units depending on bulky subsystems, but they are not
+the only technique to do so. For example, if your function requires a database
+connection, it may be both easier and more effective to pass an in-memory
+database than a mock object. Fake implementations are a good alternative to mock
+objects, which can be too forgiving when faced with wrong usage, and too tightly
+coupled to implementation details of the system under test (witness the
+`mock_requests_get` fixture). Large data objects can be generated by test object
+factories, instead of being replaced by mock objects (check out the excellent
+`factoryboy` package).
+
+Suppose you have written the following fake API implementation:
+
+```python
+class FakeAPI:
+    url = "http://localhost:5000/"
+
+    @classmethod
+    def create(cls):
+        ...
+
+    def shutdown(self):
+        ...
+```
+
+The following will not work:
+
+```python
+@pytest.fixture
+def fake_api():
+    return FakeAPI.create()
+```
+
+The API needs to be shut down after use, to free up resources such as the TCP
+port and the thread running the server. You can do this by writing the fixture
+as a generator:
+
+```python
+@pytest.fixture
+def fake_api():
+    api = FakeAPI.create()
+    yield api
+    api.shutdown()
+```
+
+Pytest takes care of running the generator, passing the yielded value to your
+test function, and executing the shutdown code after it returns. If setting up
+and tearing down the fixture is expensive, you may also consider extending the
+scope of the fixture. By default, fixtures are created once per test function.
+Instead, you could create the fake API server once per test session:
+
+```python
+@pytest.fixture(scope="session")
+def fake_api():
+    api = FakeAPI.create()
+    yield api
+    api.shutdown()
+```
+
 ### End-to-end testing
+
+Testing against the live production server is bad practice for unit tests, but
+there is nothing like the confidence you get from seeing your code work in a
+real environment. Such tests are known as _end-to-end_ tests, and while they are
+usually too slow, brittle, and unpredictable for the kind of automated testing
+you would want to do on a CI server or in the midst of development, they do have
+their place.
+
+Use Pytest’s markers to apply a custom mark. This will allow you to select or
+skip them later, using Pytest’s `-m` option.
+
+```python fp=tests/test_console.py
+@pytest.mark.e2e
+def test_main_succeeds_in_production_env(runner):
+    result = runner.invoke(console.main)
+    assert result.exit_code == 0
+```
+
+Register the `e2e` marker using the `pytest_configure` hook, as shown below. The
+hook is placed in the `conftest.py` file, at the top-level of your tests
+package. This ensures that Pytest can discover the module and use it for the
+entire test suite.
+
+```python fp=tests/conftest.py
+def pytest_configure(config):
+    config.addinivalue_line("markers", "e2e: mark as end-to-end test.")
+```
+
+Finally, exclude end-to-end tests from automated testing by passing
+`-m "not e2e"` to Pytest:
+
+```python nu fp=noxfile.py hl=5
+import nox
+
+@nox.session(python=["3.8", "3.7"])
+def tests(session):
+    args = session.posargs or ["--cov", "-m", "not e2e"]
+    session.run("poetry", "install", external=True)
+    session.run("pytest", *args)
+```
+
+```shell
+nox -rs tests-3.8 -- -m e2e
+```
 
 ## Linting
 
 ### Linting with Flake8
 
+Linters analyze source code to flag programming errors, bugs, stylistic errors,
+and suspicious constructs. The most common ones for Python are pylint and the
+linter aggregators flake8, pylama, and prospector. There are also multi-language
+linter frameworks such as pre-commit and coala.
+
+```python fp=noxfile.py
+locations = "src", "tests", "noxfile.py"
+
+@nox.session(python=["3.8", "3.7"])
+def lint(session):
+    args = session.posargs or locations
+    session.install("flake8")
+    session.run("flake8", *args)
+```
+
+Flake8 glues together several tools. The messages produced by these tools are
+assigned error codes, prefixed by one or more letters. The prefixes group the
+errors into so-called violation classes:
+
+- `F` are errors reported by pyflakes, a tool which parses source files and
+  finds invalid Python code.
+- `W` and `E` are warnings and errors reported by pycodestyle, which checks your
+  Python code against some of the style conventions in PEP 8.
+- `C` are violations reported by mccabe, which checks the code complexity of
+  your Python package against a configured limit.
+
+Configure Flake8 using the `.flake8` configuration file, enabling all the
+built-in violation classes and setting the complexity limit:
+
+```toml nu fp=.flake8
+[flake8]
+select = C,E,F,W
+max-complexity = 10
+```
+
+By default, Nox runs all sessions defined in `noxfile.py`. Use the `--session`
+(`-s`) option to restrict it to a specific session:
+
+```shell
+nox -rs lint
+```
+
 ### Code formatting with Black
+
+The next addition to our toolbox is Black, the uncompromising Python code
+formatter. One of its greatest features is its lack of configurability.
+Blackened code looks the same regardless of the project you’re reading.
+
+```python fp=noxfile.py
+@nox.session(python="3.8")
+def black(session):
+    args = session.posargs or locations
+    session.install("black")
+    session.run("black", *args)
+```
+
+Invoking `nox` without arguments triggers all the sessions, including Black. It
+would be better to only validate the coding style without modifying the
+conflicting files. Exclude Black from the sessions run by default, by setting
+`nox.options.sessions` at the top:
+
+```python fp=noxfile.py
+nox.options.sessions = "lint", "tests"
+```
+
+Instead, check adherence to the Black code style inside the linter session. The
+`flake8-black` plugin generates warnings if it detects that Black would reformat
+a source file:
+
+```python fp=noxfile.py hl=4
+@nox.session(python=["3.8", "3.7"])
+def lint(session):
+    args = session.posargs or locations
+    session.install("flake8", "flake8-black")
+    session.run("flake8", *args)
+```
+
+Configure Flake8 to enable the `flake8-black` warnings, which are prefixed by
+`BLK`. Also, some built-in warnings do not align well with Black. You need to
+ignore warnings `E203` (Whitespace before ‘:'), and `W503` (Line break before
+binary operator), and set the maximum line length to a more permissive value:
+
+```toml fp=.flake8
+[flake8]
+select = BLK,C,E,F,W
+ignore = E203,W503
+max-line-length = 88
+```
 
 ### Checking imports with flake8-import-order
 
+The flake8-import-order plugin checks that import statements are grouped and
+ordered in a consistent and PEP 8-compliant way.
+
+```python fp=noxfile.py hl=4
+@nox.session(python=["3.8", "3.7"])
+def lint(session):
+    args = session.posargs or locations
+    session.install("flake8", "flake8-black", "flake8-import-order")
+    session.run("flake8", *args)
+```
+
+Enable the warnings emitted by the plugin (`I` like _import_).
+
+```toml fp=.flake8
+[flake8]
+select = BLK,C,E,F,I,W
+```
+
+Inform the plugin about package names which are considered local:
+
+```toml fp=.flake8
+[flake8]
+application-import-names = hypermodern_python,tests
+```
+
+Adopt the Google styleguide with respect to the grouping and ordering details:
+
+```toml fp=.flake8
+[flake8]
+import-order-style = google
+```
+
 ### Finding more bugs with flake8-bugbear
+
+The `flake8-bugbear` plugin helps you find various bugs and design problems in
+your programs.
+
+```python fp=noxfile.py hl=4
+@nox.session(python=["3.8", "3.7"])
+def lint(session):
+    args = session.posargs or locations
+    session.install("flake8", "flake8-black", "flake8-bugbear", "flake8-import-order")
+    session.run("flake8", *args)
+```
+
+Enable the plugin warnings in Flake8’s configuration file (`B` like _bugbear_):
+
+```toml fp=.flake8
+[flake8]
+select = B,B9,BLK,C,E,F,I,W
+```
+
+`B9` is required for Bugbear’s more opinionated warnings, which are disabled by
+default. In particular, `B950` checks the maximum line length like the built-in
+`E501`, but with a tolerance margin of 10%. Ignore the built-in error `E501` and
+set the maximum line length to a sane value:
+
+```toml fp=.flake8
+[flake8]
+ignore = E203,E501,W503
+max-line-length = 80
+```
 
 ### Identifying security issues with Bandit
 
+Bandit is a tool designed to find common security issues in Python code.
+
+```python fp=noxfile.py hl=6
+@nox.session(python=["3.8", "3.7"])
+def lint(session):
+    args = session.posargs or locations
+    session.install(
+        "flake8",
+        "flake8-bandit",
+        "flake8-black",
+        "flake8-bugbear",
+        "flake8-import-order",
+    )
+    session.run("flake8", *args)
+```
+
+Enable the plugin warnings in Flake8’s configuration file (`S` like _security_):
+
+```toml fp=.flake8
+[flake8]
+select = B,B9,BLK,C,E,F,I,S,W
+...
+```
+
+Bandit flags uses of `assert` to enforce interface constraints because
+assertions are removed when compiling to optimized byte code. You should disable
+this warning for your test suite, as Pytest uses assertions to verify
+expectations in tests:
+
+```toml fp=.flake8
+[flake8]
+per-file-ignores = tests/*:S101
+...
+```
+
+Bandit finds known issues that can be detected via static file checking. If you
+are very concerned with security, you should consider using additional tools,
+for example a fuzzing tool such as python-afl.
+
 ### Finding security vulnerabilities in dependencies with Safety
+
+Safety checks the dependencies of your project for known security vulnerabilities, using a curated database of insecure Python packages.
+
+```python fp=noxfile.py
+import tempfile
+
+@nox.session(python="3.8")
+def safety(session):
+    with tempfile.NamedTemporaryFile() as requirements:
+        session.run(
+            "poetry",
+            "export",
+            "--dev",
+            "--format=requirements.txt",
+            "--without-hashes",
+            f"--output={requirements.name}",
+            external=True,
+        )
+        session.install("safety")
+        session.run("safety", "check", f"--file={requirements.name}", "--full-report")
+```
+
+The session uses the poetry export command to convert Poetry’s lock file to a requirements file, for consumption by Safety. The standard tempfile module is used to create a temporary file for the requirements.
+
+```python fp=noxfile.py
+nox.options.sessions = "lint", "safety", "tests"
+```
+
+```shell
+poetry add insecure-package
+nox -rs safety
+poetry remove insecure-package
+```
 
 ### Managing dependencies in Nox sessions with Poetry
 
+```python fp=noxfile:py
+def install_with_constraints(session, *args, **kwargs):
+    with tempfile.NamedTemporaryFile() as requirements:
+        session.run(
+            "poetry",
+            "export",
+            "--dev",
+            "--format=requirements.txt",
+            f"--output={requirements.name}",
+            external=True,
+        )
+        session.install(f"--constraint={requirements.name}", *args, **kwargs)
+```
+
+```python fp=noxfile.py nu hl=4,11..18,34
+@nox.session(python="3.8")
+def black(session):
+    args = session.posargs or locations
+    install_with_constraints(session, "black")
+    session.run("black", *args)
+
+
+@nox.session(python=["3.8", "3.7"])
+def lint(session):
+    args = session.posargs or locations
+    install_with_constraints(
+        session,
+        "flake8",
+        "flake8-bandit",
+        "flake8-black",
+        "flake8-bugbear",
+        "flake8-import-order",
+    )
+    session.run("flake8", *args)
+
+
+@nox.session(python="3.8")
+def safety(session):
+    with tempfile.NamedTemporaryFile() as requirements:
+        session.run(
+            "poetry",
+            "export",
+            "--dev",
+            "--format=requirements.txt",
+            "--without-hashes",
+            f"--output={requirements.name}",
+            external=True,
+        )
+        install_with_constraints(session, "safety")
+        session.run("safety", "check", f"--file={requirements.name}", "--full-report")
+```
+
+```shell
+poetry add --dev \
+    black \
+    flake8 \
+    flake8-bandit \
+    flake8-black \
+    flake8-bugbear \
+    flake8-import-order \
+    safety
+```
+
+```python fp=noxfile.py nu
+@nox.session(python=["3.9", "3.8"])
+def tests(session):
+    args = session.posargs or ["--cov", "-m", "not e2e"]
+    session.run("poetry", "install", "--no-dev", external=True)
+    install_with_constraints(
+        session, "coverage[toml]", "pytest", "pytest-cov", "pytest-mock"
+    )
+    session.run("pytest", *args)
+```
+
 ### Managing Git hooks with pre-commit
+
+Git provides hooks which allow you to run custom commands when important actions occur, such as a commit or push. You can leverage this to run automated checks when you commit changes. pre-commit is a framework for managing and maintaining such hooks. Use it to integrate the best industry standard linters into your workflow, even those written in a language other than Python.
+
+```shell
+pip install --user --upgrade pre-commit
+```
+
+```yaml nu fp=.pre-commit-config.yaml
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+-   repo: https://github.com/psf/black
+    rev: 19.3b0
+    hooks:
+    -   id: black
+```
+
+Install the hooks by running the following command:
+
+```shell
+pre-commit install
+```
+
+The hooks run automatically every time you invoke `git commit`, applying checks to any newly created or modified files. When you add new hooks, you can trigger them manually for all files using the following command:
+
+```shell
+pre-commit run --all-files
+```
+
+```yaml nu fp=.pre-commit-config.yaml hl=10..19
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+-   repo: local
+    hooks:
+    -   id: black
+        name: black
+        entry: poetry run black
+        language: system
+        types: [python]
+    -   id: flake8
+        name: flake8
+        entry: poetry run flake8
+        language: system
+        types: [python]
+```
 
 ## Typing
 

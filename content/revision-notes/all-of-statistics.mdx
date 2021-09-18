@@ -1,12 +1,105 @@
 ---
 title: All of Statistics
 resourceId: "9780387217369"
-stoppedAt: TODO
+stoppedAt: Probability
 ---
+
+The basic problem that we study in probability is:
+
+> Given a data generating process, what are the properties of the outcomes?
+
+The basic problem of statistical inference is the inverse of probability:
+
+> Given the outcomes, what can we say about the process that generated the data?
+
+Prediction, classification , clustering, and estimation are all special cases of
+statistical inference. Data analysis, machine learning and data mining are vario
+us names given to the practice of statistical inference, depending on the
+context.
 
 ## Probability
 
 ### Probability
+
+#### Introduction
+
+Probability is a mathematical language for quantifying uncertainty.
+
+#### Sample Spaces and Events
+
+The **sample space** $\Omega$ is the set of possible outcomes of an experiment.
+Points $\omega$ in n are called **sample outcomes**, **realizations**, or
+**elements**. Subsets of $\Omega$ are called **events**.
+
+Given an event $A$, let $A^c = \{ \omega \in \Omega : \omega \notin A \}$ denote
+the complement of $A$. Informally, $A^c$ can be read as "not $A$." The
+complement of $\Omega$ is the empty set $\emptyset$. The union of events $A$ and
+$B$ is defined
+
+$$
+A \bigcup B = \{ \omega \in \Omega : \omega \in A \ \text{or} \ \omega \in B \ \text{or} \ \omega \in \text{both} \}
+$$
+
+which can be though as "$A$ or $B$". If $A_1,A_2,\dots$ is a sequence of sets
+then
+
+$$
+\bigcup^\infty_{i=1} A_i = \{ \omega \in \Omega : \omega \in A_i \ \text{for at least one $i$} \} \, .
+$$
+
+The intersection of $A$ and $B$ is
+
+$$
+A \bigcap B = \{ \omega \in \Omega : \omega \in A \ \text{and} \ \omega \in B \}
+$$
+
+read "$A$ and $B$". Sometimes we write $A \bigcap B$ as $AB$ or $(A,B)$. If
+$A_1,A_2,\dots$ is a sequence of sets then
+
+$$
+\bigcap^\infty_{i=1} A_i = \{ \omega \in \Omega : \omega \in A_i \ \text{for all $i$} \} \, .
+$$
+
+The set difference is defined by
+$A - B = \{ \omega : \omega \in A, \omega \notin B \}$. If every element of $A$
+is also contained in $B$ we write $A \subset B$ or, equivalently, $B \supset A$.
+If $A$ is a finite set, let $|A|$ denote the number of elements in $A$.
+
+Summary of terminology:
+
+- $\Omega$: sample space
+- $\omega$: outcome (point or element)
+- $A$: event (subset of $\Omega$)
+- $A^c$: complement of $A$ (not $A$)
+- $A \bigcup B$: union ($A$ of $B$)
+- $A \bigcap B$ or $AB$: intersection ($A$ and $B$)
+- $A - B$: set difference ($\omega$ in $A$ but not in $B$)
+- $A \subset B$: set inclusion
+- $\emptyset$: null event (always false)
+- $\Omega$: true event (always true)
+
+We say that $A_1,A_2,\dots$ are **disjoint** or are **mutually exclusive** if
+$A_i \bigcap A_j = \emptyset$ whenever $i \ne j$. For example, $A_1 = [0,1)$,
+$A_2 = [1,2)$, $A_3 = [2,3)$,... are disjoint. A **partition** of $\Omega$ is a
+sequence of disjoint sets $A_1,A_2,\dots$ such that
+$\bigcup^\infty_{i=1} A_i = \Omega$. Given an event $A$, define the **indicator
+function of $A$** by
+
+$$
+I_A(\omega) = I(\omega \in A) = \begin{cases}
+    1 \ \text{if $\omega \in A$} \\
+    0 \ \text{if $\omega \notin A$} \, .
+\end{cases}
+$$
+
+A sequence of sets $A_1,A_2,\dots$ is **monotone increasing** if
+$A_1 \subset A_2 \subset \cdots$ and we define
+$\lim_{n \to \infty} A_n = \bigcup_{i=1}^\infty A_i$. A sequence of sets
+$A_1,A_2,\dots$ is **monotone decreasing** if $A_1 \supset A_2 \supset \cdots$
+and then we define $\lim_{n \to \infty} A_n = \bigcap^\infty_{i=1} A_i$. In
+either case, we write $A_n \rightarrow A$.
+
+#### Probability
 
 ### Random Variables
 

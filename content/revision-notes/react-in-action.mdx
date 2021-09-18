@@ -1,7 +1,7 @@
 ---
 title: React in Action
 resourceId: "9781617293856"
-stoppedAt: "React for teams"
+stoppedAt: "The life and times of a component"
 ---
 
 ## Meet React
@@ -61,11 +61,78 @@ update to the browser’s DOM. This process is often referred to as a _diff_
 
 </Figure>
 
-#### React for teams
-
 ### `<Hello World />`: our first component
 
-## Components and data in React
+#### Introducing React components
+
+##### Understanding the application data
+
+An API, or, _application programming interface_, is a set of routines and
+protocols for building software. That might sound vague, and it is a pretty
+general definition. API is a broad term, applying to everything from company
+platforms to open source libraries.
+
+In web development and engineering, API has become almost synonymous with a
+remote, web-based _public_ API. This means that an API is usually a way of
+exposing defined ways to interact with a program or platform, usually over the
+internet, and for people to use and consume.
+
+#### Creating components in React
+
+The `prop-types` library is a development library that will help you do some
+typechecking on data passed to your components.
+
+##### Creating React elements
+
+React elements are what React DOM will take and use to update the DOM.
+
+<Figure src="/media/react-and-dom.png">
+  React elements are what React uses to create a virtual DOM that React DOM will
+  manage and use to reconcile and update the actual DOM. They are simple
+  blueprints for React to use in creating and managing elements.
+</Figure>
+
+##### Property validation via PropTypes
+
+When using `PropTypes`, you need to add a `propTypes` property to the
+`React.Component` class via a static class property or by simple property
+assignment after the class definition.
+
+```jsx
+Post.propTypes = {
+  user: PropTypes.string.isRequired,
+  content: PropTypes.string.isRequired,
+  id: PropTypes.number.isRequired,
+}
+```
+
+Because `PropTypes` only does type evaluation in development mode, your app
+running in production won’t expend the extra effort to do the work of
+`PropTypes`.
+
+#### The life and times of a component
+
+<Figure src="/media/rendering-in-react.png">
+  Zooming in on rendering in React. React classes and React elements are used by
+  React to create an in-memory virtual DOM that manages the real DOM. It also
+  creates a “synthetic” event system so that you can still react to events from
+  the browser (such as clicks, scrolls, and other user-caused events).
+</Figure>
+
+##### Setting initial state
+
+One key difference between updating or reassigning a value in JavaScript and
+using `setState` is that React can choose to batch updates based on state
+changes to maximize efficiency.
+
+React implements a synthetic event system as a part of the virtual DOM that will
+translate events in the browser into events for your React application. You can
+set up event handlers that can respond to events from the browser, as you
+normally would in JavaScript. One difference is that React event handlers are
+set up on React elements or components themselves (as opposed to using
+`addEventListener`).
+
+#### Meet JSX
 
 ### Data and data flow in React
 

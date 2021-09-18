@@ -1,10 +1,150 @@
 ---
 title: The TypeScript Workshop
 resourceId: "9781838828493"
-stoppedAt: TODO
+stoppedAt: TypeScript and Objects
 ---
 
 ## TypeScript Fundamentals
+
+### Introduction
+
+#### Design Goals of TypeScript
+
+The design goals of TypeScript, as initially stated, were as follows:
+
+- Extend JavaScript to facilitate writing large applications.
+- Create a strict superset of JavaScript (that is, any valid JavaScript is valid
+  TypeScript).
+- Enhance the development tooling support.
+- Generate JavaScript that runs on any JavaScript execution environment.
+- Easy transfer between TypeScript and JavaScript code.
+- Generate clean, idiomatic JavaScript.
+- Align with future JavaScript standards.
+
+### Getting Started with TypeScript
+
+```ts nu fp=add.ts
+function add(x, y) {
+  return x + y
+}
+```
+
+```shell
+tsc add.ts
+```
+
+This will generate our output file, `add.js`. The code is identical, and we have
+our first successful transpilation.
+
+#### The TypeScript Compiler
+
+Get a full list of the options:
+
+```shell
+tsc --all
+```
+
+The most common and important ones are as follows:
+
+- `-outFile`: The name of the output file we want to be generated. It defaults
+  to the same name as the input file, but with the `.js` extension.
+- `–outDir`: The location of the output file(s). By default, the generated files
+  will be in the same location as the source files.
+- `-types`: To specify additional types that will be allowed in our source code.
+- `-lib`: To specify which library files need to be loaded. As there are
+  different execution environments for JavaScript, with different default
+  libraries (for example, browser JavaScript has a `window` object, and Node.js
+  has a `process` object), we can specify which one we want to target. We can
+  also use this option to allow or disallow specific JavaScript functionality.
+- `-target:` specify which version of the ECMAScript (that is, JavaScript)
+  language we're targeting.
+
+#### Setting Up a TypeScript Project
+
+We can save our default options in a special file that will be accessed by the
+tsc command. The best way to generate this special file called `tsconfig.json`
+is to use `tsc` itself with the `--init` option.
+
+```shell
+tsc --init
+```
+
+Exercise 1.01:
+
+```ts nu fp=squares.ts
+function squares(array: number[]) {
+  const result = array.map(x => x * x)
+  return result
+}
+```
+
+```shell
+tsc squares.ts
+```
+
+```shell
+tsc --target es6 squares.ts
+```
+
+#### Types and Their Uses
+
+```ts
+let variable: number
+```
+
+The `: number` part of the code is called a type annotation. This type of
+annotation is explicit and specific to TypeScript. Another way is simply to
+assign a value to a variable and let TypeScript work its magic. The magic is
+called _type inference_, and that means that TypeScript will try to guess the
+type of the variable based on the value provided. Actually, in most cases, we
+won't even need to add type annotations, as TypeScript's powerful type inference
+engine will correctly infer the type of the variable.
+
+### TypeScript and Functions
+
+JavaScript does not enforce that the number of actual arguments has to conform
+to the number of parameters defined. In JavaScript, we can call a function with
+more arguments than parameters, fewer arguments, or even without any arguments
+at all. If we have more arguments than needed, the extra arguments are simply
+ignored (and stored in the magical `arguments` variable), and if we have fewer
+arguments than needed, the extra parameters are given the value `undefined`.
+
+In TypeScript, a function can only be called using valid arguments – both in
+number and in type.
+
+```ts
+function add(x: number, y: number): number {
+  return x + y
+}
+```
+
+Exercise 1.02:
+
+```ts nu fp=snippet.ts
+function snippet(text: string, length: number): string {
+  if (text.length < length) {
+    return text
+  }
+  const ellipsis = "..."
+  let result = text.slice(0, length - ellipsis.length)
+  const lastSpace = result.lastIndexOf(" ")
+  result = `${result.slice(0, lastSpace)}${ellipsis}`
+
+  return result
+}
+
+const resultOne = snippet(
+  "TypeScript is a programming language that is a strict syntactical superset of JavaScript and adds optional static typing to the language.",
+  40
+)
+```
+
+```shell
+tsc snippet.ts
+node snippet.js
+```
+
+### TypeScript and Objects
 
 ## Declaration Files
 

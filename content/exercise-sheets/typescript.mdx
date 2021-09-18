@@ -4,3 +4,61 @@ relatedResources:
   - "9781838828493"
 tags: []
 ---
+
+1. Set up a TypeScript project and write a script named `squares.ts` containing
+   a function which takes an array of numbers as argument and return an array
+   their squares. Compile for two different targets.
+
+   <Solution>
+
+   ```shell
+   tsc --init
+   ```
+
+   ```ts nu fp=squares.ts
+   function squares(array: number[]) {
+     const result = array.map(x => x * x)
+     return result
+   }
+   ```
+
+   ```shell
+   tsc squares.ts
+   tsc --target es6 squares.ts
+   ```
+
+   </Solution>
+
+2. Write a script named `snippet.js` in which we have a string utility function
+   that shortens a string to a snippet. It'll cut off the text after a given
+   length, but take care that we don't chop a word in half. If the string is
+   larger than the maximum length, we'll add an ellipsis to the end. Use the
+   function is the script, compile it, then run it with Node.js.
+
+   <Solution>
+
+   ```ts nu fp=snippet.ts
+   function snippet(text: string, length: number): string {
+     if (text.length < length) {
+       return text
+     }
+     const ellipsis = "..."
+     let result = text.slice(0, length - ellipsis.length)
+     const lastSpace = result.lastIndexOf(" ")
+     result = `${result.slice(0, lastSpace)}${ellipsis}`
+
+     return result
+   }
+
+   const resultOne = snippet(
+     "TypeScript is a programming language that is a strict syntactical superset of    JavaScript and adds optional static typing to the language.",
+     40
+   )
+   ```
+
+   ```shell
+   tsc snippet.ts
+   node snippet.js
+   ```
+
+   </Solution>

@@ -1,7 +1,7 @@
 ---
 title: React Native in Action
 resourceId: "9781617294051"
-stoppedAt: Building your first React Native app
+stoppedAt: Developing applications in React Native
 ---
 
 ## Getting started with React Native
@@ -709,6 +709,708 @@ class MainComponent extends Component {
 ```
 
 ### Building your first React Native app
+
+#### Coding the todo app
+
+```shell
+react-native init TodoApp
+```
+
+```jsx nu fp=index.js
+import React from "react"
+import { AppRegistry } from "react-native"
+import App from "./app/App"
+
+const TodoApp = () => <App />
+
+AppRegistry.registerComponent("TodoApp", () => TodoApp)
+```
+
+In the `AppRegistry` method, you initiate the application. `AppRegistry` is the
+JS entry point to running all React Native apps. It takes two arguments: the
+`appKey`, or the name of the application you defined when you initialized the
+app; and a function that returns the React Native component you want to use as
+the entry point of the app.
+
+```jsx nu fp=app/App.js
+import React, { Component } from "react"
+import { View, ScrollView, StyleSheet } from "react-native"
+import Heading from "./Heading"
+
+class App extends Component {
+  render() {
+    return (
+      <View style={styles.container}>
+        <ScrollView keyboardShouldPersistTaps="always" style={styles.content}>
+          <Heading />
+        </ScrollView>
+      </View>
+    )
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+  },
+  content: {
+    flex: 1,
+    paddingTop: 60,
+  },
+})
+
+export default App
+```
+
+You import a new component called `ScrollView`, which wraps the platform
+`ScrollView` and is basically a scrollable `View` component. A
+`keyboardShouldPersistTaps` prop of always is added: this prop will dismiss the
+keyboard if it’s open and allow the UI to process any `onPress` events.
+
+You make sure both the `ScrollView` and the parent `View` of the `ScrollView`
+have a `flex: 1` value. `flex: 1` is a style value that makes the component fill
+the entire space of its parent container.
+
+```jsx fp=app/App.js hl=2..9
+class App extends Component {
+  constructor() {
+    super()
+    this.state = {
+      inputValue: "",
+      todos: [],
+      type: "All",
+    }
+  }
+  render() {
+    ...
+  }
+}
+```
+
+```jsx nu fp=app/Heading.js
+import React from "react"
+import { View, Text, StyleSheet } from "react-native"
+
+const Heading = () => (
+  <View style={styles.header}>
+    <Text style={styles.headerText}>todos</Text>
+  </View>
+)
+
+const styles = StyleSheet.create({
+  header: {
+    marginTop: 80,
+  },
+  headerText: {
+    textAlign: "center",
+    fontSize: 72,
+    color: "rgba(175, 47, 47, 0.25)",
+    fontWeight: "100",
+  },
+})
+
+export default Heading
+```
+
+```jsx nu fp=app/Input.js
+import React from "react"
+import { View, TextInput, StyleSheet } from "react-native"
+
+const Input = () => (
+  <View style={styles.inputContainer}>
+    <TextInput
+      style={styles.input}
+      placeholder="What needs to be done?"
+      placeholderTextColor="#CACACA"
+      selectionColor="#666666"
+    />
+  </View>
+)
+
+const styles = StyleSheet.create({
+  inputContainer: {
+    marginLeft: 20,
+    marginRight: 20,
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    shadowColor: "#000000",
+    shadowOffset: { width: 2, height: 2 },
+  },
+  input: {
+    height: 60,
+    backgroundColor: "#ffffff",
+    paddingLeft: 10,
+    paddingRight: 10,
+  },
+})
+
+export default Input
+```
+
+#### Opening the developer menu
+
+##### Opening the developer menu in the iOS simulator
+
+You can open the developer menu in one of three ways:
+
+- Press <Kbd>Cmd + D</Kbd>.
+- Press <Kbd>Cmd + Ctrl + Z</Kbd>.
+- Open the <Scr>Device | Shake</Scr>.
+
+##### Opening the developer menu in the Android emulator.
+
+You can open the developer menu by pressing <Kbd>Cmd + M</Kbd>.
+
+##### Using the developer menu
+
+- _Reload (iOS and Android)_—Reloads the app. This can also be done by pressing
+  <Kbd>Cmd + R</Kbd> on the keyboard (iOS) or pressing <Kbd>R</Kbd> twice (Android).
+- _Debug with Chrome (iOS and Android)_—Opens the Chrome dev tools and gives you
+  full debugging support through the browser. Here, you have access not only to
+  logging statements in your code, but also to breakpoints and whatever you’re
+  used to while debugging web apps. If you need to log any information or data
+  in your app, this is usually the place to do so.
+- _Enable Fast Refresh (iOS and Android)_—Fast Refresh is a React Native feature
+  that allows you to get near-instant feedback for changes in your React
+  components. Fast Refresh is enabled by default, and you can toggle "Enable
+  Fast Refresh" in the React Native developer menu. With Fast Refresh enabled,
+  most edits should be visible within a second or two.
+- _Show Inspector (iOS and Android)_—Brings up a property inspector similar to
+  what you see in the Chrome dev tools. You can click an element and see where
+  it is in the hierarchy of components, as well as any styling applied to the
+  element.
+- _Show Perf Monitor (iOS and Android)_—Brings up a small box in the upper-left
+  corner of the app, giving some information about the app’s performance. Here
+  you’ll see the amount of RAM being used and the number of frames per second at
+  which the app is currently running. If you click the box, it will expand to
+  show even more information.
+- _Settings (Android emulator only)_—Brings up additional debugging options,
+  including an easy way to toggle between the `__DEV__` environment variable
+  being `true` or `false`.
+
+##### Continuing building the todo app
+
+```jsx fp=app/App.js hl=2,8..11,18..21
+import Heading from "./Heading"
+import Input from "./Input"
+
+class App extends Component {
+  constructor() {
+    ...
+  }
+  inputChange(inputValue) {
+    console.log("Input Value:", inputValue)
+    this.setState({ inputValue })
+  }
+  render() {
+    const { inputValue } = this.state
+    return (
+      <View style={styles.container}>
+        <ScrollView keyboardShouldPersistTaps="always" style={styles.content}>
+          <Heading />
+          <Input
+            inputValue={inputValue}
+            inputChange={text => this.inputChange(text)}
+          />
+        </ScrollView>
+      </View>
+    )
+  }
+}
+```
+
+```jsx fp=app/Input.js hl=1,4,9
+const Input = ({ inputValue, inputChange }) => (
+  <View style={styles.inputContainer}>
+    <TextInput
+      value={inputValue}
+      style={styles.input}
+      placeholder="What needs to be done?"
+      placeholderTextColor="#CACACA"
+      selectionColor="#666666"
+      onChangeText={inputChange}
+    />
+  </View>
+)
+```
+
+```jsx nu fp=app/App.js hl=3,7..21
+import Input from "./Input"
+
+let todoIndex = 0
+
+class App extends Component {
+  ...
+  submitTodo() {
+    if (this.state.inputValue.match(/^\s*$/)) {
+      return
+    }
+    const todo = {
+      title: this.state.inputValue,
+      todoIndex,
+      complete: false,
+    }
+    todoIndex++
+    const todos = [...this.state.todos, todo]
+    this.setState({ todos, inputValue: "" }, () => {
+      console.log("State: ", this.state)
+    })
+  }
+  ...
+}
+```
+
+```jsx nu fp=app/Button.js
+import React from "react"
+import { View, Text, StyleSheet, TouchableHighlight } from "react-native"
+
+const Button = ({ submitTodo }) => (
+  <View style={styles.buttonContainer}>
+    <TouchableHighlight
+      underlayColor="#efefef"
+      style={styles.button}
+      onPress={submitTodo}
+    >
+      <Text style={styles.submit}>Submit</Text>
+    </TouchableHighlight>
+  </View>
+)
+
+const styles = StyleSheet.create({
+  buttonContainer: {
+    alignItems: "flex-end",
+  },
+  button: {
+    height: 50,
+    paddingLeft: 20,
+    paddingRight: 20,
+    backgroundColor: "#ffffff",
+    width: 200,
+    marginRight: 20,
+    marginTop: 15,
+    borderWidth: 1,
+    borderColor: "rgba(0, 0, 0, .1)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  submit: {
+    color: "#666666",
+    fontWeight: "600",
+  },
+})
+
+export default Button
+```
+
+`TouchableHighlight` is one of the ways you can create buttons in React Native
+and is fundamentally comparable to the HTML `button` element.
+
+With `TouchableHighlight`, you can wrap views and make them respond properly to
+touch events. On press down, the default `backgroundColor` is replaced with a
+specified `underlayColor` property that you’ll provide as a prop. If no
+`underlayColor` is defined, it defaults to black.
+
+`TouchableHighlight` supports only one main child component. Here, you pass in a
+`Text` component. If you want multiple components in a `TouchableHighlight`,
+wrap them in a single `View`, and pass this `View` as the child of the
+`TouchableHighlight`.
+
+```jsx fp=app/App.js hl=1,13,26
+import Button from "./Button"
+
+let todoIndex = 0
+
+class App extends Component {
+  constructor() {
+    super()
+    this.state = {
+      inputValue: "",
+      todos: [],
+      type: "All",
+    }
+    this.submitTodo = this.submitTodo.bind(this)
+  }
+  ...
+  render() {
+    const { inputValue } = this.state
+    return (
+      <View style={styles.container}>
+        <ScrollView keyboardShouldPersistTaps="always" style={styles.content}>
+          <Heading />
+          <Input
+            inputValue={inputValue}
+            inputChange={text => this.inputChange(text)}
+          />
+          <Button submitTodo={this.submitTodo} />
+        </ScrollView>
+      </View>
+    )
+  }
+}
+```
+
+```jsx nu fp=app/Todo.js
+import React from "react"
+import { View, Text, StyleSheet } from "react-native"
+
+const Todo = ({ todo }) => (
+  <View style={styles.todoContainer}>
+    <Text style={styles.todoText}>{todo.title}</Text>
+  </View>
+)
+
+const styles = StyleSheet.create({
+  todoContainer: {
+    marginLeft: 20,
+    marginRight: 20,
+    backgroundColor: "#ffffff",
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+    borderLeftWidth: 1,
+    borderColor: "#ededed",
+    paddingLeft: 14,
+    paddingTop: 7,
+    paddingBottom: 7,
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    shadowColor: "#000000",
+    shadowOffset: { width: 2, height: 2 },
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  todoText: {
+    fontSize: 17,
+  },
+})
+
+export default Todo
+```
+
+```jsx nu fp=app/TodoList.js
+import React from "react"
+import { View } from "react-native"
+import Todo from "./Todo"
+
+const TodoList = ({ todos }) => {
+  todos = todos.map((todo, i) => {
+    return <Todo key={todo.todoIndex} todo={todo} />
+  })
+  return <View>{todos}</View>
+}
+
+export default TodoList
+```
+
+The `key` property helps React identify the items that have changed when the
+diff with the virtual DOM is computed.
+
+```jsx fp=app/App.js hl=1,8,17
+import TodoList from "./TodoList"
+
+...
+
+class App extends Component {
+  ...
+  render() {
+    const { inputValue, todos } = this.state
+    return (
+      <View style={styles.container}>
+        <ScrollView keyboardShouldPersistTaps="always" style={styles.content}>
+          <Heading />
+          <Input
+            inputValue={inputValue}
+            inputChange={text => this.inputChange(text)}
+          />
+          <TodoList todos={todos} />
+          <Button submitTodo={this.submitTodo} />
+        </ScrollView>
+      </View>
+    )
+  }
+}
+```
+
+```jsx fp=app/App.js hl=4..5,8..21
+class App extends Component {
+  constructor() {
+    ...
+    this.toggleComplete = this.toggleComplete.bind(this)
+    this.deleteTodo = this.deleteTodo.bind(this)
+  }
+  ...
+  deleteTodo(todoIndex) {
+    let { todos } = this.state
+    todos = todos.filter(todo => todo.todoIndex !== todoIndex)
+    this.setState({ todos })
+  }
+  toggleComplete(todoIndex) {
+    let todos = this.state.todos
+    todos.forEach(todo => {
+      if (todo.index === todoIndex) {
+        todo.complete = !todo.complete
+      }
+    })
+    this.setState({ todos })
+  }
+  render() {
+    ...
+  }
+}
+```
+
+```jsx nu fp=app/TodoButton.js
+import React from "react"
+import { Text, TouchableHighlight, StyleSheet } from "react-native"
+
+const TodoButton = ({ onPress, complete, name }) => (
+  <TouchableHighlight
+    onPress={onPress}
+    underlayColor="#efefef"
+    style={styles.button}
+  >
+    <Text
+      style={[
+        styles.text,
+        complete ? styles.complete : null,
+        name === "Delete" ? styles.deleteButton : null,
+      ]}
+    >
+      {name}
+    </Text>
+  </TouchableHighlight>
+)
+
+const styles = StyleSheet.create({
+  button: {
+    alignSelf: "flex-end",
+    padding: 7,
+    borderColor: "#ededed",
+    borderWidth: 1,
+    borderRadius: 4,
+    marginRight: 5,
+  },
+  text: {
+    color: "#666666",
+  },
+  complete: {
+    color: "green",
+    fontWeight: "bold",
+  },
+  deleteButton: {
+    color: "rgba(175, 47, 47, 1)",
+  },
+})
+
+export default TodoButton
+```
+
+```jsx fp=app/App.js hl=6..7
+class App extends Component {
+  ...
+  render() {
+    ...
+        <TodoList
+          toggleComplete={this.toggleComplete}
+          deleteTodo={this.deleteTodo}
+          todos={todos}
+        />
+        <Button submitTodo={this.submitTodo} />
+    ...
+  }
+}
+```
+
+```jsx fp=app/TodoList.js hl=1,5..7
+const TodoList = ({ todos, deleteTodo, toggleComplete }) => {
+  todos = todos.map((todo, i) => {
+    return (
+      <Todo
+        deleteTodo={deleteTodo}
+        toggleComplete={toggleComplete}
+        key={i}
+        todo={todo}
+      />
+    )
+  })
+  ...
+}
+```
+
+```jsx fp=app/Todo.js hl=3,6..13,19..24
+import TodoButton from "./TodoButton"
+
+const Todo = ({ todo, toggleComplete, deleteTodo }) => (
+  <View style={styles.todoContainer}>
+    <Text style={styles.todoText}>{todo.title}</Text>
+    <View style={styles.buttons}>
+      <TodoButton
+        name="Done"
+        complete={todo.complete}
+        onPress={() => toggleComplete(todo.todoIndex)}
+      />
+      <TodoButton name="Delete" onPress={() => deleteTodo(todo.todoIndex)} />
+    </View>
+  </View>
+)
+
+const styles = StyleSheet.create({
+  ...
+  buttons: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+})
+```
+
+```jsx fp=app/App.js hl=4,7..9
+class App extends Component {
+  constructor() {
+    ...
+    this.setType = this.setType.bind(this)
+  }
+  ...
+  setType(type) {
+    this.setState({ type })
+  }
+  ...
+}
+```
+
+```jsx nu fp=app/TabBar.js
+import React from "react"
+import { View, StyleSheet } from "react-native"
+import TabBarItem from "./TabBarItem"
+
+const TabBar = ({ setType, type }) => (
+  <View style={styles.container}>
+    <TabBarItem type={type} title="All" setType={() => setType("All")} />
+    <TabBarItem
+      type={type}
+      border
+      title="Active"
+      setType={() => setType("Active")}
+    />
+    <TabBarItem
+      type={type}
+      border
+      title="Complete"
+      setType={() => setType("Complete")}
+    />
+  </View>
+)
+
+const styles = StyleSheet.create({
+  container: {
+    height: 70,
+    flexDirection: "row",
+    borderTopWidth: 1,
+    borderTopColor: "#dddddd",
+  },
+})
+
+export default TabBar
+```
+
+```jsx nu fp=app/TabBarItem.js
+import React from "react"
+import { Text, TouchableHighlight, StyleSheet } from "react-native"
+
+const TabBarItem = ({ border, title, selected, setType, type }) => (
+  <TouchableHighlight
+    underlayColor="#efefef"
+    onPress={setType}
+    style={[
+      styles.item,
+      selected ? styles.selected : null,
+      border ? styles.border : null,
+      type === title ? styles.selected : null,
+    ]}
+  >
+    <Text style={[styles.itemText, type === title ? styles.bold : null]}>
+      {title}
+    </Text>
+  </TouchableHighlight>
+)
+
+const styles = StyleSheet.create({
+  item: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  border: {
+    borderLeftWidth: 1,
+    borderLeftColor: "#dddddd",
+  },
+  itemText: {
+    color: "#777777",
+    fontSize: 16,
+  },
+  selected: {
+    backgroundColor: "#ffffff",
+  },
+  bold: {
+    fontWeight: "bold",
+  },
+})
+
+export default TabBarItem
+```
+
+```jsx fp=app/App.js hl=1,8,18,25
+import TabBar from "./TabBar"
+
+...
+
+class App extends Component {
+  ...
+  render() {
+    const { inputValue, todos, type } = this.state
+    return (
+      <View style={styles.container}>
+        <ScrollView keyboardShouldPersistTaps="always" style={styles.content}>
+          <Heading />
+          <Input
+            inputValue={inputValue}
+            inputChange={text => this.inputChange(text)}
+          />
+          <TodoList
+            type={type}
+            toggleComplete={this.toggleComplete}
+            deleteTodo={this.deleteTodo}
+            todos={todos}
+          />
+          <Button submitTodo={this.submitTodo} />
+        </ScrollView>
+        <TabBar type={type} setType={this.setType} />
+      </View>
+    )
+  }
+}
+```
+
+```jsx fp=app/TodoList.js hl=1..12
+const TodoList = ({ todos, deleteTodo, toggleComplete, type }) => {
+  const getVisibleTodos = (todos, type) => {
+    switch (type) {
+      case "All":
+        return todos
+      case "Complete":
+        return todos.filter(t => t.complete)
+      case "Active":
+        return todos.filter(t => !t.complete)
+    }
+  }
+  todos = getVisibleTodos(todos, type)
+  todos = todos.map((todo, i) => {
+    ...
+  })
+  ...
+}
+```
 
 ## Developing applications in React Native
 

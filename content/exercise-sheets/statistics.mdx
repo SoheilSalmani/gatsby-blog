@@ -1,0 +1,247 @@
+---
+title: Statistics
+relatedResources:
+  - "9780387217369"
+tags: []
+---
+
+1. Define what $\Omega$ and $\omega$ are. What are the subsets of $\Omega$
+   called?
+
+   <Solution>
+
+   The **sample space** $\Omega$ is the set of possible outcomes of an
+   experiment. Points $\omega$ in n are called **sample outcomes**,
+   **realizations**, or **elements**. Subsets of $\Omega$ are called **events**.
+
+   </Solution>
+
+2. If we toss a coin twice, what is $\Omega$? Give the event that the first toss
+   is heads.
+
+   <Solution>
+
+   If we toss a coin twice then $\Omega = \{ HH,HT,TH,TT \}$. The event that the
+   first toss is heads is $A = \{ HH,HT \}$.
+
+   </Solution>
+
+3. Let $\omega$ be the outcome of a measurement of some phyisical quantity, give
+   $\Omega$. Give the event that the measurement is larger than 10 but less than
+   or equal to 23.
+
+   <Solution>
+
+   We can set $\Omega = \mathbb{R} = (-\infty,\infty)$. The event that the
+   measurement is larger than 10 but less than or equal to 23 is $A = (10, 23]$.
+
+   **Note:** There is usually no harm in taking the sample space to be larger
+   than needed.
+
+   </Solution>
+
+4. If we to a coin forever, what is $\Omega$? Give the event that the first head
+   appears on the third toss.
+
+   <Solution>
+
+   If we toss a coin forever , then the sample space is the infinite set
+
+   $$
+   \Omega = \{ \omega = (\omega_1,\omega_2,\omega_3,\dots,) : \omega_i \in \{H,T\} \} \, .
+   $$
+
+   Let $E$ be the event that the first head appears on the third toss. Then
+
+   $$
+   E = \{ (\omega_1,\omega_2,\omega_3,\dots,) : \omega_1 = T, \omega_2 = T, \omega_3 = H, \omega_i \in \{H,T\} \ \text{for $i > 3$} \} \, .
+   $$
+
+   </Solution>
+
+5. Define the complement of $A$.
+
+   <Solution>
+
+   Given an event $A$, let $A^c = \{ \omega \in \Omega : \omega \notin A \}$
+   denote the complement of $A$. Informally, $A^c$ can be read as "not $A$."
+
+   </Solution>
+
+6. What is the complement of $\Omega$.
+
+   <Solution>
+
+   The complement of $\Omega$ is the empty set $\emptyset$.
+
+   </Solution>
+
+7. Define the union of events $A$ and $B$.
+
+   <Solution>
+
+   The union of events $A$ and $B$ is defined
+
+   $$
+   A \bigcup B = \{ \omega \in \Omega : \omega \in A \ \text{or} \ \omega \in B \ \text{or} \ \omega \in \text{both} \}
+   $$
+
+   which can be though as "$A$ or $B$".
+
+   </Solution>
+
+8. Same but in the case of a sequence of sets $A_1,A_2,\dots$.
+
+   <Solution>
+
+   If $A_1,A_2,\dots$ is a sequence of sets then
+
+   $$
+   \bigcup^\infty_{i=1} A_i = \{ \omega \in \Omega : \omega \in A_i \ \text{for at least one $i$} \} \, .
+   $$
+
+   </Solution>
+
+9. Define the intersection of $A$ and $B$.
+
+   <Solution>
+
+   The intersection of $A$ and $B$ is
+
+   $$
+   A \bigcap B = \{ \omega \in \Omega : \omega \in A \ \text{and} \ \omega \in B \}
+   $$
+
+   read "$A$ and $B$". Sometimes we write $A \bigcap B$ as $AB$ or $(A,B)$.
+
+   </Solution>
+
+10. Same but in the case of a sequence of sets $A_1,A_2,\dots$.
+
+    <Solution>
+
+    If $A_1,A_2,\dots$ is a sequence of sets then
+
+    $$
+    \bigcap^\infty_{i=1} A_i = \{ \omega \in \Omega : \omega \in A_i \ \text{for all $i$} \} \, .
+    $$
+
+    </Solution>
+
+11. Define the set difference.
+
+    <Solution>
+
+    The set difference is defined by
+    $A - B = \{ \omega : \omega \in A, \omega \notin B \}$.
+
+    </Solution>
+
+12. What does $A \subset B$ (or, equivalently, $B \supset A) mean?
+
+    <Solution>
+
+    If every element of $A$ is also contained in $B$ we write $A \subset B$ or,
+    equivalently, $B \supset A$.
+
+    </Solution>
+
+13. What does $|A|$ mean?
+
+    <Solution>
+
+    If $A$ is a finite set, let $|A|$ denote the number of elements in $A$.
+
+    </Solution>
+
+14. Write a summary of terminology.
+
+    <Solution>
+
+    - $\Omega$: sample space
+    - $\omega$: outcome (point or element)
+    - $A$: event (subset of $\Omega$)
+    - $A^c$: complement of $A$ (not $A$)
+    - $A \bigcup B$: union ($A$ of $B$)
+    - $A \bigcap B$ or $AB$: intersection ($A$ and $B$)
+    - $A - B$: set difference ($\omega$ in $A$ but not in $B$)
+    - $A \subset B$: set inclusion
+    - $\emptyset$: null event (always false)
+    - $\Omega$: true event (always true)
+
+    </Solution>
+
+15. What are disjoint (or mutually exlusive) events?
+
+    <Solution>
+
+    We say that $A_1,A_2,\dots$ are **disjoint** or are **mutually exclusive**
+    if $A_i \bigcap A_j = \emptyset$ whenever $i \ne j$. For example,
+    $A_1 = [0,1)$, $A_2 = [1,2)$, $A_3 = [2,3)$,... are disjoint.
+
+    </Solution>
+
+16. What is a partition of $\Omega$?
+
+    <Solution>
+
+    A **partition** of $\Omega$ is a sequence of disjoint sets $A_1,A_2,\dots$
+    such that $\bigcup^\infty_{i=1} A_i = \Omega$.
+
+    </Solution>
+
+17. Define the indicator function of $A$.
+
+    <Solution>
+
+    Given an event $A$, define the **indicator function of $A$** by
+
+    $$
+    I_A(\omega) = I(\omega \in A) = \begin{cases}
+        1 \ \text{if $\omega \in A$} \\
+        0 \ \text{if $\omega \notin A$} \, .
+    \end{cases}
+    $$
+
+    </Solution>
+
+18. What does it mean that a sequence of sets is monotone increasing? Define
+    $\lim_{n \to \infty} A_n$.
+
+    <Solution>
+
+    A sequence of sets $A_1,A_2,\dots$ is **monotone increasing** if
+    $A_1 \subset A_2 \subset \cdots$ and we define
+    $\lim_{n \to \infty} A_n = \bigcup_{i=1}^\infty A_i$.
+
+    </Solution>
+
+19. What does it mean that a sequence of sets is monotone decreasing? Define
+    $\lim_{n \to \infty} A_n$.
+
+    <Solution>
+
+    A sequence of sets $A_1,A_2,\dots$ is **monotone decreasing** if
+    $A_1 \supset A_2 \supset \cdots$ and then we define
+    $\lim_{n \to \infty} A_n = \bigcap^\infty_{i=1} A_i$.
+
+    </Solution>
+
+20. Let $\Omega = \mathbb{R}$ and let $A_i = [0,1/i)$ for $i = 1,2,\dots$. Give
+    $\bigcup_{i=1}^\infty A_i$ and $\bigcap_{i=1}^\infty A_i$.
+
+    <Solution>
+
+    $\bigcup_{i=1}^\infty A_i = [0,1)$ and $\bigcap_{i=1}^\infty A_i = \{0\}$.
+
+    </Solution>
+
+21. Let $\Omega = \mathbb{R}$ and let $A_i = (0,1/i)$ for $i = 1,2,\dots$. Give
+    $\bigcup_{i=1}^\infty A_i$ and $\bigcap_{i=1}^\infty A_i$.
+
+    <Solution>
+
+    $\bigcup_{i=1}^\infty A_i = (0,1)$ and
+    $\bigcap_{i=1}^\infty A_i = \emptyset$.
+
+    </Solution>

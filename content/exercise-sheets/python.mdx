@@ -5,7 +5,7 @@ relatedResources:
 tags: []
 ---
 
-1. Install pyenv and install Python 3.8.2 and 3.8.5 using it. Create a GitHub
+1. Install pyenv and install Python 3.9.7 and 3.8.12 using it. Create a GitHub
    repository and pull it, then make the Python installations available inside
    the repository.
 
@@ -14,13 +14,13 @@ tags: []
    Install pyenv.
 
    ```shell
-   pyenv install 3.8.2
-   pyenv install 3.7.7
+   pyenv install 3.9.7
+   pyenv install 3.8.12
    ```
 
    ```shell
    git init
-   pyenv local 3.8.2 3.7.5
+   pyenv local 3.9.7 3.8.12
    ```
 
    </Solution>
@@ -45,29 +45,28 @@ tags: []
    ```toml fp=pyproject.toml
    [tool.poetry]
    ...
-   description = "The hypermodern Python project"
+   description = "The Wikipedia CLI"
    license = "MIT"
    readme = "README.md"
-   homepage = "https://github.com/<your-username>/hypermodern-python"
-   repository = "https://github.com/<your-username>/hypermodern-python"
-   keywords = ["hypermodern"]
+   homepage = "https://github.com/SoheilSalmani/wikipedia-cli"
+   repository = "https://github.com/<your-username>/wikipedia-cli"
+   keywords = ["wikipedia", "cli"]
    ```
 
    </Solution>
 
-4. Update the `pyproject.toml` to support Python 3.7.
+4. Update the `pyproject.toml` to support Python 3.8.
 
    <Solution>
 
    ```toml fp=pyproject.toml hl=2
    [tool.poetry.dependencies]
-   python = "^3.7"
+   python = "^3.8"
    ```
 
    </Solution>
 
-5. Create a `hypermodern_python` package in `src/` and specify a version of
-   `0.1.0`.
+5. Create a `wikipedia_cli` package in `src/` and specify a version of `0.1.0`.
 
    <Solution>
 
@@ -75,12 +74,333 @@ tags: []
    .
    ├── pyproject.toml
    └── src
-       └── hypermodern_python
+       └── wikipedia_cli
            └── __init__.py
    ```
 
-   ```python nu fp=src/hypermodern_python/__init__.py
+   ```python nu fp=src/wikipedia_cli/__init__.py
    __version__ = "0.1.0"
    ```
 
    </Solution>
+
+6. Create a virtual environment dedicated to your project, and install your
+   package into it.
+
+   <Solution>
+
+   ```shell
+   poetry install
+   poetry run python
+   ```
+
+   ```python
+   >>> import wikipedia_cli
+   >>> wikipedia_cli.__version__
+   ```
+
+   </Solution>
+
+7. Build a `console` module definined a command-line application which prints a
+   random Wikipedia article. Code related to the Wikipedia API should be written
+   in a `wikipedia` module. Register the executable in `pyproject.toml`. Use
+   this endpoint: `https://en.wikipedia.org/api/rest_v1/page/random/summary`.
+
+   <Solution>
+
+   ```shell
+   poetry add click requests
+   ```
+
+   ```python nu fp=src/wikipedia_cli/console.py
+   import textwrap
+
+   import click
+   import requests
+
+   from . import __version__, wikipedia
+
+   @click.command()
+   @click.option(
+       "--language",
+       "-l",
+       default="en",
+       help="Language edition of Wikipedia",
+       metavar="LANG",
+       show_default=True,
+   )
+   @click.version_option(version=__version__)
+   def main(language):
+       """The hypermodern Python project."""
+       try:
+           data = wikipedia.random_page(language=language)
+       except requests.RequestException as error:
+           message = str(error)
+           raise click.ClickException(message)
+
+       title = data["title"]
+       extract = data["extract"]
+
+       click.secho(title, fg="green")
+       click.echo(textwrap.fill(extract))
+   ```
+
+   ```python nu fp=src/wikipedia_cli/wikipedia.py
+   import requests
+
+   API_URL = "https://{language}.wikipedia.org/api/rest_v1/page/random/summary"
+
+   def random_page(language="en"):
+       url = API_URL.format(language=language)
+       with requests.get(url) as response:
+           response.raise_for_status()
+           return response.json()
+   ```
+
+   ```toml fp=pyproject.toml
+   [tool.poetry.scripts]
+   wikipedia-cli = "wikipedia_cli.console:main"
+   ```
+
+   ```shell
+   poetry install
+   ```
+
+   </Solution>
+
+8. Upgrade a dependency package to a new minor or patch release.
+
+   <Solution>
+
+   ```shell
+   poetry update click
+   ```
+
+   </Solution>
+
+9. Upgrade a dependency to a new major release.
+
+   <Solution>
+
+   ```shell
+   poetry add click^7.0
+   ```
+
+   </Solution>
+
+10. Add a `.gitignore` file.
+
+    <Solution>
+
+    ```gitignore nu
+    /.python-version
+    __pycache__/
+    ```
+
+    </Solution>
+
+11. Write several unit and e2e tests and configure Coverage.py.
+
+    <Solution>
+
+    ```shell
+    poetry add --dev pytest coverage[toml] pytest-cov pytest-mock
+    ```
+
+    ```toml fp=pyproject.toml
+    [tool.coverage.paths]
+    source = ["src", "*/site-packages"]
+
+    [tool.coverage.run]
+    branch = true
+    source = ["wikipedia_cli"]
+
+    [tool.coverage.report]
+    show_missing = true
+    fail_under = 100
+    ```
+
+    ```python nu fp=conftest.py
+    def pytest_configure(config):
+        config.addinivalue_line("markers", "unit: mark as unit test.")
+        config.addinivalue_line("markers", "e2e: mark as end-to-end test.")
+    ```
+
+    ```python nu fp=tests/test_console.py
+    import pytest
+    import requests
+
+    from wikipedia_cli import console
+
+    @pytest.fixture
+    def mock_wikipedia_get_random(mocker):
+        mock = mocker.patch("wikipedia_cli.wikipedia.get_random")
+        mock.return_value = {
+            "title": "Title of the article",
+            "extract": "Extract of the article."
+        }
+        return mock
+
+    @pytest.mark.unit
+    def test_main_returns_0(cli_runner, mock_wikipedia_get_random):
+        result = cli_runner.invoke(console.main)
+        assert result.exit_code == 0
+
+    @pytest.mark.unit
+    def test_main_prints_title(cli_runner, mock_wikipedia_get_random):
+        result = cli_runner.invoke(console.main)
+        assert "Title of the article" in result.output
+
+    @pytest.mark.unit
+    def test_main_uses_specified_lang(cli_runner, mock_wikipedia_get_random):
+        cli_runner.invoke(console.main, ["--lang=pl"])
+        mock_wikipedia_get_random.assert_called_with(lang="pl")
+
+    @pytest.mark.unit
+    def test_main_returns_1_on_request_exception(cli_runner, mock_wikipedia_get_random):
+        mock_wikipedia_get_random.side_effect = requests.RequestException
+        result = cli_runner.invoke(console.main)
+        assert "Error" in result.output
+
+    @pytest.mark.e2e
+    def test_main_returns_0_in_production(cli_runner):
+        result = cli_runner.invoke(console.main)
+        assert result.exit_code == 0
+    ```
+
+    ```python nu fp=tests/test_wikipedia.py
+    import pytest
+
+    from wikipedia_cli import wikipedia
+
+    @pytest.fixture
+    def mock_requests_get(mocker):
+       return mocker.patch("requests.get")
+
+    def test_get_random_uses_en_wikipedia_domain_by_default(mock_requests_get):
+        wikipedia.get_random()
+        args, _ = mock_requests_get.call_args
+        assert "en.wikipedia.org" in args[0]
+
+    def test_get_random_uses_specified_wikipedia_domain(mock_requests_get):
+        wikipedia.get_random(lang="de")
+        args, _ = mock_requests_get.call_args
+        assert "de.wikipedia.org" in args[0]
+    ```
+
+    </Solution>
+
+12. Configure Nox and add a `tests` session to run unit tests for each Python
+    version.
+
+    <Solution>
+
+    ```shell
+    pip install nox
+    ```
+
+    ```python nu fp=noxfile.py
+    import contextlib
+    import tempfile
+
+    import nox
+
+    package = "wikipedia_cli"
+
+    class Poetry:
+        def __init__(self, session):
+            self.session = session
+
+        @contextlib.contextmanager
+        def export(self, *args):
+            with tempfile.NamedTemporaryFile() as requirements:
+                self.session.run(
+                    "poetry",
+                    "export",
+                    *args,
+                    "--format=requirements.txt",
+                    f"--output={requirements.name}",
+                    "--without-hashes",
+                    external=True,
+                )
+                yield requirements.name
+
+        def version(self):
+            output = self.session.run(
+                "poetry", "version", external=True, silent=True
+            )
+            return output.split()[1]
+
+        def build(self, *args):
+            self.session.run("poetry", "build", *args, external=True, silent=True)
+
+    def install_package(session):
+        poetry = Poetry(session)
+
+        with poetry.export() as requirements:
+            session.install(f"--requirement={requirements}")
+
+        poetry.build("--format=wheel")
+
+        version = poetry.version()
+        session.install(
+            "--no-deps", "--force-reinstall", f"dist/{package}-{version}-py3-none-any.whl"
+        )
+
+    def install(session, *args):
+        poetry = Poetry(session)
+        with poetry.export("--dev") as requirements:
+            session.install(f"--constraint={requirements}", *args)
+
+    @nox.session(python=["3.9", "3.8"])
+    def tests(session):
+        args = session.posargs or ["--cov", "-m", "not e2e"]
+        install_package(session)
+        install(session, "coverage[toml]", "pytest", "pytest-cov", "pytest-mock")
+        session.run("pytest", *args)
+    ```
+
+    ```shell
+    nox -rs tests-3.9 -- -m e2e
+    ```
+
+    </Solution>
+
+13. Update the `.gitignore` file.
+
+    <Solution>
+
+    ```gitignore nu hl=3..6
+    /.python-version
+    __pycache__/
+    /.coverage
+    /dist/
+    .pytest_cache/
+    /.nox/
+    ```
+
+    </Solution>
+
+1. Configure Black, Flake8 and Safety in the project.
+
+<Solution>
+
+
+
+</Solution>
+
+1. Install an insecure package, and check that Safety detect it.
+
+<Solution>
+
+
+
+</Solution>
+
+1. Configure pre-commit to run Black and Flake8 during a commit. Apply checks to all files.
+
+<Solution>
+
+
+
+</Solution>

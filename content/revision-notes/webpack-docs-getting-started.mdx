@@ -1,7 +1,7 @@
 ---
 title: Getting Started
 resourceId: https://webpack.js.org/guides/getting-started/
-stoppedAt: TODO
+stoppedAt: Using a Configuration
 ---
 
 ## Basic Setup
@@ -108,6 +108,19 @@ With that said, let's run `npx webpack`, which will take our script at
 beginning.
 
 ## Modules
+
+The `import` and `export` statements have been standardized in ES2015. They are
+supported in most of the browsers at this moment, however there are some
+browsers that don't recognize the new syntax. But don't worry, webpack does
+support them out of the box.
+
+Behind the scenes, webpack actually "transpiles" the code so that older browsers
+can also run it. Besides import and export, webpack supports various other
+module syntaxes as well.
+
+Note that webpack will not alter any code other than `import` and `export`
+statements. If you are using other ES2015 features, make sure to use a
+transpiler such as Babel or Bublé via webpack's loader system.
 
 ## Using a Configuration
 

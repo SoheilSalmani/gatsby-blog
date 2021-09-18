@@ -1,0 +1,76 @@
+---
+title: Pipeline as Code
+resourceId: "9781617293276"
+---
+
+## Getting Started with Jenkins
+
+### What's CI/CD
+
+#### Defining Continuous Integration
+
+- **Unit Tests:** Test each piece of the source code. They consist of testing
+  individual functions and methods. You could also output your test coverage and
+  validate that you're meeting your code coverage requirements.
+- **Quality Tests:** Check that the code is well-formatted, follows best
+  practices, and has no serious coding errors. This is also called static code
+  analysis, as it helps to produce high-quality code by looking for patterns in
+  code that might generate bugs.
+- **Security Tests:** Inspect source code to uncover common security
+  vulnerabilities and common security flaws (for eg: leaked usernames and
+  passwords).
+- **UI Tests:** Simulate user behavior through the system to ensure the
+  application works correctly in all supported browsers (Chrome, Firefox,
+  Internet Explorer, etc) and platforms (Windows, Linux, OS X, etc) and that it
+  delivers the functionally promised in the user stories.
+- **Integrations Tests:** Checks that different services or components used by
+  the application work well together and there are no defects. For example, it
+  can be testing the interaction with the database.
+
+#### Defining Continuous Deployments
+
+Continuous deployment (CD) is an extension of continuous integration. Every
+change that passes all stages of your continuous integration pipeline is
+released automatically to your staging/pre-production environment. In such a
+process, there's no need to decide what will be deployed and when. The pipeline
+will automatically deploy whatever build components/packages successfully exit
+the pipeline.
+
+#### Defining Continuous Delivery
+
+Continuous Delivery (CD) is similar to continuous deployment but requires human
+intervention or a business decision before deploying the release to production.
+
+### Pipeline as Code with Jenkins
+
+#### Introducing Jenkinsfile
+
+## Operating a Self-Healing Jenkins Cluster
+
+### Defining Jenkins Architecture
+
+### Baking Machine Images with Packer
+
+### Discovering Jenkins as Code with Terraform
+
+### Deploying HA Jenkins on Multiple Cloud Providers
+
+## Hands-On CI/CD Pipelines
+
+### Defining Pipeline as Code for Microservices
+
+### Running Automated Tests with Jenkins
+
+### Building Docker Images within CI Pipeline
+
+### Cloud-Native Applications on Docker Swarm
+
+### Dockerized Microservices on K8s
+
+### Lambda based Serverless Functions
+
+## Managing, Scaling and Monitoring Jenkins
+
+### Collecting Continuous Delivery Metrics
+
+### Jenkins Administration & Best Practices

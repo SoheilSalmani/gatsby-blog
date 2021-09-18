@@ -1,7 +1,7 @@
 ---
 title: Docker in Action
 resourceId: "9781617294761"
-stoppedAt: Running software in containers
+stoppedAt: "Eliminating metaconflicts: Building a website farm"
 ---
 
 ## Welcome to Docker
@@ -104,12 +104,303 @@ docker help
 ```
 
 ```shell
-docker cp
+docker help cp
 ```
 
 ## Process isolation and environment-independent computing
 
 ### Running software in containers
+
+#### Controlling containers: Building a website monitor
+
+<Figure src="/media/nginx-mailer-watcher.png">
+  The three containers that you’ll build in this example.
+</Figure>
+
+##### Creating and starting a new container
+
+The NGINX image is what Docker Inc. calls a _trusted repository_. Generally, the
+person or foundation that publishes the software controls the trusted
+repositories for that software.
+
+```shell
+docker run --detach --name web nginx:latest
+```
+
+After Docker has installed and started running NGINX, one line of seemingly
+random characters will be written to the terminal. That blob of characters is
+the unique identifier of the container that was just created to run NGINX.
+
+The program started but isn’t attached to your terminal. Running detached
+containers is a perfect fit for programs that sit quietly in the background.
+That type of program is called a _daemon_, or a _service_. A daemon generally
+interacts with other programs or humans over a network or some other
+communication channel.
+
+Another daemon that your client needs in this example is a mailer. A _mailer_
+waits for connections from a caller and then sends an email.
+
+```shell
+docker run -d
+    \ --name mailer
+    dockerinaction/ch2_mailer
+```
+
+##### Running interactive containers
+
+A terminal-based text editor is a great example of a program that requires an
+attached terminal. It takes input from the user via a keyboard (and maybe mouse)
+and displays output on the terminal. It is interactive over its input and output
+streams. Running interactive programs in Docker requires that you bind parts of
+your terminal to the input or output of a running container.
+
+```docker
+docker run --interactive --tty \
+    --link web:web \
+    --name web_test \
+    busybox:1.29 /bin/sh
+```
+
+The command uses two flags on the run command: `--interactive` (or `-i`) and
+`--tty` (or `-t`). First, the `--interactive` option tells Docker to keep the
+standard input stream (stdin) open for the container even if no terminal is
+attached. Second, the `--tty` option tells Docker to allocate a virtual terminal
+for the container, which will allow you to pass signals to the container. This
+is usually what you want from an interactive command-line program. You’ll
+usually use both of these when you’re running an interactive program such as a
+shell in an interactive container.
+
+The command in the interactive container example creates a container, starts a
+UNIX shell, and is linked to the container that’s running NGINX.
+
+```shell
+wget -O - http://web:80/
+```
+
+This uses a program called `wget` to make an HTTP request to the web server (the
+NGINX server you started earlier in a container) and then display the contents
+of the web page on your terminal.
+
+It’s possible to create an interactive container, manually start a process
+inside that container, and then detach your terminal. You can do so by holding
+down the <Kbd>Ctrl + P</Kbd> and then <Kbd>Q</Kbd>. This will work only when
+you’ve used the `--tty` option.
+
+To finish the work for your client, you need to start an agent. This is a
+monitoring agent that will test the web server and send a message with the
+mailer if the web server stops.
+
+```shell
+docker run -it \
+    --name agent \
+    --link web:insideweb \
+    --link mailer:insidemailer \
+    dockerinaction/ch2_agent
+```
+
+##### Listing, stopping, restarting, and viewing output of containers
+
+Check which containers are currently running:
+
+```shell
+docker ps
+```
+
+Running the command will display the following information about each running
+container:
+
+- The container ID
+- The image used
+- The command executed in the container
+- The time since the container was created
+- The duration that the container has been running
+- The network ports exposed by the container
+- The name of the container
+
+Restart each container:
+
+```shell
+docker restart web
+docker restart mailer
+docker restart agent
+```
+
+Examine the logs for each container:
+
+```shell
+docker logs web
+docker logs mailer
+docker logs agent
+```
+
+The `docker logs` command can be helpful for these cases but is dangerous to
+rely on. Anything that the program writes to the stdout or stderr output streams
+will be recorded in this log. The problem with this pattern is that the log is
+never rotated or truncated by default, so the data written to the log for a
+container will remain and grow as long as the container exists. That long-term
+persistence can be a problem for long-lived processes. A better way to work with
+log data uses volumes.
+
+**Tip:** The `docker logs` command has a flag, `--follow` or `-f`, that will
+display the logs and then continue watching and updating the display with
+changes to the log as they occur. When you’ve finished, press <Kbd>Ctrl +
+C</Kbd> to interrupt the `logs` command.
+
+The `docker stop` command tells the program with PID 1 in the container to halt.
+
+```shell
+docker stop web
+docker logs mailer
+```
+
+#### Solved problems and the PID namespace
+
+Every running program—or process—on a Linux machine has a unique number called a
+_process identifier (PID)_. A PID _namespace_ is a set of unique numbers that
+identify processes. Linux provides tools to create multiple PID namespaces. Each
+namespace has a complete set of possible PIDs. This means that each PID
+namespace will contain its own PID 1, 2, 3, and so on.
+
+Most programs will not need access to other running processes or be able to list
+the other running processes on the system. And so Docker creates a new PID
+namespace for each container by default. A container’s PID namespace isolates
+processes in that container from processes in other containers.
+
+Without a PID namespace, the processes running inside a container would share
+the same ID space as those in other containers or on the host. A process in a
+container would be able to determine what other processes were running on the
+host machine.
+
+List all processes running on the computer:
+
+```shell
+docker run --pid host busybox:1.29 ps
+```
+
+Environment independence provides the freedom to configure software taking
+dependencies on scarce system resources without regard for other co-located
+software with conflicting requirements. Here are some common conflict problems:
+
+- Two programs want to bind to the same network port.
+- Two programs use the same temporary filename, and file locks are preventing
+  that.
+- Two programs want to use different versions of a globally installed library.
+- Two processes want to use the same PID file.
+- A second program you installed modified an environment variable that another
+  program uses. Now the first program breaks.
+- Multiple processes are competing for memory or CPU time.
+
+All these conflicts arise when one or more programs have a common dependency but
+can’t agree to share or have different needs. Docker solves software conflicts
+with such tools as Linux namespaces, resource limits, filesystem roots, and
+virtualized network components. All these tools are used to isolate software
+inside a Docker container.
+
+#### Eliminating metaconflicts: Building a website farm
+
+Docker helps you avoid software conflicts with process isolation. But if you’re
+not careful, you can end up building systems that create _metaconflicts_, or
+conflicts between containers in the Docker layer.
+
+##### Flexible container identification
+
+Rename a container:
+
+```shell
+docker rename webid webid-old
+```
+
+The first way to get the numeric ID of a container is to simply start or create
+a new one and assign the result of the command to a shell variable. When a new
+container is started in detached mode, the container ID will be written to the
+terminal (stdout). You’d be unable to use this with interactive containers if
+this were the only way to get the container ID at creation time. Luckily, you
+can use another command to create a container without starting it. The
+`docker create` command is similar to `docker run`, the primary difference being
+that the container is created in a stopped state.
+
+```shell
+CID=$(docker create nginx:latest)
+echo $CID
+```
+
+Both the `docker run` and `docker create` commands provide another flag to write
+the ID of a new container to a known file:
+
+```shell
+docker create --cidfile /tmp/web.cid nginx
+cat /tmp/web.cid
+```
+
+Docker won’t create a new container by using the provided CID file if that file
+already exists.
+
+**Tip:** One strategy for dealing with CID file-naming collisions is to
+partition the namespace by using known or predictable path conventions. For
+example, in this scenario, you might use a path that contains all web containers
+under a known directory and further partition that directory by the customer ID.
+This would result in a path such as `/containers/web/customer1/web.cid` or
+`/containers/web/customer8/web.cid`.
+
+In other cases, you can use other commands such as `docker ps` to get the ID of
+a container. To get the truncated ID of the last created container:
+
+```shell
+CID=$(docker ps --latest --quiet)
+echo $CID
+
+CID=%(docker ps -l -q)
+echo $CID
+```
+
+**Tip:** To get the full container ID, you can use the `--no-trunc` option.
+
+##### Container state and dependencies
+
+```shell
+MAILER_CID=$(docker run -d dockerinaction/ch2_mailer)
+WEB_CID=$(docker create nginx)
+AGENT_CID=$(docker create --link $WEB_CID:insideweb \
+  --link $MAILER_CID:insidemailer \
+  dockerinaction/ch2_agent)
+```
+
+To see all the containers (including those in the created state), use the `-a`
+option:
+
+```shell
+docker ps -a
+```
+
+```shell
+docker start $WEB_CID
+docker start $AGENT_CID
+```
+
+**The legacy of container network linking:** Network links were an early and
+popular way to connect containers. Links create a _unidirectional_ network
+connection from one container to other containers on the same host. Significant
+portions of the container ecosystem asked for fully peered, _bidirectional_
+connections between containers. Docker provides this with the userdefined
+networks. These networks can also extend across a cluster of hosts. Network
+links and user-defined networks are not equivalent, but Docker recommends
+migrating to user-defined networks.
+
+```shell
+MAILER_CID=$(docker run -d dockerinaction/ch2_mailer)
+WEB_CID=$(docker run -d nginx)
+AGENT_CID=$(docker run -d \
+    --link $WEB_CID:insideweb \
+    --link $MAILER_CID:insidemailer \
+    dockerinaction/ch2_agent)
+```
+
+If you build systems or software that know too much about their environment—for
+example, addresses or fixed locations of dependency services—it’s difficult to
+change that environment or reuse the software. You need to deliver a system that
+minimizes environment dependence before the contract is complete.
+
+#### Building environment-agnostic systems
 
 ### Software installation simplified
 

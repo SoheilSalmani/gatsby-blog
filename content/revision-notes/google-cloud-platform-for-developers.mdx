@@ -1,7 +1,7 @@
 ---
 title: Google Cloud Platform for Developers
 resourceId: "9781788837675"
-stoppedAt: "The gcloud command-line tool"
+stoppedAt: "Other command-line tools"
 ---
 
 ## Why GCP?
@@ -229,6 +229,231 @@ The Google Cloud SDK installs the following tools by default:
 The SDK image is available on Docker Hub as `google/cloud-sdk`.
 
 ### The gcloud command-line tool
+
+#### The basic of gcloud
+
+The gcloud interface is composed of three basic types: _groups_, _commands_, and
+_global flags_.
+
+#### Command groups
+
+A group is a set of commands that are tied to a specific aspect of Google Cloud.
+Most of these relate to Google Cloud products and services.
+
+In addition to product-specific groups, some groups are specific to managing the
+Google Cloud SDK itself. These groups include `auth`, `components`, `config`,
+and `topic`. In addition, gcloud contains two special command groups: `alpha`
+and `beta`. These groups are not enabled by default and provide a secondary set
+of command groups for commands that are not yet considered generally available.
+
+In general, you'll specify a command group, a type of resource, an action, and
+any identifiers and flags. Actions usually include standard CRUD operations, as
+well as any product-specific operations.
+
+Commands that relate to GCP products and services are very similar in structure
+to their underlying APIs.
+
+#### Root commands
+
+Outside of groups, gcloud contains a few additional commands that do not belong
+to a specific group. These commands are available at the root level of CLI and
+include `docker`, `feedback`, `help`, `info`, `init`, and `version`. The
+`gcloud docker` command allows users to interact directly with the Google
+Container Registry. The other commands offer operations on CLI itself. Using
+`gcloud info` will display a detailed view of your current configuration and
+environment, including the active account and the project you are operating
+against. This is a very useful command to quickly check that you are running
+commands in the desired context.
+
+**Tip:** Find a bug? Try `gcloud feedback`.
+
+For all commands in the gcloud CLI, users can specify a number of global flags
+to modify command behavior. The `--account`, `--project`, and `--configuration`
+flags allow you to override the current defaults for your environment. These are
+useful to avoid modifying or switching configurations to run a few quick
+commands. Other global flags including `--quiet`, `--flatten`, `--format`, and
+`--verbosity` allow users to modify the output from running commands—often
+useful when running scripts or debugging operations.
+
+**Tip:** A great way to see how gcloud performs various actions is to use the
+`--log-http` global flag.
+
+In addition, users can learn about CLI-wide concepts using the gcloud topic
+command group. For example, to learn about using the `--filter` flag available
+in all list-producing operations, you can run `gcloud topic filter`.
+
+#### Initializing the Google Cloud SDK
+
+```shell
+gcloud init
+```
+
+#### Authentication
+
+Google uses OAuth 2.0 for API access. When a user authorizes the SDK, Google
+will store an access token for that user locally for later use.
+
+Login:
+
+```shell
+gcloud auth login --no-launch-browser
+```
+
+The Google Cloud SDK has an established process for storing authentication
+tokens on a system. For local development, the default location is in
+`$HOME/.config/gcloud`.
+
+Alternatively, users can assume the identity of a service account to take
+actions on that service account's behalf:
+
+```shell
+gcloud auth activate-service-account --key-file=</path/to/key/file>
+```
+
+Show available account on your machine:
+
+```shell
+gcloud auth list
+```
+
+Google Cloud SDKs and libraries are able to load credentials from known default
+locations, generally referred to as _application default credentials_.
+
+During local development, it is often preferable to have Google SDKs and
+libraries load a specific application default credentials. To do this, users can
+set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to point to a
+valid credentials file. This will usually be a service account's JSON key file,
+but you may instead use your own user credentials by running
+`gcloud auth application-default login`. This default credentials can then be
+removed by running `gcloud auth application-default revoke`.
+
+**Note:** Although Google Cloud client libraries will function with a user's
+credentials, it is considered best practice to assume the identity of a service
+account for most activities, including local development.
+
+#### Managing your Google Cloud SDK
+
+List the SDK components:
+
+```shell
+gcloud components list
+```
+
+By default, the Cloud SDK ships with a very few components installed. The
+default components include `gcloud`, `bq`, and `gsutil`, which are often all you
+will need for basic interactions with Google Cloud.
+
+Components can be installed or removed on an individual basis at any time with:
+
+```shell
+gcloud components <install|remove> <COMPONENT_ID>
+```
+
+#### Updating and rollbacks
+
+Component updates can be applied by running `gcloud components update`. This
+will list any components that have available updates along with any release
+notes. Updates are run transactionally, and old versions of components
+(including the SDK core libraries) are preserved locally as backups.
+
+Transactional updates enable users to quickly switch between versions of the
+SDK, which can be done by providing an optional `--version` flag such as
+`gcloud components update --version 1.8.1`.
+
+Google Cloud SDK component releases are tied to specific versions of the SDK,
+making it possible to associate a specific version of the SDK components with a
+versioned build of your own services. For operations, this can be a great way to
+help ensure repeatable build processes.
+
+If at any time, you find that a component stops functioning correctly (for
+instance, if you've modified the SDK files), you can usually repair any damage
+by reinstalling the components. This can be done by running
+`gcloud components reinstall`. Note that any changes you've made to the SDK will
+be lost.
+
+#### Alpha and beta channels
+
+To use alpha and beta features within gcloud:
+
+```shell
+gcloud components install <alpha|beta>
+```
+
+To use alpha and beta commands:
+
+```shell
+gcloud alpha <command ...>
+gcloud beta <command ...>
+```
+
+#### Configurations in the Google Cloud SDK
+
+Configuration properties can be viewed, modified, and deleted using the
+`gcloud config` command group.
+
+#### Modifying configuration properties
+
+To see the current values of all configuration properties:
+
+```shell
+gcloud config list --all
+```
+
+Read a configuration property:
+
+```shell
+gcloud config get-value <property>
+```
+
+Change a configuration property:
+
+```shell
+gcloud config set <property> <value>
+```
+
+Remove a configuration property:
+
+```shell
+gcloud config unset <property>
+```
+
+When modifying a property with `set`, you'll need to specify a property as part
+of a group in the format `group/property`.
+
+If no group is specified, gcloud will attempt to set the property in the `core`
+group.
+
+Configuration properties can often be overridden by passing a flag to a command.
+For example, while setting `core/project` is ideal for long-term use, users can
+also pass the `--project` global flag to any command to target a different
+project. This behavior is useful for quick on-off commands as well as cases
+where the default value should not be trusted (such as when running a script).
+
+#### Multiple configurations
+
+The Google Cloud SDK includes support for separate _configurations_. A
+configuration is an isolated set of configuration properties, and the Google
+Cloud SDK tools are able to switch between configurations as the user wills. We
+provisioned our first configuration, _default_, when running `gcloud init`.
+
+You can create any number of additional configurations either by rerunning
+`gcloud init` or by running `gcloud config configurations create <name>`. For
+managing and switching between configurations, use the
+`gcloud config configurations` command group. To switch between configurations:
+
+```shell
+gcloud config configurations activate <configuration>
+```
+
+To modify a value across all configurations, gcloud supports an optional
+`--installation` flag.
+
+gcloud also accepts the global `--configuration` flag. Aside from user defined
+configurations, the Google Cloud SDK contains a special `NONE` configuration.
+This configuration has no set properties, making it ideal for easily ensuring no
+configuration properties will affect command behavior.
+
+### Other command-line tools
 
 ## Google App Engine
 

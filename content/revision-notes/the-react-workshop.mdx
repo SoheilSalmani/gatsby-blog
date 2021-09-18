@@ -1,7 +1,7 @@
 ---
 title: The React Workshop
 resourceId: "9781838645564"
-stoppedAt: State and Props
+stoppedAt: Communication between Components
 ---
 
 ## Getting Started with React
@@ -2015,7 +2015,716 @@ export const Comment = ({ comment, level }) => (
 
 ## State and Props
 
-## Communication between
+### State in React
+
+#### Initializing and Using State
+
+As a property of the `Component` class:
+
+```jsx
+class App extends Component {
+  state = {
+    count: 1,
+  }
+  // ...
+}
+```
+
+In the class constructor:
+
+```jsx
+class App extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { count: 1 }
+  }
+  // ...
+}
+```
+
+State can be modified using the `setState()` method in React. The syntax is as
+follows:
+
+```jsx
+setState(updater, [callback])
+```
+
+The first parameter, `updater`, is the value being set as an object, while the
+second parameter is an optional callback function that gets called right after
+the value is set and the component is re-rendered.
+
+Changing state will always cause the component to re-render, and this can be
+controlled by using the React `shouldComponentUpdate` life cycle method.
+
+Exercise 6.01:
+
+```jsx nu fp=src/App.js
+import React, { Component } from "react"
+import "./App.css"
+
+class App extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      theme: "light",
+    }
+    this.toggleTheme = this.toggleTheme.bind(this)
+  }
+  toggleTheme() {
+    const theme = this.state.theme === "light" ? "dark" : "light"
+    this.setState({ theme })
+  }
+  render() {
+    return (
+      <div className={`${this.state.theme}-theme`}>
+        <div className="jumbotron">
+          <div className="container">
+            <h1>Hello, world!</h1>
+            <p>
+              This is a template for a simple marketing or informational
+              website. It includes a large callout called a jumbotron and three
+              supporting pieces of content. Use it as a starting point to create
+              something more unique.
+            </p>
+            <p>
+              <button
+                className="btn btn-primary btn-lg"
+                onClick={this.toggleTheme}
+              >
+                Switch Theme
+              </button>
+            </p>
+          </div>
+        </div>
+
+        <div className="container">
+          <div className="row">
+            <div className="col-md-8">
+              <h2>State example</h2>
+              <p className="lead">
+                Adipisci architecto blanditiis cumque dolores doloribus dolorum
+                eligendi ex nesciunt quisquam. Assumenda, dolorem enim eos est
+                illum ipsa odit rem tenetur. Blanditiis!
+              </p>
+              <p>
+                Adipisci aut dolore doloribus dolorum eius enim exercitationem
+                facere iusto, nesciunt nostrum porro, quidem suscipit velit.
+                Beatae blanditiis cum id quaerat quisquam.
+              </p>
+              <p>
+                Accusantium ad, animi blanditiis dignissimos eius enim est fugit
+                minima molestiae necessitatibus nostrum odio quae quaerat quidem
+                quos rerum sint ullam voluptatibus.
+              </p>
+              <p>
+                Beatae eius numquam pariatur ratione sapiente velit! Accusantium
+                adipisci aut est hic illum, maxime molestias odit optio
+                reiciendis sint tenetur, ut veritatis!
+              </p>
+              <ul>
+                <li>
+                  Aliquam amet eum exercitationem facere illo, illum ipsam
+                  laboriosam modi nihil obcaecati odit optio provident, quae
+                  quas quia quibusdam ratione totam veniam!
+                </li>
+                <li>
+                  Asperiores, debitis eius harum, id incidunt natus quisquam
+                  quos repellat tempore ut veniam voluptas. Adipisci aliquam
+                  deleniti ea iusto quasi totam voluptatum!
+                </li>
+                <li>
+                  Ad cupiditate, eos hic obcaecati voluptas voluptatibus!
+                  Accusamus eaque laudantium modi quae repellat reprehenderit,
+                  vel! Culpa doloremque eligendi excepturi minima nam sed!
+                </li>
+              </ul>
+            </div>
+            <div className="col-md-4">
+              <todo-component></todo-component>
+              <h2>Heading</h2>
+              <p>
+                Donec id elit non mi porta gravida at eget metus. Fusce dapibus,
+                tellus ac cursus commodo, tortor mauris condimentum nibh, ut
+                fermentum massa justo sit amet risus. Etiam porta sem malesuada
+                magna mollis euismod. Donec sed odio dui.{" "}
+              </p>
+              <hr />
+              <h2>Heading</h2>
+              <p>
+                Donec id elit non mi porta gravida at eget metus. Fusce dapibus,
+                tellus ac cursus commodo, tortor mauris condimentum nibh, ut
+                fermentum massa justo sit amet risus. Etiam porta sem malesuada
+                magna mollis euismod. Donec sed odio dui.{" "}
+              </p>
+              <hr />
+              <h2>Heading</h2>
+              <p>
+                Donec sed odio dui. Cras justo odio, dapibus ac facilisis in,
+                egestas eget quam. Vestibulum id ligula porta felis euismod
+                semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris
+                condimentum nibh, ut fermentum massa justo sit amet risus.
+              </p>
+            </div>
+          </div>
+          <hr />
+          <footer>
+            <p>&copy; 2016 Company, Inc.</p>
+          </footer>
+        </div>
+      </div>
+    )
+  }
+}
+
+export default App
+```
+
+```css nu fp=src/App.css
+@import url("https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css");
+
+.dark-theme {
+  background: #333;
+  color: #fff;
+}
+.dark-theme .jumbotron {
+  background: #444;
+}
+```
+
+### Props in React
+
+React has a unidirectional data flow, which means that data flows from parent to
+child and never the other way around. Another caveat of React is that props
+cannot be changed or mutated within a component. Props are similar to parameters
+to a function and the value of the state may depend on changes that are made to
+it. If props were mutable, they could trigger an infinite loop and memory leaks,
+which would be undesirable. Since props are passed from parent to child, only
+the parent would be able to change the props before they are passed. Otherwise,
+this could cause changes outside the scope of the component or side effects,
+making the application inconsistent.
+
+Exercise 6.02:
+
+```jsx nu fp=src/App.js
+import React, { Component } from "react"
+import "./App.css"
+import { Modal } from "./components/Modal"
+
+class App extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      showModal: false,
+    }
+    this.toggleModal = this.toggleModal.bind(this)
+  }
+  toggleModal() {
+    this.setState({
+      showModal: !this.state.showModal,
+    })
+  }
+  render() {
+    return (
+      <div className="container">
+        <div>
+          <p>
+            Crema caffeine, single origin variety coffee a qui turkish. Wings
+            strong siphon extra percolator sweet single origin percolator.
+            Redeye aftertaste strong single shot organic redeye brewed
+            kopi-luwak caffeine variety. Aftertaste, arabica crema to go
+            trifecta that grinder.
+          </p>
+          <p>
+            Flavour saucer, con panna sit wings macchiato dripper sugar qui
+            lungo turkish dripper. Acerbic blue mountain milk ristretto crema,
+            rich barista ut and cappuccino filter. Saucer dark cappuccino,
+            froth, extraction coffee crema white half and half single shot to
+            go. Flavour cup robust cream eu café au lait extraction con panna
+            trifecta body blue mountain decaffeinated.
+          </p>
+          <p>
+            Eu shop, mocha body cortado pumpkin spice galão. Java affogato
+            ristretto, dark flavour qui est white grounds a black. Cultivar
+            siphon flavour, extra organic grinder kopi-luwak acerbic java
+            organic. To go, et trifecta irish percolator cream est ut single
+            origin mocha.
+          </p>
+          <p>
+            Qui beans, caffeine skinny bar seasonal mazagran. Turkish spoon
+            beans rich arabica medium kopi-luwak turkish. A, con panna blue
+            mountain aftertaste steamed, so irish crema caffeine rich.
+            Aftertaste eu aftertaste foam, con panna and rich robust and aroma
+            arabica.
+          </p>
+        </div>
+        <button onClick={this.toggleModal}>Show Modal</button>
+        <Modal showModal={this.state.showModal} toggleModal={this.toggleModal}>
+          Text in overlay
+        </Modal>
+      </div>
+    )
+  }
+}
+
+export default App
+```
+
+```css nu fp=src/App.css
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 10%;
+}
+
+button {
+  margin-top: 2rem;
+  border: solid 1px #999;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+```
+
+```jsx nu fp=src/components/Modal/index.js
+import React, { Component } from "react"
+import "./styles.css"
+
+class Modal extends Component {
+  render() {
+    if (!this.props.showModal) {
+      return null
+    }
+    return (
+      <div className="modal">
+        <div className="modal_content">
+          {this.props.children}
+          <div>
+            <button onClick={this.props.toggleModal}>Close</button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+}
+
+export { Modal }
+```
+
+```css nu fp=src/components/Modal/styles.css
+.modal {
+  background: rgba(0, 0, 0, 0.3);
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 30px;
+}
+
+.modal_content {
+  max-width: 500px;
+  margin: 10vh auto;
+  background: white;
+  padding: 30px;
+  border-radius: 5px;
+}
+```
+
+Activity 6.01:
+
+```json nu fp=src/products.json
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Espresso",
+      "price": 5.5,
+      "summary": "Galão, grinder mocha, filter plunger pot siphon mug variety est caramelization. Galão cortado medium latte organic aroma dripper lungo extraction crema. Bar variety spoon a fair trade filter iced. To go mocha wings irish kopi-luwak acerbic doppio kopi-luwak viennese saucer aroma arabica.",
+      "tags": ["black"]
+    },
+    {
+      "id": 2,
+      "name": "Latte",
+      "price": 4.5,
+      "summary": "Robusta id fair trade, ristretto froth sugar siphon cream. Rich cinnamon aged espresso carajillo skinny acerbic iced. Froth, blue mountain eu mug, coffee carajillo flavour cappuccino and cortado mocha. Est, blue mountain froth roast as trifecta cappuccino.",
+      "tags": ["milk"]
+    },
+    {
+      "id": 3,
+      "name": "Cappuccino",
+      "price": 5,
+      "summary": "So robust strong, pumpkin spice carajillo extraction grounds aged flavour et acerbic. Siphon as robusta grounds seasonal chicory est extraction. Half and half arabica spoon aroma cinnamon decaffeinated qui fair trade wings. Latte mocha dark redeye percolator crema black doppio body frappuccino body saucer.",
+      "tags": ["milk", "froth"]
+    },
+    {
+      "id": 4,
+      "name": "Flat white",
+      "price": 4.5,
+      "summary": "Sugar filter java, turkish java dripper bar saucer mocha body. Barista americano roast robusta as crema carajillo strong in milk est arabica. Brewed filter beans grinder carajillo spoon cappuccino aged cortado bar extraction skinny. To go, half and half medium eu cortado single shot flavour est java.",
+      "tags": ["milk"]
+    },
+    {
+      "id": 5,
+      "name": "Americano",
+      "price": 4.5,
+      "summary": "Robusta id fair trade, ristretto froth sugar siphon cream. Rich cinnamon aged espresso carajillo skinny acerbic iced. Froth, blue mountain eu mug, coffee carajillo flavour cappuccino and cortado mocha. Est, blue mountain froth roast as trifecta cappuccino.",
+      "tags": ["water"]
+    },
+    {
+      "id": 6,
+      "name": "Mocha",
+      "price": 6,
+      "summary": "Robusta id fair trade, ristretto froth sugar siphon cream. Rich cinnamon aged espresso carajillo skinny acerbic iced. Froth, blue mountain eu mug, coffee carajillo flavour cappuccino and cortado mocha. Est, blue mountain froth roast as trifecta cappuccino.",
+      "tags": ["chocolate", "milk", "froth"]
+    }
+  ],
+  "ingredients": ["black", "chocolate", "milk", "froth", "water"]
+}
+```
+
+```jsx nu fp=src/App.js
+import React, { Component } from "react"
+import "./App.css"
+import productData from "./products.json"
+import { ProductListing } from "./components/ProductListing"
+import { Tags } from "./components/Tags"
+
+class App extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      selectedTag: null,
+    }
+    this.handleTags = this.handleTags.bind(this)
+  }
+  handleTags(tagName) {
+    return () => {
+      this.setState({ selectedTag: tagName })
+    }
+  }
+  render() {
+    const { products, ingredients } = productData
+    const { selectedTag } = this.state
+    return (
+      <div className="container">
+        <h1>Products</h1>
+        <Tags
+          tags={ingredients}
+          selectedTag={selectedTag}
+          handleTags={this.handleTags}
+        />
+        <ProductListing products={products} selectedTag={selectedTag} />
+      </div>
+    )
+  }
+}
+
+export default App
+```
+
+```css nu fp=src/App.css
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 10%;
+}
+
+.center {
+  text-align: center;
+}
+```
+
+```jsx nu fp=src/components/ProductListing/index.js
+import React from "react"
+import { Product } from "../Product"
+
+const ProductListing = props => {
+  const { products, selectedTag } = props
+  const filteredProduct = selectedTag
+    ? products.filter(product => product.tags.includes(selectedTag))
+    : products
+  return (
+    <div>
+      {filteredProduct &&
+        filteredProduct.length &&
+        filteredProduct.map((product, key) => (
+          <Product key={`${product.name}-${key}`} product={product} />
+        ))}
+    </div>
+  )
+}
+
+export { ProductListing }
+```
+
+```jsx nu fp=src/components/Product/index.js
+import React, { Component } from "react"
+import "./styles.css"
+
+class Product extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      showDescription: false,
+    }
+    this.toggleDescription = this.toggleDescription.bind(this)
+  }
+  toggleDescription() {
+    this.setState({
+      showDescription: !this.state.showDescription,
+    })
+  }
+  render() {
+    const { name, price, summary } = this.props.product
+    const { showDescription } = this.state
+    return (
+      <div className="product">
+        <div className="product_header">
+          <h2>{name}</h2>
+          <div>
+            <button onClick={this.toggleDescription}>
+              {showDescription ? "-" : "+"}
+            </button>
+          </div>
+        </div>
+        <strong>${price}</strong>
+        <div>{showDescription && <p>{summary}</p>}</div>
+      </div>
+    )
+  }
+}
+
+export { Product }
+```
+
+```css nu fp=src/components/Product/styles.css
+.product {
+  border: solid 1px #eee;
+  padding: 20px;
+  margin-bottom: 5px;
+}
+
+.product h2 {
+  margin: 0;
+}
+
+.product_header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.product button {
+  background: white;
+  border: solid 1px #eee;
+  padding: 5px 10px;
+  font-size: 20px;
+}
+```
+
+```jsx nu fp=src/components/Tags/index.js
+import React, { Component } from "react"
+import { Tag } from "../Tag"
+
+class Tags extends Component {
+  render() {
+    const { tags, selectedTag, handleTags } = this.props
+    return (
+      <div>
+        Select Filter
+        {tags.map((tag, key) => (
+          <Tag
+            key={`tag${key}`}
+            selectedTag={selectedTag}
+            handleTags={handleTags}
+          >
+            {tag}
+          </Tag>
+        ))}
+      </div>
+    )
+  }
+}
+
+export { Tags }
+```
+
+```jsx nu fp=src/components/Tag/index.js
+import React from "react"
+import "./styles.css"
+
+const Tag = props => (
+  <button
+    className={`tag ${props.selectedTag === props.children ? "active" : ""}`}
+    onClick={props.handleTags(props.children)}
+  >
+    {props.children}
+  </button>
+)
+
+export { Tag }
+```
+
+```css nu fp=src/components/Tag/styles.css
+.tag {
+  display: inline-block;
+  padding: 8px 15px;
+  margin: 15px 0 15px 20px;
+  background: #eaeaea;
+  border-radius: 5px;
+  border: solid 1px #bbb;
+}
+
+.tag.active {
+  background: #333;
+  color: white;
+}
+```
+
+## Communication between components
+
+### Getting Started
+
+Prop-drilling refers to the process of passing down values to child components
+multiple levels down.
+
+#### Passing Data to a Child Component Multiple Levels Down
+
+There are several ways we can send data down to such child components:
+
+- **Props:** We can keep passing the props down to the child components until
+  the last child component in the hierarchy.
+- **React Context API:** The main problem with passing props down to each child
+  component is there could be a lot of layers of components in-between the data
+  source and the user. This is called props-drilling. For example, if there are
+  10 child components inside a parent component and we want to send data to the
+  tenth child component from the parent component, we need to pass the data 10
+  times through the other child components. With the React Context API, we can
+  provide the data from the parent component and consume it directly from a
+  component on any level without passing it through the other child components.
+  **Redux:** Redux is one of the most powerful state management libraries. It is
+  commonly used with React, but it can be used standalone with other JavaScript
+  libraries. With Redux, we can centralize the state by storing it in an object
+  tree within a store so each component can access any state from the store.
+
+#### Passing a Component through a Prop
+
+Components can be sent through props.
+
+### Higher-Order Components
+
+A higher-order component is a function that takes a component and returns a new
+component. A HOC is not a React API, it is a pattern that shares common
+functionalities.
+
+Exercise 7.06:
+
+```jsx nu fp=src/App.js
+import React, { Component } from "react"
+
+class App extends Component {
+  render() {
+    const details = [
+      {
+        name: "Tiger",
+        number: 3890,
+        endangered: true,
+        photo: "https://source.unsplash.com/Si6Obte6Bu0/400x300",
+        donation: 100,
+      },
+      {
+        name: "Brown Bear",
+        number: 200000,
+        endangered: false,
+        photo: "https://source.unsplash.com/c8XlAc1akIU/400x300",
+        donation: 10,
+      },
+      {
+        name: "Red Panda",
+        number: 10000,
+        endangered: true,
+        photo: "https://source.unsplash.com/2zYHKx8jtvU/400x300",
+        donation: 50,
+      },
+    ]
+
+    return (
+      <Animal details={details}>
+        <h1>Endangered Animals</h1>
+      </Animal>
+    )
+  }
+}
+
+const withDonationColor = WrappedComponent => {
+  return class extends Component {
+    constructor(props) {
+      super(props)
+      this.state = { donationColor: "black" }
+    }
+
+    componentDidMount() {
+      const donationAmout = this.props.detail.donation
+      const donationColor = donationAmout > 50 ? "green" : "red"
+      this.setState({ donationColor })
+    }
+
+    render() {
+      return (
+        <WrappedComponent
+          {...this.props}
+          donationColor={this.state.donationColor}
+        />
+      )
+    }
+  }
+}
+
+const AnimalDetails = props => {
+  const { name, number, endangered, donation } = props.detail
+
+  return (
+    <li>
+      <div>
+        <p>{props.image}</p>
+        <p>Animal: {name}</p>
+        <p>Number: {number}</p>
+        <p>Endangered: {endangered ? "Yes" : "No"}</p>
+        <p style={{ color: props.donationColor }}>
+          Donation amount: <span className="donation-color">${donation}</span>
+        </p>
+      </div>
+    </li>
+  )
+}
+
+const WrapperComponent = withDonationColor(AnimalDetails)
+
+const Animal = props => {
+  const details = props.details
+
+  return (
+    <div>
+      {props.children}
+      <ul>
+        {details.map((detail, index) => (
+          <WrapperComponent
+            image={<Photo path={detail.photo} title={detail.name} />}
+            detail={detail}
+            key={index}
+          />
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+const Photo = props => {
+  return <img src={props.path} alt={props.name} />
+}
+
+export default App
+```
+
+### Render Props
 
 ## Introduction to Formik
 

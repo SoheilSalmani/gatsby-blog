@@ -202,35 +202,470 @@ cat .git/HEAD
 
 ### Working Area, Staging Area, Repository
 
+#### The Working Area
+
+- The file in your working area that are _also not_ in the staging area are not
+  handle by git.
+- Also called **untracked files**.
+
+#### The Staging Area (a.k.a Index, Cache)
+
+- What files are going to be part of the next commit.
+- The staging area is how git knows what will change between the current commit
+  and the next commit.
+- Tip: a "clean" staging area isn't empty!
+- Consider the baseline staging area as being an exact copy of the latest
+  commit.
+
+The following plumbing command will show you what's in the staging area:
+
+```shell
+git ls-files -s
+```
+
+#### The Repository
+
+- The files git knows about!
+- Contains all of your commits.
+
+#### Moving Files In & Out of the Staging Area
+
+Add a file to the next commit:
+
+```shell
+git add <file>
+```
+
+Delete a file in the next commit:
+
+```shell
+git rm <file>
+```
+
+Rename a file in the next commit:
+
+```shell
+git mv <file>
+```
+
+#### git add -p
+
+- One of my favorite tools.
+- Allows you to stage commits in hunks.
+- Interactively!
+- It's especially useful if you've done too much work for one commit.
+
+#### "Unstage" Files From the Staging Area
+
+- Not removing the files.
+- You're replacing them with a copy that's currently in the repository.
+
+#### Basics: How Content Moves in Git
+
+<Figure src="/media/how-content-moves-in-git.png">
+  How content moves in Git.
+</Figure>
+
 ### Stashing
 
-### Staging and Stashing Exercise & Solution
+#### git stash
+
+- Save un-committed work.
+- The stash is **safe** from destructive operations.
+
+#### git stash - Basic Use
+
+Stash changes:
+
+```shell
+git stash
+```
+
+List changes:
+
+```shell
+git stash list
+```
+
+Show the contents of the last stash:
+
+```shell
+git stash show
+```
+
+Show the contents of a specific stash:
+
+```shell
+git stash show stash@{0}
+```
+
+Apply the last stash:
+
+```shell
+git stash apply
+```
+
+Apply a specific stash:
+
+```shell
+git stash apply stash@{0}
+```
+
+#### Advanced Stashing - Keeping Files
+
+Keep untracked files:
+
+```shell
+git stash --include-untracked
+```
+
+Keep all files (even ignored ones!):
+
+```shell
+git stash --all
+```
+
+#### Advanced Stashing - Operations
+
+Name stashes for easy reference:
+
+```shell
+git stash save "WIP: making progress on foo"
+```
+
+Start a new branch from a stash (and remove the stash):
+
+```shell
+git stash branch <branch name>
+```
+
+Grab a single file from a stash:
+
+```shell
+git checkout <stash name> -- <filename>
+```
+
+#### Advanced Stashing - Cleaning the Stash
+
+Remove the last stash and applying changes:
+
+```shell
+git stash pop
+```
+
+**Tip:** Doesn't remove if there's a merge conflict.
+
+Remove the last stash:
+
+```shell
+git stash drop
+```
+
+Remove the nth stash:
+
+```shell
+git stash drop stash@{n}
+```
+
+Remove **_all_** stashes:
+
+```shell
+git stash clear
+```
+
+#### Advanced Stashing - Interactively
+
+Interactively stash your changes in hunks:
+
+```shell
+git stash -p
+```
 
 ## References, Commits, Branches
 
 ### References
 
+#### Three types of git references
+
+- Tags & Annotated Tags
+- Branches
+- HEAD
+
+#### What's a Branch?
+
+- A branch is just a pointer to a particular commit.
+- The pointer of the current branch changes as new commits are made.
+
+#### What is HEAD?
+
+- **HEAD** is how git knows what branch you're currently on, and what the next
+  parent will be.
+- It's a pointer.
+  - It usually points at the **_name_** of the current branch.
+  - But, it can point at a commit too (detached HEAD).
+- It moves when:
+  - You make a commit in the currently active branch.
+  - When you checkout a new branch.
+
+```shell
+cat .git/HEAD
+```
+
 ### Tags & Annotated Tags
+
+#### Lightweight Tags
+
+- Lightweight tags are just a simple pointer to a commit.
+- When you create a tag with no arguments, it captures the value in HEAD.
+
+```shell
+git tag my-first-commit
+```
+
+#### Annotated Tags: git tag -a
+
+- Point to a commit, but store additional information (author, message, date).
+
+```shell
+git tag -a v1.0 -m "Version 1.0 of my blog"
+git tag
+git show v1.0
+```
+
+#### Working with Tags
+
+List all the tags in a repo:
+
+```shell
+git tag
+```
+
+List all the tags, and what commit they're pointing to:
+
+```shell
+git show-ref --tags
+```
+
+List all the tags pointing at a commit:
+
+```shell
+git tag --points-at <commit>
+```
+
+Looking at the tag, or tagged contents:
+
+```shell
+git show <tag-name>
+```
+
+#### Tags & Branches
+
+Branch:
+
+- The current branch pointer moves with every commit to the repository
+
+Tag:
+
+- The commit that a tag points doesn't change.
+- It's a snapshot!
 
 ### Detached Head & Dangling Commits
 
-### References Exercise & Solution
+#### Head-less / Detached Head
+
+- Sometimes you need to checkout a specific commit (or tag) instead of a branch.
+- git moves the HEAD pointer to that commit
+- As soon as you checkout a different branch or commit, the value of HEAD will
+  point to the new SHA
+- There is no reference pointing to the commits you made in a detached state.
+
+Save your work:
+
+- Create a new branch that points to the last commit you made in detached state.
+
+  ```shell
+  git branch <new-branch-name> <commit>
+  ```
+
+- Why the last commit? Because the other commits point to their parents.
+
+#### Dangling Commits
+
+Discard your work:
+
+- If you don't point a new branch at those commits, they will no longer be
+  referenced in git.
+- Eventually, they will be garbaged collected.
 
 ## Merging and Rebasing
 
 ### Merging and Fast Forward
 
+#### git merge --no-ff (No Fast Forward)
+
+- To retain the history of a merge commit, even if there are no changes to the
+  base branch:
+  - use `git merge --no-ff`
+- This will _force_ a merge commit, even when one isn't necessary.
+
+```shell
+git merge new_feature --no-ff
+```
+
 ### Merge Conflicts
 
-### Merging and ReReRe Exercise & Solution
+#### Merge Conflicts
+
+- Attempt to merge, but files have diverged.
+- Git stops until the conflicts are resolved.
+
+#### git rerere - Reuse Recorded Resolution
+
+- git saves how you resolved a conflict.
+- Next conflict: reuse the same resolution.
+
+Useful for:
+
+- long lived feature branch (like a refactor),
+- rebasing.
+
+Turn it on:
+
+```shell
+git config rerere.enabled true
+```
+
+Use `--global` flag to enable for _all_ projects.
 
 ## History and Diffs
 
 ### Useful Commit Messages
 
+#### Good Commits Are Important
+
+- Good commits help preserve the history of a code base
+- They help with:
+  - debugging & troubleshooting
+  - creating release notes
+  - code reviews
+  - rolling back
+  - associating the code with an issue or ticket
+
+#### Anatomy of a good commit
+
+- Good commit message
+- Encapsulates one logical idea
+- Doesn't introduce breaking changes
+  - i.e. tests pass
+
 ### Git Log
 
+#### git log
+
+The basic command that shows you the history of your repository.
+
+#### git log --since
+
+```shell
+git log --since="yesterday"
+git log --since="2 weeks ago"
+```
+
+#### git log --follow
+
+Log files that have been moved or renamed:
+
+```shell
+git log --name-status --follow -- <file>
+```
+
+Example:
+
+```shell
+git log --grep=mail --author=nina --since=2.weeks
+```
+
+#### git log --diff-filter
+
+Selectively include or exclude files that have been: (A)dded, (D)eleted,
+(M)odified & more...
+
+```shell
+git log --diff-filter=R --stat
+```
+
+#### Git Log: Referencing Commits
+
+- `^` or `^n`:
+  - no args = `^1`: the first parent commit
+  - `n`: the nth parent commit
+- `~` or `~n`:
+  - no args = `~1`: the first commit back, following 1st parent
+  - `n`: number of commits back, _following only 1st parent_
+
+**Note:** `^` and `~` can be combined.
+
 ### Git Show and Diffs
+
+#### git show: Look at a Commit
+
+Show commit and contents:
+
+```shell
+git show <commit>
+```
+
+Show files changed in commit:
+
+```shell
+git show <commit> --stat
+```
+
+Look at a file from another commit:
+
+```shell
+git show <commit>:<file>
+```
+
+#### Diff
+
+Diff shows you changes:
+
+- between commits
+- between the staging area and the repository
+- what's in the working area
+
+Unstaged changes:
+
+```shell
+git diff
+```
+
+Staged changes:
+
+```shell
+git diff --staged
+```
+
+#### Diff Commits and Branches
+
+<Figure src="/media/diff-commits-and-branches.png">
+  Diff commits and branches.
+</Figure>
+
+#### "Diff" Branches
+
+Which branches are merged with master, and can be cleaned up?
+
+```shell
+git branch --merged master
+```
+
+Which branches aren't merged with master yet?
+
+```shell
+git branch --no-merged master
+```
 
 ### History and Diffs Exercise & Solution
 
@@ -238,55 +673,607 @@ cat .git/HEAD
 
 ### Git Checkout
 
+#### git checkout
+
+Restore working tree files _or_ switch branches.
+
+#### What happens when you git checkout a branch?
+
+1. Change HEAD to point to the new branch.
+2. Copy the commit snapshot to the staging area (index).
+3. Update the working area with branch contents.
+
+#### What happens when you git checkout -- file?
+
+Replace the working area copy with the version from the current staging area.
+
+**Warning:** This operation overwrites files in the working directory without
+warning!
+
+Overwrite the working area file with the staging area version from the last
+commit:
+
+```shell
+git checkout -- <file_path>
+```
+
+#### What happens when you git checkout &lt;commit&gt; -- file?
+
+1. Update the staging area to match the commit.
+2. Update the working area to match the staging area.
+
+#### git checkout: From a Specific Commit
+
+Checkout a file from a specific commit:
+
+- _copies to both working area & staging area_
+- ```shell
+  git checkout <commit> -- <file_path>
+  ```
+
+Restore a deleted file:
+
+```shell
+git checkout <deleting_commit>^ -- <file_path>
+```
+
 ### Git Clean & Reset
+
+#### git clean
+
+- Git clean will clean your working area by **deleting** untracked files.
+- Use the `--dry-run` flag to see what would be deleted.
+- The `-f` flag to do the deletion.
+- The `-d` flag will also clean directories.
+
+#### git reset
+
+Reset is another command that performs different actions depending on the
+arguments.
+
+- with a path
+- without a path
+
+By default, git performs a `git reset --mixed`.
+
+For commits:
+
+- Moves the HEAD pointer, optionally modifies files.
+
+For file paths:
+
+- Does not move the HEAD pointer, modifies files.
+
+#### Reset --soft: Move HEAD
+
+```shell
+git reset --soft HEAD~
+```
+
+<Figure src="/media/git-reset-soft.png">Git reset (soft).</Figure>
+
+#### Reset --mixed: Move HEAD, Copy Files to Stage
+
+```shell
+git reset --mixed HEAD~
+git reset HEAD~
+```
+
+<Figure src="/media/git-reset-mixed.png">Git reset (mixed).</Figure>
+
+#### Reset --hard: Move HEAD, Copy Files to Stage & Working
+
+```shell
+git reset --hard HEAD~
+```
+
+<Figure src="/media/git-reset-hard.png">Git reset (hard).</Figure>
+
+#### git reset -- &lt;file&gt;
+
+```shell
+git reset -- <file>
+```
+
+<Figure src="/media/git-reset-file.png">Git reset (file argument).</Figure>
+
+#### git reset &lt;commit&gt; -- &lt;file&gt;
+
+```shell
+git reset <commit> -- <file>
+```
+
+<Figure src="/media/git-reset-commit-file.png">
+  Git reset (file argument).
+</Figure>
+
+**Note:** Only reset the staging area. This operation does not work with flags!
+
+#### Undo a git reset with ORIG_HEAD
+
+In case of an accidental `git reset`, Git keeps the previous value of HEAD in
+variable called `ORIG_HEAD`.
+
+To go back to the way things were:
+
+```shell
+git reset ORIG_HEAD
+```
 
 ### Git Revert
 
-### Fixing Git Mistakes Exercise & Solution
+Git revert creates a new commit that introduces the opposite changes from the
+specified commit.
+
+The original commit stays in the repository.
+
+**Tip:** Use revert if you're undoing a commit that has already been shared.
+Revert **_does not_** change history.
 
 ## Rebase and Amend
 
 ### Git Amend
 
+#### Amend a Commit
+
+Amend is a quick and easy shortcut that lets you make changes to the previous
+commit.
+
+```shell
+git commit --amend
+```
+
 ### Rebase
+
+#### What Is Rebase Anyway?
+
+- Imagine our `tech_posts` and `master` branch have diverged.
+- We don't want a messy merge commit in our history.
+- We can pull in all the latest changes from master, and apply our commits on
+  top of them by changing the parent commit of our commits.
+
+Rebase = give a commit a new parent (i.e. a new base commit)
+
+#### Power of Rebasing - Replay Commits
+
+Commits can be:
+
+- edited
+- removed
+- combined
+- re-ordred
+- inserted
+
+**Before** they're _"replayed"_ on top of the new HEAD.
+
+#### Interactive Rebase (rebase -i or rebase --interactive)
+
+Interactive rebase opens an editor with a list of "todos":
+
+- in the format of: `<command> <commit> <commit msg>`
+- git will pick the commits in the specified order, or stop to take an action
+  when editing or a conflict occurs.
+
+```shell
+git rebase -i <commit_to_fix>^
+```
+
+#### Rebase Options
+
+- `pick`: keep the commit.
+- `reword`: keep the commit, just change the message.
+- `edit`: keep the commit, but stop to edit more than the message.
+- `squash`: combine the commit with the previous one, then stop to edit the
+  message.
+- `fixup`: combine the commit with the previous one, but keep the previous
+  commit message.
+- `exec`: run the command on this line after picking the previous commit.
+- `drop`: remove the commit (**tip:** if you remove this line, the commit will
+  be dropped too!).
+
+#### Tip: Use Rebase to Split Commits
+
+Editing a commit can also split it up into multiple commits!
+
+1. Start an interactive rebase with `rebase -i`.
+2. Mark the commit with an `edit`.
+3. `git reset HEAD^`
+4. `git add`
+5. `git commit`
+6. Repeat 4. and 5. until the working area is clean!
+7. `git rebase --continue`
 
 ### Fixup and Autosquash
 
+#### Tip: "Amend" Any Commit with Fixup & Autosquash!
+
+What if we want to amend an arbitrary commit?
+
+1. `git add` new files.
+2. `git commit --fixup <commit>`: this creates a new commit, the message starts
+   with "fixup!".
+3. `git rebase -i --autosquash <commit>^`.
+4. git will generate the right todos for you! Just save and quit.
+
+Git will automatically reorder commits, and mark the commit with fixup action.
+
+#### rebase --exec (Execute a Command)
+
+```shell
+git rebase -i --exec "run-tests" <commit>
+```
+
+2 options for exec:
+
+1. Add it as a command when doing interactive rebase.
+2. Use it as a flag when rebasing.
+
+- When used as a flag, the command specified by exec will run after every commit
+  is applied.
+- This can be used to run tests.
+- The rebase will stop if the command fails, giving you a change to fix what's
+  wrong.
+
 ### Abort
 
-### Git Rebase and Amend Exercise & Solution
+#### Pull the Rip Cord!
+
+At any time before rebase is done, if things are going wrong:
+
+```shell
+git rebase --abort
+```
+
+#### Rebase Pro Tip
+
+Before your rebase/ fixup / squash / reorder:
+
+1. Make a copy of your current branch: `git branch my_branch_backup`.
+2. If rebase "succeeds" but you messed up...
+
+   ```shell
+   git reset my_branch_backup --hard
+   ```
+
+3. You're back in business!
+
+#### Rebase Advantages
+
+- Rebase is incredibly powerful!
+- You can slice and dice your git history.
+- It's easy to fix previous mistakes in code.
+- You can keep your git history neat and clean.
+
+**Important:** You should try to commit as much as possible while you're doing
+your work.
+
+#### Commit Early & Often vs Good Commits
+
+Git Best Practice: "commit often, perfect later, publish once".
+
+When working locally:
+
+- commit whenever you make changes!
+- it'll help you be a more productive developer.
+
+Before pushing work to a shared repo:
+
+- rebase to clean up the commit history.
+
+#### Warning: Never Rewrite Public History!
+
+- Rebase commits are copies.
+- If other people are working on the same repository they would be working on
+  different commits.
+- You could cause massive merge conflicts.
+- Even worse, you can cause people to lose their work!
 
 ## Forks & Remote Repos
 
 ### GitHub vs. Git
 
+#### GitHub vs Git - The Key Is Collaboration
+
+Git:
+
+- Open source version control software
+
+GitHub:
+
+- Repository hosting
+- Browse code
+- Issues
+- Pull Requests
+- Forks
+
 ### Remotes
+
+#### Remotes
+
+- A remote is a git repository stored elsewhere - on the web, in GitHub, etc.
+- **_origin_** is the default name git gives to the server you cloned from.
+- Cloning a remote repository from a URL will fetch the whole repository, and
+  make a local copy in your .git folder.
+- You may have different privileges for a remote: Read/Write from some,
+  Read-only for others.
+
+#### Viewing Remotes
+
+```shell
+git remote -v
+```
 
 ### Forks, Pull Requests, & Upstreams
 
+#### Fork
+
+- A fork is a copy of a repository that's stored in your GitHub account.
+- You can clone your fork to your local computer.
+
+#### Merging Changes to Original Project From a Fork
+
+<Figure src="/media/merging-changes-to-original-project-from-a-fork.png">
+  Merging changes to original project from a fork.
+</Figure>
+
+#### Staying Up to Date
+
+- While you work on your fork, other changes are getting merged into the source
+  repository.
+- In order to stay up to date, set up an upstream.
+
+#### Upstream
+
+- The upstream repository is the base repository you created a fork from.
+- This isn't set up by default, you need to set it up manually.
+- By adding an upstream remote, you can pull down changes that have been added
+  to the original repository after you forked it.
+
+```shell
+git remote add upstream https://github.com/ORIG_OWNER/REPO.git
+```
+
 ### GitHub Workflow
 
-### Forks and Remote Repos Exercise
+#### Triangular Workflow
+
+<Figure src="/media/triangular-workflow.png">The triangular workflow.</Figure>
+
+#### Tracking branches
+
+- Track a branch to tie it to an upstream branch. Bonus: Use git push / pull
+  with no arguments.
+- To checkout a remote branch, with tracking:
+
+  ```shell
+  git checkout -t origin/feature
+  ```
+
+- Tell Git which branch to track the first time you push:
+
+  ```shell
+  git push -u origin feature
+  ```
+
+#### Fetch
+
+- Git fetch is important for keeping your local repository up to date with a
+  remote.
+- It pulls down all the changes that happened on the server.
+- But, it doesn't change your local repository!
+
+#### Pull
+
+- Pulling will pull down the changes from the remote repository to your local
+  repository, and merging them with a local branch.
+- Under the hood: `git pull = git fetch && git merge`.
+- If changes happened upstream, git will create a merge commit.
+- Otherwise, it will fast-forward.
+
+#### Push
+
+- Pushing sends your changes to the remote repository.
+- git only allows you to push if your changes won't cause a conflict.
+- Tip: To see commits which haven't been pushed upstream yet, use:
+
+  ```shell
+  git cherry -v
+  ```
+
+#### git pull --rebase
+
+- `git pull --rebase` will fetch, update your local branch to copy the upstream
+  branch, then replay any commits you made via rebase.
+- Bonus: When you open a PR, there will be no unsightly merge commits!
+
+#### git pull vs git pull --rebase
+
+<Figure src="/media/git-pull-vs-git-pull-rebase.png">
+
+`git pull` vs `git pull --rebase`
+
+</Figure>
+
+#### Note: Tags
+
+Git doesn't automatically push local tags to a remote repository.
+
+To push tags:
+
+- `git push <tagname>`
+- `git push --tags`
+
+#### Contributing to Open Source Projects - Pull Requests
+
+Before opening a PR:
+
+- Keep commit history clean and neat. Rebase if needed.
+- Run projects tests on your code.
+- Pull in upstream changes (preferably via rebase to avoid merge commits).
+- Check for a `CONTRIBUTING.md/.txt` in the project root.
+
+After opening a PR:
+
+- Explain your changes throughly in the pull request.
+- Link to any open issues that your pull request might fix.
+- Check back for comments from the maintainers.
+
+#### Advice
+
+- Encourage developers to work on their own forks of a repository.
+- Mistakes are less likely to happen if no one is pushing directly to the
+  "source of truth" for you codebase.
+- You can rebase and force push freely to _your own origin_, as long as no one
+  else is cloning your branch.
+
+#### Pushing/Merging Your Changes Back to a Remote
+
+Rule of thumb:
+
+- Rebase commits on your local feature branch.
+- Merge feature branches back to origin (or upstream).
+
+When accepting a pull request:
+
+- Squash and merge or rebase with care.
+- You'll lose context about the work on the feature branch!
+- It'll make it harder to debug when issues arise in the future.
 
 ## Danger Zone
 
 ### Local and Remote Destructive Operations
 
+#### Local Destructive Operations
+
+`git checkout -- <file>`: If the file is present in the staging area, it'll be
+overwritten.
+
+`git reset --hard`: Will overwrite changes that are staged and in the working
+area.
+
+Unless changes are stashed, there's **_no way_** of getting them back!
+
+**Tip:** use `git stash --include-untracked` to include working area changes in
+your stash.
+
+#### Remote Destructive Operations - Rewriting History
+
+There are many operations that can rewrite history:
+
+- rebase
+- amend
+- reset
+
+If your code is hosted or shared, **never run `git push -f`**.
+
 ### Recover Lost Work
+
+#### Recover Lost Work
+
+Use `ORIG_HEAD`, the commit `HEAD` was pointing to before a:
+
+- reset
+- merge
+
+Checkout for repository copies:
+
+- GitHub
+- Coworker
+
+#### ORIG_HEAD to Undo a Merge
+
+```shell
+git reset --merge ORIG_HEAD
+```
+
+Use `--merge` flag to preserve any uncomitted changes.
+
+#### Using Git Reflog And '@' Syntax
+
+- By default, git keeps commits around for about 2 weeks.
+- If you need to go back in time, and find a commit that's no longer referenced,
+  you can look in the reflog.
+
+The syntax of reflog is differents:
+
+- `HEAD@{2}` means "the value of HEAD 2 moves ago"
 
 ## GitHub
 
 ### GitHub Shortcuts
 
+#### Naviage Like a Pro
+
+- Press <Kbd>?</Kbd> on any page to get a list of shortcuts.
+
+Repositories:
+
+- <Kbd>g</Kbd> <Kbd>c</Kbd>: Go to Code
+- <Kbd>g</Kbd> <Kbd>i</Kbd>: Go to Issues
+- <Kbd>g</Kbd> <Kbd>p</Kbd>: Go to Pull Requests
+- <Kbd>g</Kbd> <Kbd>b</Kbd>: Go to Projects
+- <Kbd>g</Kbd> <Kbd>w</Kbd>: Go to Wiki
+
+Source code browsing:
+
+- <Kbd>t</Kbd>: Activates the file finder
+- <Kbd>l</Kbd>: Jump to line
+- <Kbd>w</Kbd>: Switch branch/tag
+- <Kbd>y</Kbd>: Expand URL to its canonical form
+- <Kbd>i</Kbd>: Show/hide all inline notes
+
 ### Continuous Integration
 
-### Continuous Integration Exercise & Solution
+- Merging smaller commits frequently, instead of waiting until a project is
+  "done" and doing one big merge.
+- This means that features can be released quicker!
+- CI only works well when there are tests that ensure that new commits didn't
+  "break the build".
+- It's even possible to perform deployment at the end of a CI build!
+
+### Travis CI
+
+- Travis CI is free for open source projects!
+- It's easy to specify what commands you need to run tests.
+- It's also easy to test against multiple versions of a language (Python 2 vs
+  Python 3) and even mutliple versions of libraries.
+- Tests run automatically on branches and pull requests.
+
+Getting set up is easy:
+
+1. Go to [travis-ci.org](https://travis-ci.org/), log in with your GitHub
+   account.
+2. Add a `travis.yml` configuration file.
+3. Push to trigger builds.
 
 ## Advanced GitHub
 
 ### GitHub API
 
-### GitHub API Exercise & Solution
+#### GitHub API
+
+- GitHub has incredibly powerful RESTful API.
+- [Libraries](https://docs.github.com/en/rest/overview/libraries)!
+
+#### Making Requests
+
+- Un-authenticated:
+  - Rate limited. 60 requests per hour.
+- Personal token:
+  - Useful for testing, personal projects.
+  - Requests authenticated as user who owns the token.
+- OAuth:
+  - When your application acts on behalf of a user.
+  - The user will log-in via the OAuth flow in your project.
+
+#### Create and Update via API
+
+- GitHub allows you to create via the API as well.
+- It's possible to create and update:
+  - Issues
+  - Pull Requests
+  - New Repositories
+  - Gists
 
 ## Wrapping Up
 

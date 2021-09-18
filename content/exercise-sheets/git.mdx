@@ -83,14 +83,21 @@ tags: []
 
    </Solution>
 
-7. Inspect all references.
+7. Inspect all references and see if you can figure out where these references
+   are pointing to.
 
    <Solution>
 
+   Let's look under the hood at our `HEAD` variable. `HEAD` is just git's
+   pointer to "where you are now," usually referring to the current branch. We
+   can see that right now, it points to our current branch - `master`.
+
+   Now, if we look at our `master` reference, we can see that it points to the
+   latest commit.
+
    ```shell
-   git log --oneline
-   cat .git/refs/heads/master
    cat .git/HEAD
+   cat .git/refs/heads/master
    ```
 
    </Solution>
@@ -113,89 +120,19 @@ tags: []
 
    </Solution>
 
-9. Create a new folder and initialize it as a Git repo.
+9. Open something with `less`, go to the next page and then return to the
+   previous page.
 
    <Solution>
 
-   ```shell
-   git status
-   git identical
-   ```
+   To navigate:
+
+   - <Kbd>F</Kbd>, for next page
+   - <Kbd>B</Kbd>, for previous page
 
    </Solution>
 
-10. Create a file, stage it, and commit it to your new repo.
-
-    <Solution>
-
-    ```shell
-    echo 'Hello World!' > hello.txt
-    git add hello.txt
-    git commit -m "Initial commit"
-    ```
-
-    </Solution>
-
-11. Look at your `.git` folder, using tree if you have it.
-
-    <Solution>
-
-    Using tree, look in your .git/objects folder, you should now see three
-    objects, represented by long SHA1 hashes. These represent the tree, blob,
-    and commit that we created in the last step.
-
-    ```shell
-    tree .git
-    ```
-
-    </Solution>
-
-12. Inspect the objects in your `.git/objects` folder using `git cat-file`. See
-    if you can find the tree, blob, and commit objects for your recent commit.
-
-    <Solution>
-
-    Use:
-
-    ```shell
-    git cat-file -t [sha1]
-    git cat-file -p [sha1]
-    ```
-
-    </Solution>
-
-13. Look at your `.git/HEAD` and `.git/refs/heads/master` files and see if you
-    can figure out where these references are pointing to.
-
-    <Solution>
-
-    Let's look under the hood at our `HEAD` variable. `HEAD` is just git's
-    pointer to "where you are now," usually referring to the current branch. We
-    can see that right now, it points to our current branch - `master`.
-
-    Now, if we look at our `master` reference, we can see that it points to the
-    latest commit.
-
-    ```shell
-    cat .git/HEAD
-    cat .git/refs/heads/master
-    ```
-
-    </Solution>
-
-14. Open something with `less`, go to the next page and then return to the
-    previous page.
-
-    <Solution>
-
-    To navigate:
-
-    - <Kbd>F</Kbd>, for next page
-    - <Kbd>B</Kbd>, for previous page
-
-    </Solution>
-
-15. Search a word in `less`, select the next match and then the previous match.
+10. Search a word in `less`, select the next match and then the previous match.
 
     <Solution>
 
@@ -207,7 +144,7 @@ tags: []
 
     </Solution>
 
-16. Quit less.
+11. Quit less.
 
     <Solution>
 
@@ -216,3 +153,938 @@ tags: []
     - <Kbd>Q</Kbd>, to quit
 
     </Solution>
+
+12. Use a plumbing command to show what's in the staging area:
+
+    <Solution>
+
+    ```shell
+    git ls-files -s
+    ```
+
+    </Solution>
+
+13. Add, delete and rename a file in the staging area.
+
+    <Solution>
+
+    ```shell
+    git add <file>
+    git rm <file>
+    git mv <file>
+    ```
+
+    </Solution>
+
+14. Add changes interactively in hunks in the staging area.
+
+    <Solution>
+
+    ```shell
+    git add -p
+    ```
+
+    </Solution>
+
+15. Stash your current changes.
+
+    <Solution>
+
+    ```shell
+    git stash
+    ```
+
+    </Solution>
+
+16. List your stashes.
+
+    <Solution>
+
+    ```shell
+    git stash list
+    ```
+
+    </Solution>
+
+17. Show the contents of the last stash.
+
+    <Solution>
+
+    ```shell
+    git stash show
+    ```
+
+    </Solution>
+
+18. Show the contents of a specific stash.
+
+    <Solution>
+
+    ```shell
+    git stash show stash@{0}
+    ```
+
+    </Solution>
+
+19. Apply the last stash.
+
+    <Solution>
+
+    ```shell
+    git stash apply
+    ```
+
+    </Solution>
+
+20. Apply a specific stash.
+
+    <Solution>
+
+    ```shell
+    git stash apply stash@{0}
+    ```
+
+    </Solution>
+
+21. Stash your current changes including untracked files.
+
+    <Solution>
+
+    ```shell
+    git stash --include-untracked
+    ```
+
+    </Solution>
+
+22. Stash all files including ignored ones.
+
+    <Solution>
+
+    ```shell
+    git stash --all
+    ```
+
+    </Solution>
+
+23. Stash your changes and name your stash.
+
+    <Solution>
+
+    ```shell
+    git stash save "WIP: making progress on foo"
+    ```
+
+    </Solution>
+
+24. Start a new branch from a stash and remove the stash. Use one command.
+
+    <Solution>
+
+    ```shell
+    git stash branch <branch name>
+    ```
+
+    </Solution>
+
+25. Grab a single file from a stash.
+
+    <Solution>
+
+    ```shell
+    git checkout <stash name> -- <filename>
+    ```
+
+    </Solution>
+
+26. Remove the last stash and apply changes.
+
+    <Solution>
+
+    ```shell
+    git stash pop
+    ```
+
+    </Solution>
+
+27. Remove the last stash.
+
+    <Solution>
+
+    ```shell
+    git stash drop
+    ```
+
+    </Solution>
+
+28. Remove a specific stash.
+
+    <Solution>
+
+    ```shell
+    git stash drop stash@{n}
+    ```
+
+    </Solution>
+
+29. Remove all stashes.
+
+    <Solution>
+
+    ```shell
+    git stash clear
+    ```
+
+    </Solution>
+
+30. Interactively stash your changes in hunks.
+
+    <Solution>
+
+    ```shell
+    git stash -p
+    ```
+
+    </Solution>
+
+31. Stage a change, then unstage it.
+
+    <Solution>
+
+    To unstage:
+
+    ```shell
+    git reset
+    ```
+
+    </Solution>
+
+32. Create a lightweight tag for the commit pointed by HEAD.
+
+    <Solution>
+
+    ```shell
+    git tag tagged-commit
+    ```
+
+    </Solution>
+
+33. Create an annotated tag.
+
+    <Solution>
+
+    ```shell
+    git tag -a v1.0 -m "Version 1.0 of my blog"
+    ```
+
+    </Solution>
+
+34. List all the tags in a repo.
+
+    <Solution>
+
+    ```shell
+    git tag
+    ```
+
+    </Solution>
+
+35. List all the tags in a repo and what they're pointing to.
+
+    <Solution>
+
+    ```shell
+    git show-ref --tags
+    ```
+
+    </Solution>
+
+36. List all the tags pointing at a commit.
+
+    <Solution>
+
+    ```shell
+    git tag --points-at <commit>
+    ```
+
+    </Solution>
+
+37. Display information about a tag.
+
+    <Solution>
+
+    ```shell
+    git show <tag-name>
+    ```
+
+    </Solution>
+
+38. Checkout a specific commit, then create commits on top of that commit.
+    Finally, save your work in a new branch (no dangling commits).
+
+    <Solution>
+
+    To save your work:
+
+    ```shell
+    git branch <new-branch-name> <commit>
+    ```
+
+    </Solution>
+
+39. List all references.
+
+    <Solution>
+
+    ```shell
+    git show-ref
+    ```
+
+    </Solution>
+
+40. Merge a branch to a base branch in which there are no changes. The merge
+    should create a merge commit. Insepct that commit, and log the history in a
+    graph-like view.
+
+    <Solution>
+
+    ```shell
+    git merge new_feature --no-ff
+    git cat-file -p <merge commit>
+    git log --graph
+    ```
+
+    </Solution>
+
+41. Enable Git ReReRe (not globally) and test the functionality.
+
+    <Solution>
+
+    To enable Git ReReRe:
+
+    ```shell
+    git config rerere.enabled true
+    ```
+
+    Use `git rerere diff` to check the resolution strategy recorded.
+
+    </Solution>
+
+42. Use the shortcut which allow to switch to the previous branch.
+
+    <Solution>
+
+    ```shell
+    git checkout -
+    ```
+
+    </Solution>
+
+43. Show the history of commits since yesterday, then since 2 weeks.
+
+    <Solution>
+
+    ```shell
+    git log --since="yesterday"
+    git log --since="2 weeks ago"
+    ```
+
+    </Solution>
+
+44. Show the history of change status of a file.
+
+    <Solution>
+
+    ```shell
+    git log --name-status --follow -- <file>
+    ```
+
+    </Solution>
+
+45. In a Git repository, search all commits of an author containing a given word
+    since a given date.
+
+    <Solution>
+
+    ```shell
+    git log --grep=mail --author=nina --since=2.weeks
+    ```
+
+    </Solution>
+
+46. Log all commits which renamed files and show their diffstat.
+
+    <Solution>
+
+    ```shell
+    git log --diff-filter=R --stat
+    ```
+
+    </Solution>
+
+47. Build the Git graph below. How to access each commit from A?
+
+    <Figure src="/media/referencing-commits.png">Referencing commits.</Figure>
+
+    <Solution>
+
+    - A: `A` or `A^0` or `A~0`.
+    - B: `A^` or `A^1` or `A~` or `A^1`.
+    - C: `A^2`.
+    - D: `A~2` or `A^^`.
+    - E: `A^^2`.
+    - F: `A^^3` or `A^2^`.
+
+    </Solution>
+
+48. Show the contents of a commit (log message and textual diff).
+
+    <Solution>
+
+    ```shell
+    git show <commit>
+    ```
+
+    </Solution>
+
+49. Show the diffstat of a commit.
+
+    <Solution>
+
+    ```shell
+    git show <commit> --stat
+    ```
+
+    </Solution>
+
+50. Look at a file from another commit.
+
+    <Solution>
+
+    ```shell
+    git show <commit>:<file>
+    ```
+
+    </Solution>
+
+51. Check the unstaged changes.
+
+    <Solution>
+
+    ```shell
+    git diff
+    ```
+
+    </Solution>
+
+52. Check the staged changes.
+
+    <Solution>
+
+    ```shell
+    git diff --staged
+    ```
+
+    </Solution>
+
+53. Check the diff between branches.
+
+    <Solution>
+
+    ```shell
+    git diff branch1 branch2
+    git diff branch1..branch2
+    ```
+
+    </Solution>
+
+54. List all branches merged with master.
+
+    <Solution>
+
+    ```shell
+    git branch --merged master
+    ```
+
+    </Solution>
+
+55. List all branches which aren't merged with master yet.
+
+    <Solution>
+
+    ```shell
+    git branch --no-merged master
+    ```
+
+    </Solution>
+
+56. Overwrite a working area file with the staging area version.
+
+    <Solution>
+
+    ```shell
+    git checkout -- <file_path>
+    ```
+
+    </Solution>
+
+57. Overwrite a working area file with the version of an old commit. The change
+    should be staged, and you have to do it all in one command.
+
+    <Solution>
+
+    ```shell
+    git checkout <commit> -- <file_path>
+    ```
+
+    </Solution>
+
+58. Find a commit where a file was deleted, and restore it in the working area.
+    The restored file should be staged, and you have to do it all in one
+    command.
+
+    <Solution>
+
+    ```shell
+    git checkout <deleting_commit>^ -- <file_path>
+    ```
+
+    </Solution>
+
+59. Delete all untracked files (do not delete directories).
+
+    <Solution>
+
+    ```shell
+    git clean -f
+    ```
+
+    </Solution>
+
+60. Delete all untracked files and directories.
+
+    <Solution>
+
+    ```shell
+    git clean -d -f
+    ```
+
+    </Solution>
+
+61. Same but don't apply the deletion, just watch what would be deleted.
+
+    <Solution>
+
+    ```shell
+    git clean -d -f --dry-run
+    ```
+
+    </Solution>
+
+62. Reset from a previous commit by just moving HEAD.
+
+    <Solution>
+
+    ```shell
+    git reset --soft HEAD~
+    ```
+
+    </Solution>
+
+63. Reset from a previous commit by moving HEAD and copying files to the staging
+    area.
+
+    <Solution>
+
+    ```shell
+    git reset --mixed HEAD~
+    git reset HEAD~
+    ```
+
+    </Solution>
+
+64. Reset from a previous commit by moving HEAD and copying files to the staging
+    and working area.
+
+    <Solution>
+
+    ```shell
+    git reset --hard HEAD~
+    ```
+
+    </Solution>
+
+65. Reset a file in the staging area to the version of the last commit.
+
+    <Solution>
+
+    ```shell
+    git reset -- <file>
+    ```
+
+    </Solution>
+
+66. Reset a file in the staging area to the version of a previous commit.
+
+    <Solution>
+
+    ```shell
+    git reset <commit> -- <file>
+    ```
+
+    </Solution>
+
+67. Perform a reset which moves HEAD, then undo that.
+
+    <Solution>
+
+    ```shell
+    git reset ORIG_HEAD
+    ```
+
+    </Solution>
+
+68. Revert a commit.
+
+    <Solution>
+
+    ```shell
+    git revert <commit>
+    ```
+
+    </Solution>
+
+69. Make change to the previous commit using a quick and easy shortcut.
+
+    <Solution>
+
+    ```shell
+    git commit --amend
+    ```
+
+    </Solution>
+
+70. Rebase a branch to begin on the tip of the master branch.
+
+    <Solution>
+
+    ```shell
+    git checkout <branch_to_rebase>
+    git rebase master
+    ```
+
+    </Solution>
+
+71. Perform an interactive rebase and use all the rebase options.
+
+    <Solution>
+
+    ```shell
+    git rebase -i <first-commit>^
+    ```
+
+    The rebase options are:
+
+    - `pick`: keep the commit.
+    - `reword`: keep the commit, just change the message.
+    - `edit`: keep the commit, but stop to edit more than the message.
+    - `squash`: combine the commit with the previous one, then stop to edit the
+      message.
+    - `fixup`: combine the commit with the previous one, but keep the previous
+      commit message.
+    - `exec`: run the command on this line after picking the previous commit.
+    - `drop`: remove the commit (**tip:** if you remove this line, the commit
+      will be dropped too!).
+
+    </Solution>
+
+72. Use an interactive rebase to split a commit.
+
+    <Solution>
+
+    Editing a commit can also split it up into multiple commits!
+
+    1. Start an interactive rebase with `rebase -i`.
+    2. Mark the commit with an `edit`.
+    3. `git reset HEAD^`
+    4. `git add`
+    5. `git commit`
+    6. Repeat 4. and 5. until the working area is clean!
+    7. `git rebase --continue`
+
+    </Solution>
+
+73. Use the _Fixup and Autosquash_ feature of Git.
+
+    <Solution>
+
+    What if we want to amend an arbitrary commit?
+
+    1. `git add` new files.
+    2. `git commit --fixup <commit>`: this creates a new commit, the message
+       starts with "fixup!".
+    3. `git rebase -i --autosquash <commit>^`.
+    4. git will generate the right todos for you! Just save and quit.
+
+    Git will automatically reorder commits, and mark the commit with fixup
+    action.
+
+    </Solution>
+
+74. Configure an interactive rebase to run a command after every commit in the
+    list.
+
+    <Solution>
+
+    ```shell
+    git rebase -i --exec "run-tests" <commit>
+    ```
+
+    </Solution>
+
+75. Abort a rebase.
+
+    <Solution>
+
+    ```shell
+    git rebase --abort
+    ```
+
+    </Solution>
+
+76. Create a backup of your branch, then perform an interactive rebase. The
+    rebase "succeeds" but you messed up, so reset to the backup branch.
+
+    <Solution>
+
+    Before your rebase/ fixup / squash / reorder:
+
+    1. Make a copy of your current branch: `git branch my_branch_backup`.
+    2. If rebase "succeeds" but you messed up...
+
+       ```shell
+       git reset my_branch_backup --hard
+       ```
+
+    3. You're back in business!
+
+    </Solution>
+
+77. Create an organization on GitHub, create a repository inside it and clone
+    the repo. Add some commits, push them, then fork the repo in your personal
+    space. Rename the `origin` remote to `upstream`, and add the new remote (the
+    fork of the repo) as `origin`.
+
+    <Solution>
+
+    ```shell
+    git remote rename origin upstream
+    git remote add origin git@github.com:mhenstell/advanced-git-exercises.git
+    ```
+
+    </Solution>
+
+78. List all remotes.
+
+    <Solution>
+
+    ```shell
+    git remote -v
+    ```
+
+    </Solution>
+
+79. Set up `master` to track `origin/master`.
+
+    <Solution>
+
+    ```shell
+    git checkout master
+    git branch --set-upstream-to origin/master
+    ```
+
+    </Solution>
+
+80. Add commits to `master` in the organization repo, then create a `feature`
+    branch in our forked one. Pull the changes from `upstream/master` and create
+    a merge commit in the feature branch.
+
+    <Solution>
+
+    ```shell
+    git checkout feature
+    git pull upstream master
+    ```
+
+    </Solution>
+
+81. Same but this time, rebase the `feature` branch instead of creating a merge
+    commit. You have to do it all in one command.
+
+    <Solution>
+
+    ```shell
+    git checkout feature
+    git pull --rebase upstream master
+    ```
+
+    </Solution>
+
+82. Push the `feature` branch to `origin`. It should tracks the remote branch.
+
+    <Solution>
+
+    ```shell
+    git push -u origin feature
+    ```
+
+    </Solution>
+
+83. Delete the master branch, then checkout a remote branch with tracking.
+
+    <Solution>
+
+    ```shell
+    git checkout -t upstream/master
+    ```
+
+    </Solution>
+
+84. Add new commits, then list all commits which haven't been pushed upstream
+    yet.
+
+    <Solution>
+
+    ```shell
+    git cherry -v
+    ```
+
+    </Solution>
+
+85. Create tags, push one of them, then push all of them.
+
+    <Solution>
+
+    To push tags:
+
+    - `git push <tagname>`
+    - `git push --tags`
+
+    </Solution>
+
+86. Properly undo a merge.
+
+    <Solution>
+
+    ```shell
+    git reset --merge ORIG_HEAD
+    ```
+
+    </Solution>
+
+87. Perform a rebase and undo it with the help of reflogs. Of course, don't use
+    a backup branch.
+
+    <Solution>
+
+    Use:
+
+    ```shell
+    git reflog
+    ```
+
+    </Solution>
+
+88. Get a list of shortcuts in GitHub (using a shortcut).
+
+    <Solution>
+      Use <Kbd>?</Kbd>.
+    </Solution>
+
+89. What is the shortcut for _Go to Code_ in GitHub?
+
+    <Solution>
+      Use <Kbd>g</Kbd> <Kbd>c</Kbd>.
+    </Solution>
+
+90. What is the shortcut for _Go to Issues_ in GitHub?
+
+    <Solution>
+      Use <Kbd>g</Kbd> <Kbd>i</Kbd>.
+    </Solution>
+
+91. What is the shortcut for _Go to Pull Requests_ in GitHub?
+
+    <Solution>
+      Use <Kbd>g</Kbd> <Kbd>p</Kbd>.
+    </Solution>
+
+92. What is the shortcut for _Go to Projects_ in GitHub?
+
+    <Solution>
+      Use <Kbd>g</Kbd> <Kbd>b</Kbd>.
+    </Solution>
+
+93. What is the shortcut for _Go to Wiki_ in GitHub?
+
+    <Solution>
+      Use <Kbd>?</Kbd>.
+    </Solution>
+
+94. What is the shortcut to activate the file finder in GitHub?
+
+    <Solution>
+      Use <Kbd>g</Kbd> <Kbd>w</Kbd>.
+    </Solution>
+
+95. What is the shortcut for _Jump to line_ in GitHub?
+
+    <Solution>
+      Use <Kbd>l</Kbd>.
+    </Solution>
+
+96. What is the shortcut for _Switch branch/tag_ in GitHub?
+
+    <Solution>
+      Use <Kbd>w</Kbd>.
+    </Solution>
+
+97. What is the shortcut for _Expand URL to its canonical form_ in GitHub?
+
+    <Solution>
+      Use <Kbd>y</Kbd>.
+    </Solution>
+
+98. What is the shortcut for _Show/hide all inline notes_ in GitHub?
+
+    <Solution>
+      Use <Kbd>i</Kbd>.
+    </Solution>
+
+99. Get information about your user profile in GitHub using cURL.
+
+    <Solution>
+
+    ```shell
+    curl https://api.github.com/users/SoheilSalmani
+    ```
+
+    </Solution>
+
+100. Create a personal access token, then use it to make a cURL request.
+
+     <Solution>
+
+     1. Visit <Scr>Settings | Developer settings | Personal access tokens</Scr>.
+     2. Click <Scr>Generate new token</Scr>.
+     3. Enter a token description.
+     4. Select the "repo" scope, leave all others unchecked.
+     5. Store the access code in a safe place, you won't be able to retrieve it
+        again. If you lose it, you'll have to generate a new one.
+
+     ```shell
+     curl -i -H 'Authorization: token <YOUR_TOKEN>' https://api.github.com/user
+     ```
+
+     </Solution>
+
+Don't forget to delete the GitHub organization, repositories and tokens.

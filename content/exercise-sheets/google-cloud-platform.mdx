@@ -173,3 +173,248 @@ tags: []
    6. Click on <Scr>Execute</Scr>.
 
    </Solution>
+
+4. Display a detailed view of your current configuration and environment.
+
+   <Solution>
+
+   ```shell
+   gcloud info
+   ```
+
+   </Solution>
+
+5. List all Compute Engine instances and log all HTTP server requests and
+   responses.
+
+   <Solution>
+
+   ```shell
+   gcloud compute instances list --log-http
+   ```
+
+   </Solution>
+
+6. List all available topics that can been seen in the gcloud CLI.
+
+   <Solution>
+
+   ```shell
+   gcloud topic --help
+   ```
+
+   </Solution>
+
+7. Run a command to get information about the `--filter` flag.
+
+   <Solution>
+
+   ```shell
+   gcloud topic filter
+   ```
+
+   </Solution>
+
+8. Initialize the Google Cloud SDK.
+
+   <Solution>
+
+   ```shell
+   gcloud init
+   ```
+
+   </Solution>
+
+9. Authenticate using a new Google user credentials (without launching the
+   browser).
+
+   <Solution>
+
+   ```shell
+   gcloud auth login --no-launch-browser
+   ```
+
+   </Solution>
+
+10. Go to the directory where authentication tokens are stored.
+
+    <Solution>
+
+    ```shell
+    cd $HOME/.config/gcloud
+    ```
+
+    </Solution>
+
+11. Assume the identity of a service account to take actions on that service
+    account's behalf.
+
+    <Solution>
+
+    ```shell
+    gcloud auth activate-service-account --key-file=</path/to/key/file>
+    ```
+
+    </Solution>
+
+12. Show available accounts on your machine.
+
+    <Solution>
+
+    ```shell
+    gcloud auth list
+    ```
+
+    </Solution>
+
+13. Set the application default credentials to your service account's key file.
+
+    <Solution>
+
+    ```shell
+    export GOOGLE_APPLICATION_CREDENTIALS=</path/to/key/file>
+    ```
+
+    </Solution>
+
+14. Use your own user credentials as application default credentials. Then,
+    remove it.
+
+    <Solution>
+
+    ```shell
+    gcloud auth application-default login
+    gcloud auth application-default revoke
+    ```
+
+    </Solution>
+
+15. List the SDK components.
+
+    <Solution>
+
+    ```shell
+    gcloud components list
+    ```
+
+    </Solution>
+
+16. Install and remove SDK components.
+
+    <Solution>
+
+    ```shell
+    gcloud components <install|remove> <COMPONENT_ID>
+    ```
+
+    </Solution>
+
+17. Update all of your installed components to the latest version.
+
+    <Solution>
+
+    ```shell
+    gcloud components update
+    ```
+
+    </Solution>
+
+18. Update Cloud SDK to the version `1.8.1`.
+
+    <Solution>
+
+    ```shell
+    gcloud components update --version 1.8.1
+    ```
+
+    </Solution>
+
+19. Reinstall all components.
+
+    <Solution>
+
+    ```shell
+    gcloud components reinstall
+    ```
+
+    </Solution>
+
+20. Install the `alpha` and `beta` components within gcloud.
+
+    <Solution>
+
+    ```shell
+    gcloud components install <alpha|beta>
+    ```
+
+    </Solution>
+
+21. Get the current values of all configuration properties.
+
+    <Solution>
+
+    ```shell
+    gcloud config list --all
+    ```
+
+    </Solution>
+
+22. Read a configuration property.
+
+    <Solution>
+
+    ```shell
+    gcloud config get-value <property>
+    ```
+
+    </Solution>
+
+23. Change a configuration property.
+
+    <Solution>
+
+    ```shell
+    gcloud config set <property> <value>
+    ```
+
+    </Solution>
+
+24. Remove a configuration property.
+
+    <Solution>
+
+    ```shell
+    gcloud config unset <property>
+    ```
+
+    </Solution>
+
+25. Create multiple configurations.
+
+    <Solution>
+
+    ```shell
+    gcloud config configurations create <name>
+    ```
+
+    </Solution>
+
+26. Switch between to an other configuration.
+
+    <Solution>
+
+    ```shell
+    gcloud config configurations activate <configuration>
+    ```
+
+    </Solution>
+
+27. Modify a configuration property for the entire Cloud SDK installation.
+
+    <Solution>
+
+    ```shell
+    gcloud config set ai/region us-central1 --installation
+    ```
+
+    </Solution>

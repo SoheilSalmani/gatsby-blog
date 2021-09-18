@@ -23,6 +23,166 @@ tags: ["Docker", "DevOps"]
 
    </Solution>
 
+2. Using containers, run an NGINX server (`docker:latest`), a mailer
+   (`dockerinaction/ch2_mailer`) and a monitoring agent
+   (`dockerincation/ch2_agent`) (attach your terminal). Using Docker, configure
+   these three containers so that a email is sent when the NGINX server is down.
+
+   <Solution>
+
+   ```shell
+   docker run --detach --name web nginx:latest
+   docker run -d --name mailer dockerinaction/ch2_mailer
+   docker run -it --name agent --link web:insideweb --link mailer:insidemailer dockerinaction/ch2_agent
+   ```
+
+   ```shell
+   wget -O - http://web:80/
+   ```
+
+   ```shell
+   docker ps
+   ```
+
+   </Solution>
+
+3. Detach your terminal from the monitoring agent container.
+
+   <Solution>
+
+   You can do so by holding down the <Kbd>Ctrl + P</Kbd> and then <Kbd>Q</Kbd>.
+   This will work only when you’ve used the `--tty` option.
+
+   </Solution>
+
+4. Restart all containers and examine the logs for each container. Follow the
+   logs of the mailer container.
+
+   <Solution>
+
+   ```shell
+   docker restart web
+   docker restart mailer
+   docker restart agent
+   ```
+
+   Examine the logs for each container:
+
+   ```shell
+   docker logs web
+   docker logs agent
+   docker logs --follow mailer
+   ```
+
+   </Solution>
+
+5. Stop the NGINX server.
+
+   <Solution>
+
+   ```shell
+   docker stop web
+   ```
+
+   </Solution>
+
+6. List all processes running on the computer inside a container.
+
+   <Solution>
+
+   ```shell
+   docker run --pid host busybox:1.29 ps
+   ```
+
+   </Solution>
+
+7. Rename a container.
+
+   <Solution>
+
+   ```shell
+   docker rename webid webid-old
+   ```
+
+   </Solution>
+
+8. Create a container without starting it. Store the container ID in a `CID`
+   variable.
+
+   <Solution>
+
+   ```shell
+   CID=$(docker create nginx:latest)
+   echo $CID
+   ```
+
+   </Solution>
+
+9. Write a command which creates a container and writes the ID to a known file.
+
+   <Solution>
+
+   ```shell
+   docker create --cidfile /tmp/web.cid nginx
+   cat /tmp/web.cid
+   ```
+
+   </Solution>
+
+10. Get the truncated ID of a container using `docker ps`. Store the container
+    ID in a `CID` variable.
+
+    <Solution>
+
+    ```shell
+    CID=$(docker ps --latest --quiet)
+    echo $CID
+
+    CID=%(docker ps -l -q)
+    echo $CID
+    ```
+
+    </Solution>
+
+11. Same but this time the full container ID.
+
+    <Solution>
+
+    ```shell
+    CID=$(docker ps --latest --quiet --no-trunc)
+    echo $CID
+    ```
+
+    </Solution>
+
+12. Use a script to run and configure containers accordingly as what you've done
+    at _Exercise 2_.
+
+    <Solution>
+
+    ```shell
+    MAILER_CID=$(docker run -d dockerinaction/ch2_mailer)
+    WEB_CID=$(docker create nginx)
+    AGENT_CID=$(docker create --link $WEB_CID:insideweb \
+      --link $MAILER_CID:insidemailer \
+      dockerinaction/ch2_agent)
+    docker start $WEB_CID
+    docker start $AGENT_CID
+    ```
+
+    Or:
+
+    ```shell
+    MAILER_CID=$(docker run -d dockerinaction/ch2_mailer)
+    WEB_CID=$(docker run -d nginx)
+    AGENT_CID=$(docker run -d \
+        --link $WEB_CID:insideweb \
+        --link $MAILER_CID:insidemailer \
+        dockerinaction/ch2_agent)
+    ```
+
+    </Solution>
+
 ## Kubernetes in Action
 
 1. Create a trivial Node.js app, then build a container image of your app using

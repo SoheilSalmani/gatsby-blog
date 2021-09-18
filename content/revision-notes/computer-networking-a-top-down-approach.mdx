@@ -1,7 +1,7 @@
 ---
 title: "Computer Networking: A Top-Down Approach"
 resourceId: "9780135928738"
-stoppedAt: "Describe how cable Internet access works?"
+stoppedAt: "Physical Media"
 ---
 
 ## Computer Networks and the Internet
@@ -227,6 +227,10 @@ router) to the ONT and access the Internet via this home router. In the PON
 architecture, all packets sent from OLT to the splitter are replicated at the
 splitter (similar to a cable head end).
 
+<Figure src="/media/ftth-internet-access.png">
+  FTTH Internet access using the PON distribution architecture.
+</Figure>
+
 In addition to DSL, Cable, and FTTH, **5G fixed wireless** is beginning to be
 deployed. 5G fixed wireless not only promises high-speed residential access, but
 will do so without installing costly and failure-prone cabling from the telco’s
@@ -235,11 +239,51 @@ sent wirelessly from a provider’s base station to the a modem in the home. A
 WiFi wireless router is connected to the modem (possibly bundled together),
 similar to how a WiFi wireless router is connected to a cable or DSL modem.
 
-<Figure src="/media/ftth-internet-access.png">
-  FTTH Internet access using the PON distribution architecture.
+##### Access in the Enterprise (and the Home): Ethernet and WiFi
+
+On corporate and university campuses, and increasingly in home settings, a local
+area network (LAN) is used to connect an end system to the edge router. Although
+there are many types of LAN technologies, Ethernet is by far the most prevalent
+access technology in corporate, university, and home networks.
+
+<Figure src="/media/ethernet-internet-access.png">
+  Ethernet Internet access.
 </Figure>
 
-##### Access in the Enterprise (and the Home): Ethernet and WiFi
+Ethernet users use twisted-pair copper wire to connect to an Ethernet switch.
+The Ethernet switch, or a network of such interconnected switches, is then in
+turn connected into the larger Internet.
+
+Increasingly, however, people are accessing the Internet wirelessly from
+laptops, smartphones, tablets, and other “things”. In a wireless LAN setting,
+wireless users transmit/receive packets to/from an access point that is
+connected into the enterprise’s network (most likely using wired Ethernet),
+which in turn is connected to the wired Internet. A wireless LAN user must
+typically be within a few tens of meters of the access point. Wireless LAN
+access based on IEEE 802.11 technology, more colloquially known as WiFi.
+
+Even though Ethernet and WiFi access networks were initially deployed in
+enterprise (corporate, university) settings, they are also common components of
+home networks. Many homes combine broadband residential access (that is, cable
+modems or DSL) with these inexpensive wireless LAN technologies to create
+powerful home networks.
+
+<Figure src="/media/typical-home-network.png">A typical home network.</Figure>
+
+This home network consists of a roaming laptop, multiple Internet-connected home
+appliances, as well as a wired PC; a base station (the wireless access point),
+which communicates with the wireless PC and other wireless devices in the home;
+and a home router that connects the wireless access point, and any other wired
+home devices, to the Internet.
+
+##### Wide-Area Wireless Access: 3G and LTE 4G and 5G
+
+Mobile devices employ the same wireless infrastructure used for cellular
+telephony to send/receive packets through a base station that is operated by the
+cellular network provider. Unlike WiFi, a user need only be within a few tens of
+kilometers (as opposed to a few tens of meters) of the base station.
+
+#### Physical Media
 
 ## Application Layer
 

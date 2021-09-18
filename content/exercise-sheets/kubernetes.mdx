@@ -74,3 +74,276 @@ tags: []
    </Figure>
 
    </Solution>
+
+5. Install Minikube and run a local single-node Kubernetes cluster.
+
+   <Solution>
+
+   ```shell
+   minikube start
+   ```
+
+   </Solution>
+
+6. Check to see the cluster is up and `kubectl` can talk to it.
+
+   <Solution>
+
+   ```shell
+   kubectl cluster-info
+   ```
+
+   </Solution>
+
+7. Log into the Minikube VM and explore it from the inside.
+
+   <Solution>
+
+   ```shell
+   minikube ssh
+   ```
+
+   </Solution>
+
+8. Set up a Google Cloud project and download the necessary client binaries.
+
+   <Solution>
+
+   1. Enable the Kubernetes Engine API.
+   2. Download and install Google Cloud SDK.
+   3. Install the `kubectl` command-line tool with
+      `gcloud components install kubectl`.
+
+   </Solution>
+
+9. Create a Kubernetes cluster with three nodes.
+
+   <Solution>
+
+   ```shell
+   gcloud container clusters create kubia --num-nodes 3 --machine-type f1-micro
+   ```
+
+   </Solution>
+
+10. Check if the cluster is up by listing cluster nodes.
+
+    <Solution>
+
+    ```shell
+    kubectl get nodes
+    ```
+
+    </Solution>
+
+11. Log into one of the nodes.
+
+    <Solution>
+
+    ```shell
+    gcloud compute ssh <node-name>
+    ```
+
+    </Solution>
+
+12. Retrieve additional details on a node.
+
+    <Solution>
+
+    ```shell
+    kubectl describe node gke-kubia-85f6-node-0rrx
+    ```
+
+    </Solution>
+
+13. Retreive additional details on all nodes.
+
+    <Solution>
+
+    ```shell
+    kubectl get nodes
+    ```
+
+    </Solution>
+
+14. Create an alias named `k` for `kubectl`.
+
+    <Solution>
+
+    ```bashrc fp=/home/<user>/.bashrc
+    alias k=kubectl
+    ```
+
+    </Solution>
+
+15. Using GKE, deploy a trivial Node.js app using a ReplicationController (use
+    one pod).
+
+    <Solution>
+
+    ```yaml nu fp=kubia-rc.yaml
+    apiVersion: v1
+    kind: ReplicationController
+    metadata:
+      name: kubia
+      labels:
+        run: kubia
+    spec:
+      replicas: 1
+      selector:
+        run: kubia
+      template:
+        metadata:
+          labels:
+            run: kubia
+        spec:
+          containers:
+            - name: kubia
+              image: luksa/kubia:latest
+              ports:
+                - containerPort: 8080
+                  protocol: TCP
+    ```
+
+    ```shell
+    kubectl create -f kubia-rc.yaml
+    ```
+
+    </Solution>
+
+16. List all pods.
+
+    <Solution>
+
+    ```shell
+    kubectl get pods
+    ```
+
+    </Solution>
+
+17. Get more information about the pod.
+
+    <Solution>
+
+    ```shell
+    kubectl describe pods <pod-name>
+    ```
+
+    </Solution>
+
+18. Expose the ReplicationController you created earlier.
+
+    <Solution>
+
+    ```shell
+    kubectl expose rc kubia --type=LoadBalancer --name kubia-http
+    ```
+
+    </Solution>
+
+19. List all services.
+
+    <Solution>
+
+    ```shell
+    kubectl get services
+    ```
+
+    </Solution>
+
+20. Deploy the same cluster locally using Minikube.
+
+    <Solution>
+
+    Run all preceding commands. Then:
+
+    ```shell
+    minikube service kubia-http
+    ```
+
+    </Solution>
+
+21. List all ReplicationControllers.
+
+    <Solution>
+
+    ```shell
+    kubectl get replicationcontrollers
+    kubectl get rc
+    ```
+
+    </Solution>
+
+22. Increase the desired replicas to three.
+
+    <Solution>
+
+    ```shell
+    kubectl scale rc kubia --replicas=3
+    ```
+
+    </Solution>
+
+23. Hit the service multiple times.
+
+    <Solution>
+
+    ```shell
+    curl 104.155.74.57:8080
+    curl 104.155.74.57:8080
+    curl 104.155.74.57:8080
+    curl 104.155.74.57:8080
+    ```
+
+    </Solution>
+
+24. Display the pod IP and the pod's node when listing pods
+
+    <Solution>
+
+    ```shell
+    kubectl get pods -o wide
+    ```
+
+    </Solution>
+
+25. Inspect other details of a pod.
+
+    <Solution>
+
+    ```shell
+    kubectl describe pod kubia-hczji
+    ```
+
+    </Solution>
+
+26. Access the dashboard using GKE.
+
+    <Solution>
+
+    If you’re using Google Kubernetes Engine, you can find out the URL of the
+    dashboard through the `kubectl cluster-info` command:
+
+    ```shell
+    kubectl cluster-info | grep dashboard
+    ```
+
+    If you open this URL in a browser, you’re presented with a username and
+    password prompt. You’ll find the username and password by running the
+    following command:
+
+    ```shell
+    gcloud container clusters describe kubia | grep -E "(username|password):"
+    ```
+
+    </Solution>
+
+27. Access the dashboard using Minikube.
+
+    <Solution>
+
+    ```shell
+    minikube dashboard
+    ```
+
+    </Solution>

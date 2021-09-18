@@ -7,6 +7,7 @@ import theme from "prism-react-renderer/themes/nightOwl"
 import React from "react"
 ;(typeof global !== "undefined" ? global : window).Prism = Prism
 
+require("prismjs/components/prism-bash")
 require("prismjs/components/prism-csharp")
 require("prismjs/components/prism-docker")
 require("prismjs/components/prism-groovy")

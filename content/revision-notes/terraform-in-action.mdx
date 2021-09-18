@@ -1,12 +1,85 @@
 ---
 title: Terraform in Action
 resourceId: "9781617296895"
-stoppedAt: TODO
+stoppedAt: “Hello Terraform!”
 ---
 
 ## Terraform bootcamp
 
 ### Getting started with Terraform
+
+Terraform is a deployment technology for anyone who wants to provision and
+manage their _infrastructure as code_ (IaC). _Infrastructure_ refers primarily
+to cloud-based infrastructure, although anything that could be controlled
+through an application programming interface (API) technically qualifies as
+infrastructure. _Infrastructure as code_ is the process of managing and
+provisioning infrastructure through machine-readable definition files. We use
+IaC to automate processes that used to be done manually.
+
+When we talk about _provisioning_, we mean the act of deploying infrastructure,
+as opposed to _configuration management_, which deals mostly with application
+delivery, particularly on virtual machines (VMs). Configuration management (CM)
+tools like Ansible, Puppet, SaltStack, and Chef are extremely popular and have
+been around for many years. Terraform does not supplant these tools, at least
+not entirely, because infrastructure provisioning and configuration management
+are inherently different problems. That being said, Terraform does perform many
+of the functions once reserved by CM tools, and many companies find they do not
+need CM tools after adopting Terraform.
+
+The basic principle of Terraform is that it allows you to write human-readable
+configuration code to define your IaC. With configuration code, you can deploy
+repeatable, ephemeral, consistent environments to vendors on the public,
+private, and hybrid clouds.
+
+<Figure src="/media/terraform-deploy-infrastructure.png">
+  Terraform can deploy infrastructure to any cloud or combination of clouds.
+</Figure>
+
+#### What makes Terraform so great?
+
+Six key characteristics make Terraform unique and give it a competitive
+advantage:
+
+- _Provisioning tool_—Deploys infrastructure, not just applications.
+- _Easy to use_—For all of us non-geniuses.
+- _Free and open source_—Who doesn’t like free?
+- _Declarative_—Say what you want, not how to do it.
+- _Cloud-agnostic_—Deploy to any cloud using the same tool.
+- _Expressive and extendable_—You aren’t limited by the language.
+
+##### Easy to use
+
+The main reason Terraform is so easy to use is that the code is written in a
+domainspecific configuration language called _HashiCorp Configuration Language_
+(HCL).
+
+HCL is fully compatible with JSON, which means HCL can be converted 1:1 to JSON
+and vice versa. This makes it easy to interoperate with systems outside of
+Terraform or generate configuration code on the fly.
+
+##### Declarative programming
+
+Declarative programming means you express the logic of a computation (the
+_what_) without describing the control flow (the _how_). Instead of writing
+step-by-step instructions, you describe what you want.
+
+Declarative programming is in contrast to imperative (or procedural)
+programming. Imperative programming languages use conditional branching, loops,
+and expressions to control system flow, save state, and execute commands.
+
+**Note:** Declarative programming cares about the destination, not the journey.
+Imperative programming cares about the journey, not the destination.
+
+<Figure src="/media/terraform-multiple-clouds.png">
+  Deploying to multiple clouds concurrently with Terraform.
+</Figure>
+
+Terraform integrates with different clouds through Terraform _providers_.
+Providers are plugins for Terraform that are designed to interface with external
+APIs. Providers are written in golang and distributed as binaries on the
+Terraform Registry.
+
+#### “Hello Terraform!”
 
 ### Life cycle of a Terraform resource
 

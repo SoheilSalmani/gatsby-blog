@@ -1,7 +1,7 @@
 ---
 title: Data Pipelines with Apache Airflow
 resourceId: "9781617296901"
-stoppedAt: Best practices for designing tasks
+stoppedAt: Hooking up other systems
 ---
 
 ## Getting started
@@ -882,13 +882,464 @@ we have already loaded these earlier data partitions as part of our past runs.
 
 #### Best practices for designing tasks
 
+##### Atomicity
+
+The term _atomicity_ is frequently used in database systems, where an atomic
+transaction is considered an indivisible and irreducible series of database
+operations such that either all occur or nothing occurs. Similarly, in Airflow,
+tasks should be defined so that they either succeed and produce some proper
+result or fail in a manner that does not affect the state of the system.
+
+##### Idempotency
+
+Tasks are said to be idempotent if calling the same task multiple times with the
+same inputs has no additional effect.
+
+```python
+fetch_events = BashOperator(
+    task_id="fetch_events",
+    bash_command=(
+        "mkdir -p /data/events && "
+        "curl -o /data/events/{{ds}}.json "
+        "http://events_api:5000/events?"
+        "start_date={{ds}}&"
+        "end_date={{next_ds}}"
+    ),
+    dag=dag,
+)
+```
+
+Rerunning this task for a given date would result in the task fetching the same
+set of events as its previous execution (assuming the date is within our 30-day
+window), and overwriting the existing JSON file in the /data/events folder,
+producing the same result. As such, this implementation of the fetch events task
+is clearly idempotent.
+
 ### Templating tasks using the Airflow context
 
 #### Inspecting data for processing with Airflow
 
+##### Determining how to load incremental data
+
+<Figure src="/media/downloading-and-inspecting-pageviews.png">
+  Downloading and inspecting Wikimedia pageviews data.
+</Figure>
+
+We see the URLs follow a fixed pattern, which we can use when downloading the
+data in batch fashion.
+
+<Figure src="/media/simple-analysis-pageviews.png">
+  First simple analysis on Wikimedia pageviews data.
+</Figure>
+
 #### Task context and Jinja templating
 
+##### Templating operator arguments
+
+```python nu
+import airflow.utils.dates
+from airflow import DAG
+from airflow.operators.bash import BashOperator
+
+dag = DAG(
+    dag_id="chapter4_stocksense_bashoperator",
+    start_date=airflow.utils.dates.days_ago(3),
+    schedule_interval="@hourly",
+)
+get_data = BashOperator(
+    task_id="get_data",
+    bash_command=(
+        "curl -o /tmp/wikipageviews.gz "
+        "https://dumps.wikimedia.org/other/pageviews/"
+        "{{ execution_date.year }}/"
+        "{{ execution_date.year }}-"
+        "{{ '{:02}'.format(execution_date.month) }}/"
+        "pageviews-{{ execution_date.year }}"
+        "{{ '{:02}'.format(execution_date.month) }}"
+        "{{ '{:02}'.format(execution_date.day) }}-"
+        "{{ '{:02}'.format(execution_date.hour) }}0000.gz"
+    ),
+    dag=dag,
+)
+```
+
+Jinja is a templating engine, which replaces variables and/or expressions in a
+templated string at runtime. Templating is used when you, as a programmer, don’t
+know the value of something at the time of writing, but do know the value of
+something at runtime.
+
+In Airflow, you have a number of variables available at runtime from the task
+context. One of these variables is `execution_date`. Airflow uses the Pendulum
+library for datetimes, and `execution_date` is such a Pendulum datetime object.
+It is a drop-in replacement for native Python datetime, so all methods that can
+be applied to Python can also be applied to Pendulum.
+
+##### What is available for templating?
+
+```python nu
+import airflow.utils.dates
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+
+dag = DAG(
+    dag_id="chapter4_print_context",
+    start_date=airflow.utils.dates.days_ago(3),
+    schedule_interval="@daily",
+)
+
+def _print_context(**kwargs):
+    print(kwargs)
+
+print_context = PythonOperator(
+    task_id="print_context",
+    python_callable=_print_context,
+    dag=dag,
+)
+```
+
+All variables are captured in `**kwargs` and passed to the `print()` function.
+All these variables are available at runtime.
+
+All task context variables:
+
+- `conf`: Provides access to Airflow configuration.
+- `dag`: The current DAG object.
+- `dag_run`: The current `DagRun` object.
+- `ds`: `execution_date` formatted as `%Y-%m-%d`.
+- `ds_nodash`: `execution_date` formatted as `%Y%m%d`.
+- `execution_date`: The start datetime of the task's interval.
+- `inlets`: Shorthand for `task.inlets`, a feature to track input data sources
+  for data lineage.
+- `macros`: `airflow.macros` module.
+- `next_ds`: `execution_date` of the next interval (= end of current interval)
+  formatted as `%Y-%m-%d`.
+- `next_ds_nodash`: `execution_date` of the next interval (= end of current
+  interval) formatted as `%Y%m%d`.
+- `next_execution_date`: The start datetime of the task’s next interval (= end
+  of current interval).
+- `outlets`: Shorthand for `task.outlets`, a feature to track output data
+  sources for data lineage.
+- `params`: User-provided variables to the task context.
+- `prev_ds`: `execution_date` of the previous interval formatted as `%Y-%m-%d`.
+- `prev_ds_nodash`: `execution_date` of the previous interval formatted as
+  `%Y%m%d`.
+- `prev_execution_date`: The start datetime of the task's previous interval.
+- `prev_execution_date_success`: Start datetime of the last successfully
+  completed run of the same task (only in past).
+- `prev_start_date_success`: Date and time on which the last successful run of
+  the same task (only in past) was started.
+- `run_id`: The `DagRun`’s `run_id` (a key typically composed of a prefix +
+  datetime).
+- `task`: The current operator.
+- `task_instance`: The current `TaskInstance` object.
+- `task_instance_key_str`: A unique identifier for the current `TaskInstance`
+  (`{dag_id}__{task_id}__{ds_nodash}`).
+- `templates_dict`: User-provided variables to the task context.
+- `test_mode`: Whether Airflow is running in test mode (configuration property).
+- `ti`: The current `TaskInstance` object, same as `task_instance`.
+- `tomorrow_ds`: `ds` plus one day
+- `tomorrow_ds_nodash`: `ds_nodash` plus one day
+- `ts`: `execution_date` formatted according to ISO8601 format.
+- `ts_nodash`: `execution_date` formatted as `%Y%m%dT%H%M%S`
+- `ts_nodash_with_tz`: `ts_nodash` with time zone information.
+- `var`: Helpers objects for dealing with Airflow variables.
+- `yesterday_ds`: `ds` minus one day.
+- `yesterday_ds_nodash`: `ds_nodash` minus one day.
+
+##### Templating the PythonOperator
+
+With the `BashOperator` (and all other operators in Airflow), you provide a
+string to the `bash_command` argument (or whatever the argument is named in
+other operators), which is automatically templated at runtime. The
+`PythonOperator` is an exception to this standard, because it doesn’t take
+arguments that can be templated with the runtime context, but instead a
+`python_callable` argument in which the runtime context can be applied.
+
+Since it is a function, and not a string as with all other operators, the code
+within the function cannot be automatically templated.
+
+**Note:** In Python, any object implementing `__call__()` is considered a
+callable (e.g., functions/methods).
+
+```python nu
+from urllib import request
+
+import airflow
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+
+dag = DAG(
+    dag_id="stocksense",
+    start_date=airflow.utils.dates.days_ago(1),
+    schedule_interval="@hourly",
+)
+
+def _get_data(execution_date):
+    year, month, day, hour, *_ = execution_date.timetuple()
+    url = (
+        "https://dumps.wikimedia.org/other/pageviews/"
+        f"{year}/{year}-{month:0>2}/"
+        f”pageviews-{year}{month:0>2}{day:0>2}-{hour:0>2}0000.gz"
+    )
+    output_path = "/tmp/wikipageviews.gz"
+    request.urlretrieve(url, output_path)
+
+get_data = PythonOperator(
+    task_id="get_data",
+    python_callable=_get_data,
+    dag=dag,
+)
+```
+
+In Airflow 2, the `PythonOperator` determines which context variables must be
+passed along to your callable by inferring these from the callable argument
+names.
+
+```python hl=1..3
+def _print_context(**context):
+    start = context["execution_date"]
+    end = context["next_execution_date"]
+    print(f"Start: {start}, end: {end}")
+
+print_context = PythonOperator(
+    task_id="print_context",
+    python_callable=_print_context,
+    dag=dag,
+)
+```
+
+```python
+def _get_data(execution_date, **context):
+  year, month, day, hour, *_ = execution_date.timetuple()
+  # ...
+```
+
+The end result with this example is that a keyword with the name
+`execution_date` is passed along to the `execution_date` argument and all other
+variables are passed along to `**context` since they are not explicitly expected
+in the function signature. Your code will be more self-explanatory and tools
+such as linters and type hinting will benefit by the explicit argument
+definition.
+
+##### Providing variables to the PythonOperator
+
+```python
+def _get_data(output_path, **context):
+  year, month, day, hour, *_ = context["execution_date"].timetuple()
+  url = (
+    "https://dumps.wikimedia.org/other/pageviews/"
+    f"{year}/{year}-{month:0>2}/pageviews-{year}{month:0>2}{day:0>2}-{hour:0>2}0000.gz"
+  )
+  request.urlretrieve(url, output_path)
+```
+
+```python hl=4
+get_data = PythonOperator(
+    task_id="get_data",
+    python_callable=_get_data,
+    op_args=["/tmp/wikipageviews.gz"],
+    dag=dag,
+)
+```
+
+```python hl=4
+get_data = PythonOperator(
+    task_id="get_data",
+    python_callable=_get_data,
+    op_kwargs={"output_path": "/tmp/wikipageviews.gz"}
+    dag=dag,
+)
+```
+
+Providing templated strings as input for the callable function:
+
+```python
+def _get_data(year, month, day, hour, output_path, **_):
+    url = (
+    "https://dumps.wikimedia.org/other/pageviews/"
+    f"{year}/{year}-{month:0>2}/”
+    f"pageviews-{year}{month:0>2}{day:0>2}-{hour:0>2}0000.gz"
+    )
+    request.urlretrieve(url, output_path)
+
+get_data = PythonOperator(
+    task_id="get_data",
+    python_callable=_get_data,
+    op_kwargs={
+        "year": "{{ execution_date.year }}",
+        "month": "{{ execution_date.month }}",
+        "day": "{{ execution_date.day }}",
+        "hour": "{{ execution_date.hour }}",
+        "output_path": "/tmp/wikipageviews.gz",
+    },
+    dag=dag,
+)
+```
+
+##### Inspecting templated arguments
+
+You can inspect the templated argument values after running a task by selecting
+it in either the graph or tree view and clicking the <Scr>Rendered
+Template</Scr> button.
+
+This view is visible per task instance. Consequently, a task must be scheduled
+by Airflow before being able to inspect the rendered attributes. The Airflow
+Command Line Interface (CLI) allows us to render templated values for any given
+datetime.
+
+```shell
+airflow tasks render stocksense get_data 2019-07-19T00:00:00
+```
+
+```shell
+airflow tasks render [dag id] [task id] [desired execution date]
+```
+
 #### Hooking up other systems
+
+```python
+extract_gz = BashOperator(
+    task_id="extract_gz",
+    bash_command="gunzip --force /tmp/wikipageviews.gz",
+    dag=dag,
+)
+
+def _fetch_pageviews(pagenames):
+  result = dict.fromkeys(pagenames, 0)
+  with open(f"/tmp/wikipageviews", "r") as f:
+    for line in f:
+      domain_code, page_title, view_counts, _ = line.split(" ")
+      if domain_code == "en" and page_title in pagenames:
+        result[page_title] = view_counts
+  print(result)
+
+fetch_pageviews = PythonOperator(
+  task_id="fetch_pageviews",
+  python_callable=_fetch_pageviews,
+  op_kwargs={
+    "pagenames:": {
+      "Google",
+      "Amazon",
+      "Apple",
+      "Microsoft",
+      "Facebook",
+    }
+  },
+  dag=dag,
+)
+```
+
+```sql nu
+CREATE TABLE pageview_counts (
+    pagename VARCHAR(50) NOT NULL,
+    pageviewcount INT NOT NULL,
+    datetime TIMESTAMP NOT NULL
+);
+```
+
+An example `INSERT` query would look as follows:
+
+```sql
+INSERT INTO pageview_counts VALUES ('Google', 333, '2019-07-17T00:00:00');
+```
+
+The `PythonOperator` currently prints the results but does not write to the
+database, so we’ll need a second task to write the results. In Airflow, there
+are two ways of passing data between tasks:
+
+- By using the Airflow metastore to write and read results between tasks. This
+  is called XCom.
+- By writing results to and from a persistent location (e.g., disk or database)
+  between tasks.
+
+Airflow tasks run independently of each other, possibly on different physical
+machines depending on your setup, and therefore cannot share objects in memory.
+Data between tasks must therefore be persisted elsewhere, where it resides after
+a task finishes and can be read by another task.
+
+Airflow provides one mechanism out of the box called XCom, which allows storing
+and later reading any _picklable_ object in the Airflow metastore. Pickle is
+Python’s serialization protocol, and serialization means converting an object in
+memory to a format that can be stored on disk to be read again later, possibly
+by another process. Using XComs for storing pickled objects is only suitable for
+smaller objects. Since Airflow’s metastore (typically a MySQL or Postgres
+database) is finite in size and pickled objects are stored in blobs in the
+metastore, it’s typically advised to apply XComs only for transferring small
+pieces of data such as a handful of strings (e.g., a list of names).
+
+The alternative for transferring data between tasks is to keep the data outside
+Airflow. The number of ways to store data are limitless, but typically a file on
+disk is created. In the use case, we’ve fetched a few strings and integers,
+which in itself are not space-consuming. With the idea in mind that more pages
+might be added, and thus data size might grow in the future, we’ll think ahead
+and persist the results on disk instead of using XComs.
+
+In order to decide how to store the intermediate data, we must know where and
+how the data will be used again. Since the target database is a Postgres, we’ll
+use the `PostgresOperator` to insert data. First, we must install an additional
+package to import the `PostgresOperator` class in our project:
+
+```shell
+pip install apache-airflow-providers-postgres
+```
+
+**Airflow 2 providers packages:** All additional pip packages are named
+`apache airflow-provider-*`. Only a few core operators remain in Airflow, such
+as the `BashOperator` and `PythonOperator`.
+
+Writing `INSERT` statements to feed to the `PostgresOperator`:
+
+```python nu
+extract_gz = BashOperator(
+    task_id="extract_gz",
+    bash_command="gunzip --force /tmp/wikipageviews.gz",
+    dag=dag,
+)
+
+def _fetch_pageviews(pagenames):
+  result = dict.fromkeys(pagenames, 0)
+  with open(f"/tmp/wikipageviews", "r") as f:
+    for line in f:
+      domain_code, page_title, view_counts, _ = line.split(" ")
+      if domain_code == "en" and page_title in pagenames:
+        result[page_title] = view_counts
+
+  with open("/tmp/postgres_query.sql", "w") as f:
+    for pagename, pageviewcount in result.items():
+      f.write(
+        "INSERT INTO pageview_counts VALUES ("
+        f"'{pagename}', {pageviewcount}, '{execution_date}'"
+        ");\n"
+      )
+
+fetch_pageviews = PythonOperator(
+  task_id="fetch_pageviews",
+  python_callable=_fetch_pageviews,
+  op_kwargs={
+    "pagenames:": {
+      "Google",
+      "Amazon",
+      "Apple",
+      "Microsoft",
+      "Facebook",
+    }
+  },
+  dag=dag,
+)
+```
+
+```python
+from airflow.providers.postgres.operators.postgres import PostgresOperator
+
+dag = DAG(..., template_searchpath="/tmp")
+
+write_to_postgres = PostgresOperator(
+    task_id="write_to_postgres",
+    postgres_conn_id="my_postgres",
+    sql="postgres_query.sql",
+    dag=dag,
+)
+```
 
 ### Defining dependencies between tasks
 
