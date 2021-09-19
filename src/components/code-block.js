@@ -14,6 +14,7 @@ require("prismjs/components/prism-groovy")
 require("prismjs/components/prism-ini")
 require("prismjs/components/prism-java")
 require("prismjs/components/prism-properties")
+require("prismjs/components/prism-rest")
 require("prismjs/components/prism-toml")
 
 const Code = styled.div`

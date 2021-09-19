@@ -497,3 +497,210 @@ tags: []
     ```
 
     </Solution>
+
+17. Use Desert and Marshmallow to validate data fetched from the Wikipedia API.
+
+    <Solution>
+
+    ```shell
+    poetry add marshmallow desert
+    ```
+
+    ```python fp=src/wikipedia_cli/wikipedia.py
+    import desert
+    import marshmallow
+
+    ...
+
+    @dataclass
+    class Page:
+        title: str
+        extract: str
+
+    page_schema = desert.schema(Page, meta={"unknown": marshmallow.EXCLUDE})
+
+    def get_random(lang="en"):
+        url = API_URL.format(lang=lang)
+        with requests.get(url) as response:
+            response.raise_for_status()
+            data = response.json()
+            return page_schema.load(data)
+    ```
+
+    ```python fp=src/wikipedia_cli/console.py
+    import marshmallow
+
+    ...
+
+    def main(lang):
+        try:
+            page = wikipedia.get_random(lang=lang)
+        except (requests.RequestException, marshmallow.ValidationError) as error:
+            raise click.ClickException(str(error)) from error
+
+        click.secho(page.title, fg="green")
+        click.echo(textwrap.fill(page.extract))
+    ```
+
+    ```python fp=tests/test_wikipedia.py
+    def test_random_page_returns_page(mock_requests_get: Mock) -> None:
+        page = wikipedia.get_random()
+        assert isinstance(page, wikipedia.Page)
+    ```
+
+    ```python fp=tests/test_console.py
+    from wikipedia_cli.wikipedia import page_schema
+
+    @pytest.fixture
+    def mock_wikipedia_get_random(mocker):
+        mock = mocker.patch("wikipedia_cli.wikipedia.get_random")
+        mock.return_value = page_schema.load(
+            {
+                "title": "Title of the article",
+                "extract": "Extract of the article.",
+            }
+        )
+        return mock
+    ```
+
+    </Solution>
+
+18. Configure Mypy, Pytype and Typeguard in the project.
+
+    <Solution>
+
+    ```shell
+    poetry add --dev mypy pytype typeguard
+    ```
+
+    ```python fp=noxfile.py
+    nox.options.sessions = "lint", "mypy", "pytype", "safety", "tests"
+
+    @nox.session(python=["3.9", "3.8"])
+    def mypy(session):
+        args = session.posargs or locations
+        install_package(session)
+        install(session, "mypy")
+        session.run("mypy", *args)
+
+    @nox.session(python=["3.9", "3.8"])
+    def pytype(session):
+        args = session.posargs or ["--disable=import-error", *locations]
+        install_package(session)
+        install(session, "pytype")
+        session.run("pytype", *args)
+
+    @nox.session(python=["3.9", "3.8"])
+    def typeguard(session):
+        args = session.posargs or ["-m", "not e2e"]
+        install_package(session)
+        install(session, "pytest", "pytest-mock", "typeguard")
+        session.run("pytest", f"--typeguard-packages={package}", *args)
+    ```
+
+    ```ini nu fp=mypy.ini
+    [mypy]
+
+    [mypy-desert,marshmallow,nox.*,pytest,pytest_mock,_pytest.*]
+    ignore_missing_imports = True
+    ```
+
+    </Solution>
+
+19. Add type annotations in the codebase, and check them using a Flake8 plugin.
+
+    <Solution>
+
+    ```shell
+    poetry add --dev flake8-annotations
+    ```
+
+    ```ini fp=.flake8
+    [flake8]
+    select = ANN,B,B9,BLK,C,E,F,I,S,W
+    ignore = ANN101,E203,E501,W503
+    ```
+
+    ```python fp=src/wikipedia_cli/wikipedia.py
+    API_URL: str = "https://{lang}.wikipedia.org/api/rest_v1/page/random/summary"
+
+    def get_random(lang: str = "en") -> Page: ...
+    ```
+
+    ```python fp=src/wikipedia_cli/console.py
+    def main(lang: str) -> None: ...
+    ```
+
+    ```python fp=noxfile.py
+    from typing import Iterator
+
+    from nox.sessions import Session
+
+    class Poetry:
+        def __init__(self, session: Session) -> None: ...
+        def export(self, *args: str) -> Iterator[str]: ...
+        def version(self) -> str: ...
+        def build(self, *args: str) -> None: ...
+
+    def install_package(session: Session) -> None: ...
+
+    def install(session: Session, *args: str) -> None: ...
+
+    def lint(session: Session) -> None: ...
+
+    def mypy(session: Session) -> None: ...
+
+    def pytype(session: Session) -> None: ...
+
+    def safety(session: Session) -> None: ...
+
+    def tests(session: Session) -> None: ...
+
+    def black(session: Session) -> None: ...
+
+    def typeguard(session: Session) -> None: ...
+    ```
+
+    ```python fp=tests/test_wikipedia.py
+    from unittest.mock import Mock
+
+    from pytest_mock import MockFixture
+
+    def mock_requests_get(mocker: MockFixture) -> Mock: ...
+
+    def test_get_random_uses_en_wikipedia_domain_by_default(mock_requests_get: Mock) -> None: ...
+
+    def test_get_random_uses_specified_wikipedia_domain(mock_requests_get: Mock) -> None:
+
+    def test_random_page_returns_page(mock_requests_get: Mock) -> None: ...
+    ```
+
+    ```python fp=tests/test_console.py
+    from unittest.mock import Mock
+
+    from pytest_mock import MockFixture
+
+    def cli_runner() -> CliRunner: ...
+
+    def mock_wikipedia_get_random(mocker: MockFixture) -> Mock: ...
+
+    def test_main_returns_0(cli_runner: CliRunner, mock_wikipedia_get_random: Mock) -> None: ...
+
+    def test_main_prints_title(cli_runner: CliRunner, mock_wikipedia_get_random: Mock) -> None: ...
+
+    def test_main_uses_specified_lang(cli_runner: CliRunner, mock_wikipedia_get_random: Mock) -> None: ...
+
+    def test_main_returns_1_on_request_exception(cli_runner: CliRunner, mock_wikipedia_get_random: Mock) -> None: ...
+
+    def test_main_returns_0_in_production(cli_runner: CliRunner): ...
+    ```
+
+    ```python fp=tests/conftest.py
+    from _pytest.config import Config
+
+    def pytest_configure(config: Config) -> None: ...
+    ```
+
+    </Solution>
+
+1. Check that your docstrings are showed when you list Nox sessions using the `nox` CLI.
