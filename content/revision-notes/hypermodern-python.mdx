@@ -1347,6 +1347,13 @@ def random_page(language: str = "en") -> Page:
         raise click.ClickException(message)
 ```
 
+```python fp=tests/test_wikipedia.py
+def test_random_page_handles_validation_errors(mock_requests_get):
+    mock_requests_get.return_value.__enter__.return_value.json.return_value = None
+    with pytest.raises(click.ClickException):
+        wikipedia.random_page()
+```
+
 ### Runtime type checking with Typeguard
 
 Typeguard is a runtime type checker for Python: It checks that arguments match
@@ -1706,6 +1713,25 @@ Unlike other plugins, darglint enables most of its warnings by default. For cons
 ```ini fp=.flake8
 [flake8]
 select = ANN,B,B9,BLK,C,D,DAR,E,F,I,S,W
+```
+
+```python fp=noxfile.py hl=14
+@nox.session(python=["3.8", "3.7"])
+def lint(session: Session) -> None:
+    """Lint using flake8."""
+    args = session.posargs or locations
+    install_with_constraints(
+        session,
+        "flake8",
+        "flake8-annotations",
+        "flake8-bandit",
+        "flake8-black",
+        "flake8-bugbear",
+        "flake8-docstrings",
+        "flake8-import-order",
+        "darglint",
+    )
+    session.run("flake8", *args)
 ```
 
 By default, Darglint requires every docstring to completely specify parameters, return value, and exceptions. In some cases, this is not desirable. For example, documenting the parameters of test functions or Nox sessions would mostly create redundancy. Configure darglint to accept one-line docstrings, using the .darglint configuration file:
