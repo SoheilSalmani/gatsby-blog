@@ -256,8 +256,8 @@ tags: []
         mock_wikipedia_get_random.assert_called_with(lang="pl")
 
     @pytest.mark.unit
-    def test_main_returns_1_on_request_exception(cli_runner, mock_wikipedia_get_random):
-        mock_wikipedia_get_random.side_effect = requests.RequestException
+    def test_main_handles_request_exceptions(cli_runner, mock_wikipedia_get_random):
+        mock_wikipedia_get_random.side_effect = requests.RequestException("request failed")
         result = cli_runner.invoke(console.main)
         assert "Error" in result.output
 
@@ -543,9 +543,16 @@ tags: []
     ```
 
     ```python fp=tests/test_wikipedia.py
-    def test_random_page_returns_page(mock_requests_get: Mock) -> None:
+    @pytest.mark.unit
+    def test_get_random_returns_page(mock_requests_get):
         page = wikipedia.get_random()
         assert isinstance(page, wikipedia.Page)
+
+    @pytest.mark.unit
+    def test_get_random_raises_validation_error_on_invalid_data(mock_requests_get):
+        mock_requests_get.return_value.__enter__.return_value.json.return_value = None
+        with pytest.raises(marshmallow.ValidationError):
+            wikipedia.get_random()
     ```
 
     ```python fp=tests/test_console.py
@@ -561,6 +568,12 @@ tags: []
             }
         )
         return mock
+
+    @pytest.mark.unit
+    def test_main_handles_validation_errors(cli_runner, mock_wikipedia_get_random):
+        mock_wikipedia_get_random.side_effect = marshmallow.ValidationError("invalid data")
+        result = cli_runner.invoke(console.main)
+        assert "Error" in result.output
     ```
 
     </Solution>
@@ -672,7 +685,9 @@ tags: []
 
     def test_get_random_uses_specified_wikipedia_domain(mock_requests_get: Mock) -> None:
 
-    def test_random_page_returns_page(mock_requests_get: Mock) -> None: ...
+    def test_get_random_returns_page(mock_requests_get: Mock) -> None: ...
+
+    def test_get_random_raises_validation_error_on_invalid_data(mock_requests_get: Mock) -> None:
     ```
 
     ```python fp=tests/test_console.py
@@ -690,7 +705,9 @@ tags: []
 
     def test_main_uses_specified_lang(cli_runner: CliRunner, mock_wikipedia_get_random: Mock) -> None: ...
 
-    def test_main_returns_1_on_request_exception(cli_runner: CliRunner, mock_wikipedia_get_random: Mock) -> None: ...
+    def test_main_handles_request_exceptions(cli_runner: CliRunner, mock_wikipedia_get_random: Mock) -> None: ...
+
+    def test_main_handles_validation_errors(cli_runner: CliRunner, mock_wikipedia_get_random: Mock) -> None: ...
 
     def test_main_returns_0_in_production(cli_runner: CliRunner): ...
     ```
@@ -703,4 +720,400 @@ tags: []
 
     </Solution>
 
-1. Check that your docstrings are showed when you list Nox sessions using the `nox` CLI.
+20. Configure Flake8, Darglint and xdoctest to check docstrings in the codebase.
+
+    <Solution>
+
+    ```shell
+    poetry add --dev flake8-docstrings darglint xdoctest
+    ```
+
+    ```ini nu fp=.darglint
+    [darglint]
+    strictness = short
+    ```
+
+    ```ini fp=.flake8
+    [flake8]
+    select = ANN,B,B9,BLK,C,D,DAR,E,F,I,S,W
+    docstring-convention = google
+    ```
+
+    ```python fp=noxfile.py hl=11,13,17..22
+    @nox.session(python=["3.9", "3.8"])
+    def lint(session: Session) -> None:
+        args = session.posargs or locations
+        install(
+            session,
+            "flake8",
+            "flake8-annotations",
+            "flake8-bandit",
+            "flake8-black",
+            "flake8-bugbear",
+            "flake8-docstrings",
+            "flake8-import-order",
+            "darglint",
+        )
+        session.run("flake8", *args)
+
+    @nox.session(python=["3.9", "3.8"])
+    def xdoctest(session: Session) -> None:
+        args = session.posargs or ["all"]
+        install_package(session)
+        install(session, "xdoctest")
+        session.run("python", "-m", "xdoctest", package, *args)
+    ```
+
+    </Solution>
+
+21. Add docstrings in the Nox configuration file.
+
+    <Solution>
+
+    ```python fp=noxfile.py
+    """Nox sessions."""
+
+    class Poetry:
+        """Helper class for invoking Poetry inside a Nox session.
+
+        Attributes:
+            session: The Session object.
+        """
+
+        def __init__(self, session: Session) -> None:
+            """Initialize self."""
+
+        def export(self, *args: str) -> Iterator[str]:
+            """Export the lock file to requirements format.
+
+            Args:
+                args: Command-line arguments for ``poetry export``.
+
+            Yields:
+                The path to the requirements file.
+            """
+
+        def version(self) -> str:
+            """Retrieve the package version.
+
+            Returns:
+                The package version.
+            """
+
+        def build(self, *args: str) -> None:
+            """Build the package.
+
+            Args:
+                args: Command-line arguments for ``poetry build``.
+            """
+
+    def install_package(session: Session) -> None:
+        """Build and install the package.
+
+        Build a wheel from the package, and install it into the virtual environment
+        of the specified Nox session.
+
+        The package requirements are installed using the versions specified in
+        Poetry's lock file.
+
+        Args:
+            session: The Session object.
+        """
+
+    def install(session: Session, *args: str) -> None:
+        """Install development dependencies into the session's virtual environment.
+
+        This function is a wrapper for nox.sessions.Session.install.
+
+        The packages must be managed as development dependencies in Poetry.
+
+        Args:
+            session: The Session object.
+            args: Command-line arguments for ``pip install``.
+        """
+
+    def lint(session: Session) -> None:
+        """Lint using Flake8."""
+
+    def mypy(session: Session) -> None:
+        """Type-check using mypy."""
+
+    def pytype(session: Session) -> None:
+        """Type-check using pytype."""
+
+    def safety(session: Session) -> None:
+        """Scan dependencies for insecure packages."""
+
+    def tests(session: Session) -> None:
+        """Run the test suite."""
+
+    def black(session: Session) -> None:
+        """Run Black code formatter."""
+
+    def typeguard(session: Session) -> None:
+        """Runtime type checking using Typeguard."""
+
+    def xdoctest(session: Session) -> None:
+        """Run examples with xdoctest."""
+    ```
+
+    </Solution>
+
+22. Check that your docstrings are showed when you list Nox sessions using the
+    `nox` CLI.
+
+    <Solution>
+
+    ```shell
+    nox --list-sessions
+    ```
+
+    </Solution>
+
+23. Add docstrings in the `wikipedia-cli` package.
+
+    <Solution>
+
+    ```python fp=src/wikipedia_cli/__init__.py
+    """The Wikipedia CLI project."""
+    ```
+
+    ```python fp=src/wikipedia_cli/console.py
+    """Command-line interface."""
+
+    def main(lang: str) -> None:
+        """The Wikipedia CLI project.
+
+        Args:
+            lang: The Wikipedia language edition. By default, the English Wikipedia
+                is used ("en").
+
+        Raises:
+            ClickException: The HTTP request failed or the HTTP response contained
+                an invalid body.
+        """
+    ```
+
+    ```python fp=src/wikipedia_cli/wikipedia.py
+    """Client for the Wikipedia REST API, version 1."""
+
+    class Page:
+        """Page resource.
+
+        Attributes:
+            title: The title of the Wikipedia page.
+            extract: A plain text summary.
+        """
+
+    def get_random(lang: str = "en") -> Page:
+        """Return a random page.
+
+        Performs a GET request to the /page/random/summary endpoint.
+
+        Args:
+            lang: The Wikipedia language edition. By default, the English Wikipedia
+                is used ("en").
+
+        Returns:
+            A page resource.
+
+        Example:
+            >>> from wikipedia_cli import wikipedia
+            >>> page = wikipedia.get_random(lang="en")
+            >>> bool(page.title)
+            True
+        """
+    ```
+
+    </Solution>
+
+24. Add docstrings in the test suite.
+
+    <Solution>
+
+    ```python fp=tests/__init__.py
+    """Test suite for the wikipedia_cli package."""
+    ```
+
+    ```python fp=tests/conftest.py
+    """Configuration module of the test suite."""
+
+    def pytest_configure(config: Config) -> None:
+        """Pytest configuration hook."""
+    ```
+
+    ```python fp=tests/test_console.py
+    """Test cases for the console module."""
+
+    def cli_runner() -> CliRunner:
+        """Fixture for invoking command-line interfaces."""
+
+    def mock_wikipedia_get_random(mocker: MockFixture) -> Mock:
+        """Fixture for mocking wikipedia.get_random."""
+
+    def test_main_returns_0(cli_runner: CliRunner, mock_wikipedia_get_random: Mock) -> None:
+        """It exits with a status code of zero."""
+
+    def test_main_prints_title(cli_runner: CliRunner, mock_wikipedia_get_random: Mock) -> None:
+        """It prints the title of the Wikipedia page."""
+
+    def test_main_uses_specified_lang(cli_runner: CliRunner, mock_wikipedia_get_random: Mock) -> None:
+        """It uses the specified language edition of Wikipedia."""
+
+    def test_main_handles_request_exceptions(cli_runner: CliRunner, mock_wikipedia_get_random: Mock) -> None:
+        """It exists with a non-zero status code if the request fails."""
+
+    def test_main_handles_validation_errors(cli_runner: CliRunner, mock_wikipedia_get_random: Mock) -> None:
+        """It raises `ClickException` when validation fails."""
+
+    def test_main_returns_0_in_production(cli_runner: CliRunner) -> None:
+        """It exists with a status code of zero (end-to-end)."""
+    ```
+
+    ```python fp=tests/test_wikipedia.py
+    """Test cases for the wikipedia module."""
+
+    def mock_requests_get(mocker: MockFixture) -> Mock:
+        """Fixture for mocking requests.get."""
+
+    def test_get_random_uses_en_wikipedia_domain_by_default(mock_requests_get: Mock) -> None:
+        """It uses the English Wikipedia language edition by default."""
+
+    def test_get_random_uses_specified_wikipedia_domain(mock_requests_get: Mock) -> None:
+        """It selects the specified Wikipedia language edition."""
+
+    def test_get_random_returns_page(mock_requests_get: Mock) -> None:
+        """It returns an object of type Page."""
+
+    def test_get_random_raises_validation_error_on_invalid_data(mock_requests_get: Mock) -> None:
+        """It raises ValidationError when the fetched data is invalid."""
+    ```
+
+    </Solution>
+
+25. Configure Sphinx to build a documentation.
+
+    <Solution>
+
+    ```shell
+    poetry add --dev sphinx sphinx-autodoc-typehints
+    ```
+
+    ```python fp=noxfile.py
+    locations = "src", "tests", "noxfile.py", "docs/conf.py"
+
+    @nox.session(python="3.9")
+    def docs(session: Session) -> None:
+        """Build the documentation."""
+        install_package(session)
+        install(session, "sphinx", "sphinx-autodoc-typehints")
+        session.run("sphinx-build", "docs", "docs/_build")
+    ```
+
+    ```python nu fp=docs/conf.py
+    """Sphinx configuration."""
+
+    project = "wikipedia-cli"
+    author = "Soheil Salmani"
+    copyright = f"2021, {author}"
+    extensions = [
+        "sphinx.ext.autodoc",
+        "sphinx.ext.napoleon",
+        "sphinx_autodoc_typehints",
+    ]
+    ```
+
+    ```rest nu fp=docs/index.rst
+    The Wikipedia CLI Project
+    =========================
+
+    .. toctree::
+        :hidden:
+        :maxdepth: 1
+
+        license
+        reference
+
+    The example project for The
+    `Wikipedia CLI <https://github.com/SoheilSalmani/wikipedia-cli>`_
+    article series.
+    The command-line interface prints random facts to your console,
+    using the `Wikipedia API <https://en.wikipedia.org/api/rest_v1/#/>`_.
+
+    Installation
+    ------------
+
+    To install the Wikipedia CLI project,
+    run this command in your terminal:
+
+    .. code-block:: console
+
+       $ pip install wikipedia-cli
+
+    Usage
+    -----
+
+    Hypermodern Python's usage looks like:
+
+    .. code-block:: console
+
+       $ wikipedia-cli [OPTIONS]
+
+    .. option:: -l <language>, --language <language>
+
+       The Wikipedia language edition,
+       as identified by its subdomain on
+       `wikipedia.org <https://www.wikipedia.org/>`_.
+       By default, the English Wikipedia is selected.
+
+    .. option:: --version
+
+       Display the version and exit.
+
+    .. option:: --help
+
+       Display a short usage message and exit.
+    ```
+
+    ```rest nu fp=docs/license.rst
+    License
+    =======
+
+    .. include:: ../LICENSE
+    ```
+
+    ```rest nu fp=docs/reference.rst
+    Reference
+    =========
+
+    .. contents::
+       :local:
+       :backlinks: none
+
+    wikipedia_cli.console
+    --------------------------
+
+    .. automodule:: wikipedia_cli.console
+        :members:
+
+    wikipedia_cli.wikipedia
+    ----------------------------
+
+    .. automodule:: wikipedia_cli.wikipedia
+        :members:
+    ```
+
+    ```gitignore fp=.gitignore hl=10
+    /.python-version
+    __pycache__/
+    /.coverage
+    /dist/
+    .pytest_cache/
+    /.nox/
+    /.devcontainer/
+    /.mypy_cache/
+    /.pytype/
+    /docs/_build/
+    ```
+
+    </Solution>

@@ -1521,15 +1521,21 @@ def main(language: str) -> None:
     """The hypermodern Python project."""
 ```
 
-Documentation strings communicate the purpose and usage of a module, class, or function to other developers reading your code. Unlike comments, the Python bytecode compiler does not throw them away, but adds them to the `__doc__` attribute of documented objects. This allows tools like Sphinx to generate API documentation from your code.
+Documentation strings communicate the purpose and usage of a module, class, or
+function to other developers reading your code. Unlike comments, the Python
+bytecode compiler does not throw them away, but adds them to the `__doc__`
+attribute of documented objects. This allows tools like Sphinx to generate API
+documentation from your code.
 
-You can document your entire package by adding a docstring to the top of `__init__.py`:
+You can document your entire package by adding a docstring to the top of
+`__init__.py`:
 
 ```python fp=src/hypermodern_python/__init__.py
 """The hypermodern Python project."""
 ```
 
-Document the modules in your package by adding docstrings to the top of their respective source files.
+Document the modules in your package by adding docstrings to the top of their
+respective source files.
 
 ```python fp=src/hypermodern_python/console.py
 """Command-line interface."""
@@ -1539,9 +1545,15 @@ Document the modules in your package by adding docstrings to the top of their re
 """Client for the Wikipedia REST API, version 1."""
 ```
 
-So far we have used one-line docstrings. Docstrings can also consist of multiple lines. By convention, the first line is separated from the rest of the docstring by a blank line. This structures the docstring into a summary line and a more elaborate description.
+So far we have used one-line docstrings. Docstrings can also consist of multiple
+lines. By convention, the first line is separated from the rest of the docstring
+by a blank line. This structures the docstring into a summary line and a more
+elaborate description.
 
-Docstring summaries can include useful information about class attributes, function parameters, return values, and other things. A common format for this with good readability and tooling support is the Google docstring style. Other options are the Sphinx and NumPy formats.
+Docstring summaries can include useful information about class attributes,
+function parameters, return values, and other things. A common format for this
+with good readability and tooling support is the Google docstring style. Other
+options are the Sphinx and NumPy formats.
 
 ```python fp=src/hypermodern_python/wikipedia.py
 @dataclass
@@ -1573,7 +1585,9 @@ def random_page(language: str = "en") -> Page:
 
 ### Linting code documentation with flake8-docstrings
 
-The flake8-docstrings plugin uses the tool pydocstyle to check that docstrings are compliant with the style recommendations of PEP 257. Warnings range from missing docstrings to issues with whitespace, quoting, and docstring content.
+The flake8-docstrings plugin uses the tool pydocstyle to check that docstrings
+are compliant with the style recommendations of PEP 257. Warnings range from
+missing docstrings to issues with whitespace, quoting, and docstring content.
 
 ```shell
 poetry add --dev flake8-docstrings
@@ -1596,7 +1610,8 @@ def lint(session: Session) -> None:
     session.run("flake8", *args)
 ```
 
-Configure Flake8 to enable the plugin warnings (`D` for docstring) and adopt the Google docstring style:
+Configure Flake8 to enable the plugin warnings (`D` for docstring) and adopt the
+Google docstring style:
 
 ```ini fp=.flake8
 select = ANN,B,B9,BLK,C,D,E,F,I,S,W
@@ -1605,7 +1620,10 @@ docstring-convention = google
 
 ### Adding docstrings to Nox sessions
 
-Docstrings in Nox sessions make your noxfile.py a friendly, welcoming place for contributors (as well as for yourself a few months down the road). This is especially true since Nox shows them when you list the sessions using `--list-sessions`.
+Docstrings in Nox sessions make your noxfile.py a friendly, welcoming place for
+contributors (as well as for yourself a few months down the road). This is
+especially true since Nox shows them when you list the sessions using
+`--list-sessions`.
 
 ```python fp=noxfile.py
 """Nox sessions."""
@@ -1641,9 +1659,15 @@ nox --list-sessions
 
 ### Adding docstrings to the test suite
 
-Docstrings for test cases are a great way to improve the readability of your test suite. They help you keep test function names succinct without becoming obscure, and they can be used to make test output more friendly.
+Docstrings for test cases are a great way to improve the readability of your
+test suite. They help you keep test function names succinct without becoming
+obscure, and they can be used to make test output more friendly.
 
-```python fp=conftest.py
+```python nu fp=tests/__init__.py
+"""Test suite for the hypermodern_python package."""
+```
+
+```python fp=tests/conftest.py
 """Package-wide test fixtures."""
 
 def pytest_configure(config: Config) -> None:
@@ -1702,13 +1726,16 @@ def test_random_page_handles_validation_errors(mock_requests_get: Mock) -> None:
 
 ### Validating docstrings against function signatures with darglint
 
-Darglint checks that docstring descriptions match function definitions, and integrates with Flake8 as a plugin.
+Darglint checks that docstring descriptions match function definitions, and
+integrates with Flake8 as a plugin.
 
 ```shell
 poetry add --dev darglint
 ```
 
-Unlike other plugins, darglint enables most of its warnings by default. For consistency and to future-proof your Flake8 configuration, enable the plugin warnings explicitly (`DAR` like *darglint*):
+Unlike other plugins, darglint enables most of its warnings by default. For
+consistency and to future-proof your Flake8 configuration, enable the plugin
+warnings explicitly (`DAR` like _darglint_):
 
 ```ini fp=.flake8
 [flake8]
@@ -1734,7 +1761,11 @@ def lint(session: Session) -> None:
     session.run("flake8", *args)
 ```
 
-By default, Darglint requires every docstring to completely specify parameters, return value, and exceptions. In some cases, this is not desirable. For example, documenting the parameters of test functions or Nox sessions would mostly create redundancy. Configure darglint to accept one-line docstrings, using the .darglint configuration file:
+By default, Darglint requires every docstring to completely specify parameters,
+return value, and exceptions. In some cases, this is not desirable. For example,
+documenting the parameters of test functions or Nox sessions would mostly create
+redundancy. Configure darglint to accept one-line docstrings, using the
+.darglint configuration file:
 
 ```ini nu fp=.darglint
 [darglint]
@@ -1743,7 +1774,9 @@ strictness = short
 
 ### Running documentation examples with xdoctest
 
-A good way to explain how to use your function or module is to include an example in its docstring. By convention, docstring examples are written as if entered at a Python prompt.
+A good way to explain how to use your function or module is to include an
+example in its docstring. By convention, docstring examples are written as if
+entered at a Python prompt.
 
 ```python fp=src/hypermodern_python/wikipedia.py hl=17..21
 def random_page(language: str = "en") -> Page:
@@ -1770,11 +1803,13 @@ def random_page(language: str = "en") -> Page:
     """
 ```
 
-The xdoctest package runs the examples in your docstrings and compares the actual output to the expected output as per the docstring. This serves multiple purposes:
+The xdoctest package runs the examples in your docstrings and compares the
+actual output to the expected output as per the docstring. This serves multiple
+purposes:
 
-* The example is checked for correctness.
-* You ensure that the documentation is up-to-date.
-* Your codebase gets additional test coverage for free.
+- The example is checked for correctness.
+- You ensure that the documentation is up-to-date.
+- Your codebase gets additional test coverage for free.
 
 ```shell
 poetry add --dev xdoctest
@@ -1790,23 +1825,30 @@ def xdoctest(session: Session) -> None:
     session.run("python", "-m", "xdoctest", package, *args)
 ```
 
-By default, the Nox session uses the `all` subcommand to run all examples. You can also `list` the examples using the list subcommand, or run specific examples:
+By default, the Nox session uses the `all` subcommand to run all examples. You
+can also `list` the examples using the list subcommand, or run specific
+examples:
 
 ```shell
 nox -rs xdoctest -- random_page
 ```
 
-Xdoctest integrates with Pytest as a plugin, so you could also install the tool into your existing Nox session for Pytest, and enable it via the `--xdoctest` option. We are using it in stand-alone mode here, which has the advantage of keeping unit tests and doctest separate.
+Xdoctest integrates with Pytest as a plugin, so you could also install the tool
+into your existing Nox session for Pytest, and enable it via the `--xdoctest`
+option. We are using it in stand-alone mode here, which has the advantage of
+keeping unit tests and doctest separate.
 
 ### Creating documentation with Sphinx
 
-Sphinx is the documentation tool used by the official Python documentation and many open-source projects.
+Sphinx is the documentation tool used by the official Python documentation and
+many open-source projects.
 
 ```shell
 poetry add --dev sphinx
 ```
 
-Create a directory `docs`. The master document is located in the file `docs/index.rst`. Let’s start with a simple placeholder text:
+Create a directory `docs`. The master document is located in the file
+`docs/index.rst`. Let’s start with a simple placeholder text:
 
 ```rest fp=docs/index.rst
 This is docs/index.rst,
@@ -1836,11 +1878,15 @@ def docs(session: Session) -> None:
 nox -rs docs
 ```
 
-You can now open the file `docs/_build/index.html` in your browser to view your documentation offline.
+You can now open the file `docs/_build/index.html` in your browser to view your
+documentation offline.
 
 ### Writing documentation using reStructuredText
 
-Sphinx documentation is commonly written using reStructuredText (reST), although Markdown is also supported. reStructuredText may not be as lightweight as Markdown, but its expressiveness and extensibility, among other reasons, make it more suitable for writing technical documentation.
+Sphinx documentation is commonly written using reStructuredText (reST), although
+Markdown is also supported. reStructuredText may not be as lightweight as
+Markdown, but its expressiveness and extensibility, among other reasons, make it
+more suitable for writing technical documentation.
 
 ```rest nu fp=docs/index.rst
 The Hypermodern Python Project
@@ -1889,11 +1935,19 @@ Hypermodern Python's usage looks like:
    Display a short usage message and exit.
 ```
 
-Indentation is significant, like in Python. Three spaces are customary, because they line up directives with their content.
+Indentation is significant, like in Python. Three spaces are customary, because
+they line up directives with their content.
 
-Directives like `code-block` are Sphinx extensions, but unlike the fenced code blocks of GitHub Flavored Markdown, they use a standard extension mechanism built into the base language. While reStructuredText provides some directives of its own, Sphinx defines many more, creating an expressive semantic markup language that lets you focus on meaning instead of formatting.
+Directives like `code-block` are Sphinx extensions, but unlike the fenced code
+blocks of GitHub Flavored Markdown, they use a standard extension mechanism
+built into the base language. While reStructuredText provides some directives of
+its own, Sphinx defines many more, creating an expressive semantic markup
+language that lets you focus on meaning instead of formatting.
 
-Sphinx documentation can be spread over multiple interconnected files. Let’s see how this works by including the license in the documentation. Create a file `docs/license.rst`, which includes the `LICENSE` file from the parent directory using an include directive:
+Sphinx documentation can be spread over multiple interconnected files. Let’s see
+how this works by including the license in the documentation. Create a file
+`docs/license.rst`, which includes the `LICENSE` file from the parent directory
+using an include directive:
 
 ```rest nu fp=docs/license.rst
 License
@@ -1902,7 +1956,8 @@ License
 .. include:: ../LICENSE
 ```
 
-Add the license to the navigation sidebar by adding a `toctree` directive to the main document in `docs/index.rst`.
+Add the license to the navigation sidebar by adding a `toctree` directive to the
+main document in `docs/index.rst`.
 
 ```rest fp=docs/index.rst
 The Hypermodern Python Project
@@ -1915,17 +1970,25 @@ The Hypermodern Python Project
    license
 ```
 
-The `:hidden:` option prevents the table of contents from being inserted into the main document itself, which makes sense since it is already included in the sidebar. The `:maxdepth: 1` option turns the navigation sidebar into a flat list, instead of a nested hierarchy including the internal structure of each documentation page.
+The `:hidden:` option prevents the table of contents from being inserted into
+the main document itself, which makes sense since it is already included in the
+sidebar. The `:maxdepth: 1` option turns the navigation sidebar into a flat
+list, instead of a nested hierarchy including the internal structure of each
+documentation page.
 
 ### Generating API documentation with autodoc
 
-We use Sphinx to generate API documentation from the documentation strings and type annotations in the package, using three Sphinx extensions:
+We use Sphinx to generate API documentation from the documentation strings and
+type annotations in the package, using three Sphinx extensions:
 
-* `autodoc` enables Sphinx to generate API documentation from the docstrings in your package.
-* `napoleon` pre-processes Google-style docstrings to reStructuredText.
-* `sphinx-autodoc-typehints` uses type annotations to document the types of function parameters and return values.
+- `autodoc` enables Sphinx to generate API documentation from the docstrings in
+  your package.
+- `napoleon` pre-processes Google-style docstrings to reStructuredText.
+- `sphinx-autodoc-typehints` uses type annotations to document the types of
+  function parameters and return values.
 
-The autodoc and napoleon extensions are distributed with Sphinx, so there is no need to install them explicitly.
+The autodoc and napoleon extensions are distributed with Sphinx, so there is no
+need to install them explicitly.
 
 ```shell
 poetry add --dev sphinx-autodoc-typehints
@@ -1951,9 +2014,11 @@ extensions = [
 ]
 ```
 
-You can now reference docstrings in your Sphinx documentation using directives such as `automodule`, `autoclass`, and `autofunction`.
+You can now reference docstrings in your Sphinx documentation using directives
+such as `automodule`, `autoclass`, and `autofunction`.
 
-Create the file `docs/reference.rst`, containing the API reference for the project:
+Create the file `docs/reference.rst`, containing the API reference for the
+project:
 
 ```rest nu fp=docs/reference.rst
 Reference
@@ -1978,11 +2043,17 @@ hypermodern_python.wikipedia
    :members:
 ```
 
-The `automodule` directive inserts the documentation for the specified Python module. With the `:members:` option, it also includes documentation for the classes and functions defined by the module.
+The `automodule` directive inserts the documentation for the specified Python
+module. With the `:members:` option, it also includes documentation for the
+classes and functions defined by the module.
 
-The contents directive inserts a table of content into the document. The `:local:` option avoids including the page title in the table of contents. The `:backlinks:` none option avoids linking each section title to the table of contents.
+The contents directive inserts a table of content into the document. The
+`:local:` option avoids including the page title in the table of contents. The
+`:backlinks:` none option avoids linking each section title to the table of
+contents.
 
-Include the new file in the navigation sidebar, by updating the `toctree` directive at the top of `docs/index.rst`:
+Include the new file in the navigation sidebar, by updating the `toctree`
+directive at the top of `docs/index.rst`:
 
 ```rest fp=docs/index.rst hl=9
 The Hypermodern Python Project
@@ -2000,16 +2071,442 @@ The Hypermodern Python Project
 
 ### Continuous integration using GitHub Actions
 
+_Continuous integration_ (CI) helps you automate the integration of code changes
+into your project. When changes are pushed to the project repository, the CI
+server verifies their correctness, triggering tools such as unit tests, linters,
+or type checkers.
+
+Pull Requests are an important building block in this workflow. They let you
+propose a set of changes to the repository, for example a specific bugfix or new
+feature. When the pull request gets accepted, its changes are merged into the
+target branch, typically master. GitHub displays Pull Requests with a green tick
+if they pass CI, and with a red x if the CI pipeline failed. In this way,
+continuous integration functions as a gate commits need to pass to enter the
+master branch.
+
+Configure GitHub Actions by adding the following YAML file to the
+`.github/workflows` directory:
+
+```yaml nu fp=.github/workflows/tests.yml
+name: Tests
+on: push
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+          architecture: x64
+      - run: pip install nox==2019.11.9
+      - run: pip install poetry==1.0.5
+      - run: nox
+```
+
+This file defines a so-called _workflow_. A workflow is an automated process
+executing a series of steps, grouped into one or many jobs. Workflows are
+triggered by events, for example when someone pushes a commit to a repository,
+or when someone creates a pull request, an issue, or a release.
+
+The workflow above is triggered on every push to your GitHub repository, and
+executes the test suite using Nox. It is aptly named “Tests”, and consists of a
+single job running on the latest supported Ubuntu image. The job executes five
+steps, using either official GitHub Actions or invoking shell commands:
+
+1. Check out your repository using `actions/checkout`.
+2. Install Python 3.8 using `actions/setup-python`.
+3. Install Nox with pip.
+4. Install Poetry with pip.
+5. Run your test suite with Nox.
+
+Every tool used in the CI process is pinned to a specific version. The reasoning
+behind this is that a CI process should be predictable and deterministic. There
+is a common fallacy that you should always use the latest version of a specific
+tool, and therefore that tool should not be pinned.
+
+By all means, use the latest versions of your tools, but be explicit about it.
+This gives your project a higher level of auditability, and prevents things from
+magically breaking and un-breaking in CI. Upgrading tools in a dedicated pull
+request also lets you investigate the impact of an upgrade, rather than breaking
+your entire CI when a new version becomes available.
+
+The workflow currently uses Python 3.8 only, but you should really test your
+project on all Python versions it supports. You can achieve this using a _build
+matrix_. A build matrix lets you define variables, such as for the operating
+system or for the Python version, and specify multiple values for them. Jobs can
+reference these variables, and are instantiated for every combination of values.
+
+Let’s define a build matrix for the Python versions supported by the project
+(Python 3.7 and 3.8). Use the `strategy` and `matrix` keywords to define a build
+matrix with a `python-version` variable, and reference the variable using the
+syntax `${{ matrix.python-version }}`:
+
+```yaml nu fp=.github/workflows/tests.yml hl=6..9,14
+name: Tests
+on: push
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8"]
+    name: Python ${{ matrix.python-version }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+      - run: pip install nox==2019.11.9
+      - run: pip install poetry==1.0.5
+      - run: nox
+```
+
+If you commit and push now, you can watch the workflow execute under the
+<Scr>Actions</Scr> tab in your GitHub repository, with a separate job for each
+Python version.
+
+You should also add a GitHub Actions badge to your repository page. The badge
+indicates whether the tests are passing or failing on the master branch, and
+links to the GitHub Actions dashboard for your project.
+
+Add the line below to the top of your `README.md` to display the badge:
+
+```markdown fp=README.md
+[![Tests](https://github.com/<your-username>/hypermodern-python/workflows/Tests/badge.svg)](https://github.com/<your-username>/hypermodern-python/actions?workflow=Tests)
+```
+
 ### Coverage reporting with Codecov
+
+A coverage reporting service offers some additional benefits, by making code
+coverage more visible:
+
+- Pull requests get automated comments with a quick rundown of how the changes
+  affect coverage.
+- The site visualizes code coverage for every commit and file in your
+  repository, using graphs and code listings.
+- You can display code coverage on your repository page, using a badge.
+
+We use Codecov for coverage reporting. Sign up at Codecov, install their GitHub
+app, and add your repository to Codecov. The sign up process will guide you
+through these steps.
+
+Add the official codecov CLI to your development dependencies:
+
+```shell
+poetry add --dev codecov
+```
+
+Add the Nox session shown below. The session exports the coverage data to
+cobertura XML format, which is the format expected by Codecov. It then uses
+`codecov` to upload the coverage data.
+
+```python fp=noxfile.py
+@nox.session(python="3.8")
+def coverage(session: Session) -> None:
+    """Upload coverage data."""
+    install_with_constraints(session, "coverage[toml]", "codecov")
+    session.run("coverage", "xml", "--fail-under=0")
+    session.run("codecov", *session.posargs)
+```
+
+Note that you need to disable the coverage minimum using the command-line option
+`--fail-under=0`. Otherwise, you would only get coverage reports when coverage
+is at 100%, defeating their very purpose.
+
+Next, grant GitHub Actions access to upload to Codecov:
+
+1. Go to your repository settings on Codecov, and copy the <Scr>Repository
+   Upload Token</Scr>.
+2. Go to your repository settings on GitHub, and add a secret named
+   `CODECOV_TOKEN` with the token you just copied.
+
+Add the following GitHub workflow to upload coverage data:
+
+```yaml nu fp=.github/workflows/coverage.yml
+name: Coverage
+on: push
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: "3.8"
+          architecture: x64
+      - run: pip install nox==2019.11.9
+      - run: pip install poetry==1.0.5
+      - run: nox --sessions tests-3.8 coverage
+        env:
+          CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
+```
+
+In contrast to the Tests workflow, the Coverage workflow only runs on Python
+3.8. It invokes Nox to execute the test suite and upload the coverage data,
+providing the Codecov token as an environment variable.
+
+Add the Codecov badge to your `README.md`:
+
+```markdown fp=README.md
+[![Codecov](https://codecov.io/gh/<your-username>/hypermodern-python/branch/master/graph/badge.svg)](https://codecov.io/gh/<your-username>/hypermodern-python)
+```
 
 ### Uploading your package to PyPI
 
+Before you can upload your Python package, you need to generate distribution
+packages. These are compressed archives which an end-user can download and
+install on their system. They come in two flavours: source (or _sdist_)
+archives, and binary packages in the wheel format. Poetry supports generating
+both with the `poetry build` command:
+
+```shell
+poetry build
+```
+
+Poetry also supports uploading your package to PyPI, with the `poetry publish`
+command:
+
+```shell
+poetry publish
+```
+
+Automation helps you ensure your Python package passes all checks before it is
+published, and keeps the build and upload process itself reliable.
+
+Sign up at PyPI, and enable two-factor authentication for an additional layer of
+security. Next, grant GitHub Actions permission to upload to PyPI:
+
+1. Go to the <Scr>Account Settings</Scr> on PyPI, generate an API token, and
+   copy it.
+2. Go to the repository settings on GitHub, and add a secret named `PYPI_TOKEN`
+   with the token you just copied.
+
+The following GitHub workflow uploads your package to PyPI when you release it:
+
+```yaml fp=.github/workflows/release.yml
+name: Release
+on:
+  release:
+    types: [published]
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: "3.8"
+          architecture: x64
+      - run: pip install nox==2019.11.9
+      - run: pip install poetry==1.0.5
+      - run: nox
+      - run: poetry build
+      - run: poetry publish --username=__token__ --password=${{ secrets.PYPI_TOKEN }}
+```
+
+The release workflow is triggered when you publish a GitHub Release. GitHub
+Releases are based on Git tags, which mark a specific point in your repository’s
+history. Here’s how you can create and publish a release for your project:
+
+1. Go to the Releases tab of your main repository page.
+2. Click <Scr>Draft a new release</Scr>.
+3. Enter the Git tag. By convention, these tags have the form `v<version>`.
+4. Enter the title and description for your release.
+5. Click <Scr>Publish release</Scr>.
+
+The release workflow should now start building your package, and upload the resulting artifacts to PyPI. At the start of the workflow, the test suite is run once more to ensure that the package passes all checks.
+
+Add a badge to `README.md` which links to your PyPI project page and displays the latest release:
+
+```markdown fp=README.md
+[![PyPI](https://img.shields.io/pypi/v/hypermodern-python.svg)](https://pypi.org/project/hypermodern-python/)
+```
+
 ### Documenting releases with Release Drafter
+
+The Release Drafter action drafts your next release notes as pull requests are merged into master. It does this by creating and maintaining a draft release. When a pull request gets accepted, the release description is updated to include its title, author, and a link to the pull request itself.
+
+When you’re ready to make a release, you simply need to add the tag name, and click *Publish*. You’re also free to edit the release description further, for example to include a more general description of the release.
+
+Add the following workflow to use Release Drafter:
+
+```yaml nu fp=.github/workflows/release-drafter.yml
+name: Release Drafter
+on:
+  push:
+    branches:
+      - master
+jobs:
+  draft_release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: release-drafter/release-drafter@v5.6.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+Another useful feature of Release Drafter is to group pull requests based on labels you apply to them. This would allow you, for example, to have separate headings for features, bugfixes, and documentation in the release notes, using GitHub’s *enhancement*, *bug*, and *documentation* labels.
+
+The configuration file below goes somewhat further, and is very loosely based on the Angular Commit Message Convention and gitmoji. You will need to add the remaining labels to your repository manually, using New Label on the Issues tab of the repository.
+
+```yaml nu fp=.github/release-drafter.yml
+categories:
+  - title: ':boom: Breaking Changes'
+    label: 'breaking'
+  - title: ':package: Build System'
+    label: 'build'
+  - title: ':construction_worker: Continuous Integration'
+    label: 'ci'
+  - title: ':books: Documentation'
+    label: 'documentation'
+  - title: ':rocket: Features'
+    label: 'enhancement'
+  - title: ':beetle: Fixes'
+    label: 'bug'
+  - title: ':racehorse: Performance'
+    label: 'performance'
+  - title: ':hammer: Refactoring'
+    label: 'refactoring'
+  - title: ':fire: Removals and Deprecations'
+    label: 'removal'
+  - title: ':lipstick: Style'
+    label: 'style'
+  - title: ':rotating_light: Testing'
+    label: 'testing'
+template: |
+  ## What’s Changed
+
+  $CHANGES
+```
 
 ### Single-sourcing the package version
 
+Before creating the next release of your package, you need to bump the version of your package. Use `poetry version` to update the version declared in `pyproject.toml`:
+
+```shell
+poetry version <version>
+```
+
+You can pass the new version explicitly, or a rule such as `major`, `minor`, or `patch`. In a nutshell, increment the major version if the release contains breaking changes, the patch level if the release contains only bugfixes, and the minor version in all other cases. This assumes that your project has a stable and public API, and a version number greater than or equal to `1.0.0`. For more details, refer to the Semantic Versioning standard.
+
+As it stands, you also need to update the version declared inside your package’s `__init__.py`. We can streamline this process even further, by determining the version automatically using the installed package metadata. This is possible in Python 3.8 using the standard `importlib.metadata` library, and in Python 3.7 and earlier using its backport `importlib_metadata`.
+
+```shell
+poetry add --python="<3.8" importlib_metadata
+```
+
+Determining the package version should really be as simple as the following:
+
+```python nu fp=src/hypermodern_python/__init__.py
+"""The hypermodern Python project."""
+
+from importlib.metadata import version
+
+
+__version__ = version(__name__)
+```
+
+However, the actual implementation is slightly more complicated, due to the fact that the import path depends on the Python version, and the possibility that the package has not been installed (although this should rarely happen, thanks to src layout). For the same reasons, we need to disable type checking and coverage for certain lines.
+
+```python nu fp=src/hypermodern_python/__init__.py
+"""The hypermodern Python project."""
+
+try:
+    from importlib.metadata import version, PackageNotFoundError  # type: ignore
+except ImportError:  # pragma: no cover
+    from importlib_metadata import version, PackageNotFoundError  # type: ignore
+
+
+try:
+    __version__ = version(__name__)
+except PackageNotFoundError:  # pragma: no cover
+    __version__ = "unknown"
+```
+
+With this in place, `pyproject.toml` has become the single source of truth for your package version.
+
 ### Uploading your package to TestPyPI
+
+TestPyPI is a separate instance of the Python Package Index that allows you to try distribution tools and processes without affecting the real index.
+
+Sign up at TestPyPI, and grant GitHub Actions permission to upload to TestPyPI:
+
+1. Go to the <Scr>Account Settings</Scr> on TestPyPI, generate an API token, and copy it.
+2. Go to the repository settings on GitHub, and add a secret named `TEST_PYPI_TOKEN` with the token you just copied.
+
+The following GitHub workflow builds and uploads your package to TestPyPI from the master branch of your repository:
+
+```yaml nu fp=.github/workflows/test-pypi.yml
+name: TestPyPI
+on:
+  push:
+    branches:
+      - master
+jobs:
+  test_pypi:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.8'
+        architecture: x64
+    - run: pip install poetry==1.0.5
+    - run: >-
+        poetry version patch &&
+        version=$(poetry version | awk '{print $2}') &&
+        poetry version $version.dev.$(date +%s)
+    - run: poetry build
+    - uses: pypa/gh-action-pypi-publish@v1.0.0a0
+      with:
+        user: __token__
+        password: ${{ secrets.TEST_PYPI_TOKEN }}
+        repository_url: https://test.pypi.org/legacy/
+```
+
+TestPyPI does not allow you to overwrite an existing package version. The workflow therefore bumps the version and appends a suffix of the form `.dev.<timestamp>`, indicating a developmental release. The package is then built and uploaded using the PyPI publish GitHub Action of the Python Packaging Authority.
 
 ### Hosting documentation at Read the Docs
 
-### Conclusion
+Read the Docs hosts documentation for countless open-source Python projects. The hosting service also takes care of rebuilding the documentation when you update your project. Users can browse documentation for every published version, as well as the latest development version.
+
+Create the `.readthedocs.yml` configuration file:
+
+```yaml nu =.readthedocs.yml
+version: 2
+sphinx:
+  configuration: docs/conf.py
+formats: all
+python:
+  version: 3.7
+  install:
+    - requirements: docs/requirements.txt
+    - path: .
+```
+
+The `install` section in the configuration file tells Read the Docs how to install your package and its documentation dependencies. Read the Docs does not support installation of dependencies using Poetry directly. Luckily, pip can install any package with a standard `pyproject.toml` file, and will use `poetry-core` behind the scenes.
+
+On the other hand, the development dependencies on Sphinx and its extensions are not declared in the package. (And even if they were, dependencies declared in the package are not pinned, so we might run into problems due to slightly different build environments.) Uploading the documentation from a GitHub workflow would solve this nicely, but this is currently not supported. So let’s be pragmatic and duplicate the documentation dependencies using a separate requirements file:
+
+```txt nu fp=docs/requirements.txt
+sphinx==2.3.1
+sphinx-autodoc-typehints==1.10.3
+```
+
+Sign up at Read the Docs, and import your GitHub repository, using the button Import a Project. Read the Docs automatically starts building your documentation. When the build has completed, your documentation will have a public URL like this:
+https://hypermodern-python.readthedocs.io/.
+
+You can display the documentation link on PyPI by including it in your package configuration file:
+
+```toml fp=pyproject.toml
+[tool.poetry]
+documentation = "https://hypermodern-python.readthedocs.io"
+```
+
+Let’s also add the link to the GitHub repository page, by adding a Read the Docs badge to `README.md`:
+
+```markdown fp=README.md
+[![Read the Docs](https://readthedocs.org/projects/hypermodern-python/badge/)](https://hypermodern-python.readthedocs.io/)
+```
