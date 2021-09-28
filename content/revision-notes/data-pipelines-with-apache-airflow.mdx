@@ -531,7 +531,7 @@ dag = DAG(
 fetch_events = BashOperator(
     task_id="fetch_events",
     bash_command=(
-        "mkdir -p /data/events && "
+        "mkdir -p /data && "
         "curl -o /data/events.json "
         "http://events_api:5000/events"
     ),
@@ -684,7 +684,7 @@ Airflow provides tasks with extra parameters. The most important of these
 parameters is called the `execution_date`, which represents the date and time
 for which our DAG is being executed. The end time of the schedule interval is
 indicated by another parameter called the `next_execution_date`. Airflow also
-provides a previous_execution_date parameter, which describes the start of the
+provides a `prev_execution_date` parameter, which describes the start of the
 previous schedule interval.
 
 <Figure src="/media/airflow-execution-dates.png">
@@ -823,10 +823,10 @@ marks our schedule interval rather than the moment our DAG is actually executed.
 When executing a task, the start and end of the corresponding interval are
 defined by the `execution_date` (the start of the interval) and the
 `next_execution` date (the start of the next interval) parameters. Similarly,
-the previous schedule interval can be derived using the
-`previous_execution_date` and `execution_date` parameters.
+the previous schedule interval can be derived using the `prev_execution_date`
+and `execution_date` parameters.
 
-However, one caveat to keep in mind when using the `previous_execution_date` and
+However, one caveat to keep in mind when using the `prev_execution_date` and
 `next_execution_date` parameters in your tasks is that these are only defined
 for DAG runs following the schedule interval. As such, the values of these
 parameters will be undefined for any runs that are triggered manually using
@@ -911,7 +911,7 @@ fetch_events = BashOperator(
 
 Rerunning this task for a given date would result in the task fetching the same
 set of events as its previous execution (assuming the date is within our 30-day
-window), and overwriting the existing JSON file in the /data/events folder,
+window), and overwriting the existing JSON file in the `/data/events` folder,
 producing the same result. As such, this implementation of the fetch events task
 is clearly idempotent.
 

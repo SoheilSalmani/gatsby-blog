@@ -5,7 +5,64 @@ relatedResources:
 tags: []
 ---
 
-1. Install pyenv and install Python 3.9.7 and 3.8.12 using it. Create a GitHub
+Declare all your GitHub labels before starting, and think to merge branches into
+master using pull requests. You should also label your pull requests for release
+notes. Finally, think to upgrade the version of the project for each release.
+
+1. Create a GitHub workflow which maintains drafts of release notes as pull
+   requests are merged into master.
+
+   <Solution>
+
+   Example:
+
+   ```yaml nu fp=.github/release-drafter.yaml
+   categories:
+     - title: ":boom: Breaking Changes"
+       label: "breaking"
+     - title: ":package: Build System"
+       label: "build"
+     - title: ":construction_worker: Continuous Integration"
+       label: "ci"
+     - title: ":books: Documentation"
+       label: "documentation"
+     - title: ":rocket: Features"
+       label: "enhancement"
+     - title: ":beetle: Fixes"
+       label: "bug"
+     - title: ":racehorse: Performance"
+       label: "performance"
+     - title: ":hammer: Refactoring"
+       label: "refactoring"
+     - title: ":fire: Removals and Deprecations"
+       label: "removal"
+     - title: ":lipstick: Style"
+       label: "style"
+     - title: ":rotating_light: Testing"
+       label: "testing"
+   template: |
+     ## What's Changed
+     $CHANGES
+   ```
+
+   ```yaml nu fp=.github/workflows/release-drafter.yml
+   name: Release Drafter
+   on:
+     push:
+       branches:
+         - master
+   jobs:
+     draft_release:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: release-drafter/release-drafter@v5.15.0
+           env:
+             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+   ```
+
+   </Solution>
+
+2. Install pyenv and install Python 3.9.7 and 3.8.12 using it. Create a GitHub
    repository and pull it, then make the Python installations available inside
    the repository.
 
@@ -25,7 +82,7 @@ tags: []
 
    </Solution>
 
-2. Install Poetry and initialize your Python project using Poetry (without
+3. Install Poetry and initialize your Python project using Poetry (without
    interaction).
 
    <Solution>
@@ -38,24 +95,28 @@ tags: []
 
    </Solution>
 
-3. Add some metadata to the package.
+4. Add some metadata to the package.
 
    <Solution>
 
    ```toml fp=pyproject.toml
    [tool.poetry]
-   ...
+   name = "wikipedia-cli-by-ss"
+   version = "0.1.0"
    description = "The Wikipedia CLI"
    license = "MIT"
    readme = "README.md"
    homepage = "https://github.com/SoheilSalmani/wikipedia-cli"
    repository = "https://github.com/<your-username>/wikipedia-cli"
    keywords = ["wikipedia", "cli"]
+   packages = [
+       { include = "wikipedia_cli", from = "src" }
+   ]
    ```
 
    </Solution>
 
-4. Update the `pyproject.toml` to support Python 3.8.
+5. Update the `pyproject.toml` to support Python 3.8.
 
    <Solution>
 
@@ -66,7 +127,7 @@ tags: []
 
    </Solution>
 
-5. Create a `wikipedia_cli` package in `src/` and specify a version of `0.1.0`.
+6. Create a `wikipedia_cli` package in `src/` and specify a version of `0.1.0`.
 
    <Solution>
 
@@ -84,7 +145,7 @@ tags: []
 
    </Solution>
 
-6. Create a virtual environment dedicated to your project, and install your
+7. Create a virtual environment dedicated to your project, and install your
    package into it.
 
    <Solution>
@@ -101,7 +162,7 @@ tags: []
 
    </Solution>
 
-7. Build a `console` module definined a command-line application which prints a
+8. Build a `console` module definined a command-line application which prints a
    random Wikipedia article. Code related to the Wikipedia API should be written
    in a `wikipedia` module. Register the executable in `pyproject.toml`. Use
    this endpoint: `https://en.wikipedia.org/api/rest_v1/page/random/summary`.
@@ -122,7 +183,7 @@ tags: []
 
    @click.command()
    @click.option(
-       "--language",
+       "--lang",
        "-l",
        default="en",
        help="Language edition of Wikipedia",
@@ -130,10 +191,10 @@ tags: []
        show_default=True,
    )
    @click.version_option(version=__version__)
-   def main(language):
+   def main(lang):
        """The hypermodern Python project."""
        try:
-           data = wikipedia.random_page(language=language)
+           data = wikipedia.get_random(lang=lang)
        except requests.RequestException as error:
            raise click.ClickException(str(error)) from error
 
@@ -147,10 +208,10 @@ tags: []
    ```python nu fp=src/wikipedia_cli/wikipedia.py
    import requests
 
-   API_URL = "https://{language}.wikipedia.org/api/rest_v1/page/random/summary"
+   API_URL = "https://{lang}.wikipedia.org/api/rest_v1/page/random/summary"
 
-   def random_page(language="en"):
-       url = API_URL.format(language=language)
+   def get_random(lang="en"):
+       url = API_URL.format(lang=lang)
        with requests.get(url) as response:
            response.raise_for_status()
            return response.json()
@@ -167,7 +228,7 @@ tags: []
 
    </Solution>
 
-8. Upgrade a dependency package to a new minor or patch release.
+9. Upgrade a dependency package to a new minor or patch release.
 
    <Solution>
 
@@ -177,28 +238,128 @@ tags: []
 
    </Solution>
 
-9. Upgrade a dependency to a new major release.
-
-   <Solution>
-
-   ```shell
-   poetry add click^7.0
-   ```
-
-   </Solution>
-
-10. Add a `.gitignore` file.
+10. Upgrade a dependency to a new major release.
 
     <Solution>
 
-    ```gitignore nu
-    /.python-version
-    __pycache__/
+    ```shell
+    poetry add click^7.0
     ```
 
     </Solution>
 
-11. Write several unit and e2e tests and configure Coverage.py.
+11. Find a way to single-source the package version of the package.
+
+    <Solution>
+
+    ```python fp=src/wikipedia_cli/__init__.py
+    from importlib.metadata import version
+
+    DIST_NAME = "wikipedia-cli-by-ss"
+
+    __version__ = version(DIST_NAME)
+    ```
+
+    </Solution>
+
+12. Create a GitHub workflow which builds and publishes the package on TestPyPI
+    on every push on master.
+
+    <Solution>
+
+    Sign up at TestPyPI, and grant GitHub Actions permission to upload to
+    TestPyPI:
+
+    1. Go to the <Scr>Account settings</Scr> on TestPyPI, generate an API token,
+       and copy it.
+    2. Go to the repository settings on GitHub, and add a secret named
+       `TEST_PYPI_TOKEN` with the token you just copied.
+
+    ```yaml nu fp=.github/workflows/test-pypi.yml
+    name: TestPyPI
+    on:
+      push:
+        branches:
+          - master
+    jobs:
+      test_pypi:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v2
+          - uses: actions/setup-python@v1
+            with:
+              python-version: "3.9"
+              architecture: x64
+          - run: pip install poetry==1.1.8
+          - run: >-
+              poetry version patch && version=$(poetry version | awk '{print
+              $2}') && poetry version $version.dev.$(date +%s)
+          - run: poetry build
+          - uses: pypa/gh-action-pypi-publish@release/v1
+            with:
+              user: __token__
+              password: ${{ secrets.TEST_PYPI_TOKEN }}
+              repository_url: https://test.pypi.org/legacy/
+    ```
+
+    </Solution>
+
+13. Create a GitHub workflow which builds and publishes the package on PyPI when
+    a new release is published on GitHub. Add the related badge in the readme
+    file.
+
+    <Solution>
+
+    Sign up at PyPI, and enable two-factor authentication for an additional
+    layer of security. Next, grant GitHub Actions permission to upload to PyPI:
+
+    1. Go to the <Scr>Account settings</Scr> on PyPI, generate an API token, and
+       copy it.
+    2. Go to the repository settings on GitHub, and add a secret named
+       `PYPI_TOKEN` with the token you just copied.
+
+    ```yml nu fp=.github/workflows/release.yml
+    name: Release
+    on:
+      release:
+        types: [published]
+    jobs:
+      release:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v2
+          - uses: actions/setup-python@v1
+            with:
+              python-version: "3.9"
+              architecture: x64
+          - run: pip install nox==2021.6.12
+          - run: pip install poetry==1.1.8
+          - run: nox
+          - run: poetry build
+          - run:
+              poetry publish --username=__token__ --password=${{
+              secrets.PYPI_TOKEN }}
+    ```
+
+    The release workflow is triggered when you publish a GitHub Release. GitHub
+    Releases are based on Git tags, which mark a specific point in your
+    repository’s history. Here’s how you can create and publish a release for
+    your project:
+
+    1. Go to the Releases tab of your main repository page.
+    2. Click <Scr>Create a new release</Scr>.
+    3. Enter the Git tag. By convention, these tags have the form `v<version>`.
+    4. Enter the title and description for your release.
+    5. Click <Scr>Publish release</Scr>.
+
+    ```markdown fp=README.md
+    [![PyPI](https://img.shields.io/pypi/v/wikipedia-cli-by-ss)](https://pypi.org/
+    project/wikipedia-cli-by-ss/)
+    ```
+
+    </Solution>
+
+14. Write several unit and e2e tests and configure Coverage.py.
 
     <Solution>
 
@@ -289,7 +450,7 @@ tags: []
 
     </Solution>
 
-12. Configure Nox and add a `tests` session to run unit tests for each Python
+15. Configure Nox and add a `tests` session to run unit tests for each Python
     version.
 
     <Solution>
@@ -304,6 +465,7 @@ tags: []
 
     import nox
 
+    wheel_prefix = "wikipedia_cli_by_ss"
     package = "wikipedia_cli"
 
     class Poetry:
@@ -343,7 +505,9 @@ tags: []
 
         version = poetry.version()
         session.install(
-            "--no-deps", "--force-reinstall", f"dist/{package}-{version}-py3-none-any.whl"
+            "--no-deps",
+            "--force-reinstall",
+            f"dist/{wheel_prefix}-{version}-py3-none-any.whl"
         )
 
     def install(session, *args):
@@ -365,22 +529,94 @@ tags: []
 
     </Solution>
 
-13. Update the `.gitignore` file.
+16. Create a GitHub workflow which runs tests on every push. Add the related
+    badge in the readme file.
 
     <Solution>
 
-    ```gitignore nu hl=3..6
-    /.python-version
-    __pycache__/
-    /.coverage
-    /dist/
-    .pytest_cache/
-    /.nox/
+    ```yaml nu fp=.github/workflows/tests.yml
+    name: Tests
+    on: push
+    jobs:
+      tests:
+        runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            python-version: ["3.8", "3.9"]
+        name: Python ${{ matrix.python-version }}
+        steps:
+          - uses: actions/checkout@v2
+          - uses: actions/setup-python@v1
+            with:
+              python-version: ${{ matrix.python-version }}
+              architecture: x64
+          - run: pip install nox==2021.6.12
+          - run: pip install poetry==1.1.8
+          - run: nox
+    ```
+
+    ```markdown fp=README.md
+    [![Tests](https://github.com/SoheilSalmani/wikipedia-cli/actions/workflows/tests.
+    yml/badge.svg)](https://github.com/SoheilSalmani/wikipedia-cli/actions/workflows/
+    tests.yml)
     ```
 
     </Solution>
 
-14. Configure Black, Flake8 and Safety in the project.
+17. Create a GitHub workflow to push the code coverage report to Codecov on
+    every push. Add the related badge in the readme file.
+
+    <Solution>
+
+    Sign up at Codecov, install their GitHub app, and add your repository to
+    Codecov.
+
+    ```shell
+    poetry add --dev codecov
+    ```
+
+    ```python fp=noxfile.py
+    @nox.session(python="3.9")
+    def coverage(session: Session) -> None:
+        """Upload coverage data."""
+        install(session, "coverage[toml]", "codecov")
+        session.run("coverage", "xml", "--fail-under=0")
+        session.run("codecov", *session.posargs)
+    ```
+
+    Grant GitHub Actions access to upload to Codecov:
+
+    1. Go to your repository settings on Codecov, and copy the <Scr>Repository
+       Upload Token</Scr>.
+    2. Go to your repository settings on GitHub, and add a secret named
+       `CODECOV_TOKEN` with the token you just copied.
+
+    ```yaml nu fp=.github/workflows/coverage.yml
+    name: Coverage
+    on: push
+    jobs:
+      coverage:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v2
+          - uses: actions/setup-python@v1
+            with:
+              python-version: "3.9"
+              architecture: x64
+          - run: pip install nox==2021.6.12
+          - run: pip install poetry==1.1.8
+          - run: nox --sessions tests-3.9 coverage
+            env:
+              CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
+    ```
+
+    ```markdown fp=README.md
+    [![codecov](https://codecov.io/gh/SoheilSalmani/wikipedia-cli/branch/master/graph/ badge.svg?token=KG1NCKGY95)](https://codecov.io/gh/SoheilSalmani/wikipedia-cli)
+    ```
+
+    </Solution>
+
+18. Configure Black, Flake8 and Safety in the project.
 
     <Solution>
 
@@ -445,7 +681,7 @@ tags: []
 
     </Solution>
 
-15. Install an insecure package, and check that Safety detect it.
+19. Install an insecure package, and check that Safety detect it.
 
     <Solution>
 
@@ -457,7 +693,7 @@ tags: []
 
     </Solution>
 
-16. Configure pre-commit to run Black and Flake8 during a commit. Apply checks
+20. Configure pre-commit to run Black and Flake8 during a commit. Apply checks
     to all files.
 
     <Solution>
@@ -498,7 +734,7 @@ tags: []
 
     </Solution>
 
-17. Use Desert and Marshmallow to validate data fetched from the Wikipedia API.
+21. Use Desert and Marshmallow to validate data fetched from the Wikipedia API.
 
     <Solution>
 
@@ -578,7 +814,7 @@ tags: []
 
     </Solution>
 
-18. Configure Mypy, Pytype and Typeguard in the project.
+22. Configure Mypy, Pytype and Typeguard in the project.
 
     <Solution>
 
@@ -620,7 +856,7 @@ tags: []
 
     </Solution>
 
-19. Add type annotations in the codebase, and check them using a Flake8 plugin.
+23. Add type annotations in the codebase, and check them using a Flake8 plugin.
 
     <Solution>
 
@@ -720,7 +956,7 @@ tags: []
 
     </Solution>
 
-20. Configure Flake8, Darglint and xdoctest to check docstrings in the codebase.
+24. Configure Flake8, Darglint and xdoctest to check docstrings in the codebase.
 
     <Solution>
 
@@ -766,7 +1002,7 @@ tags: []
 
     </Solution>
 
-21. Add docstrings in the Nox configuration file.
+25. Add docstrings in the Nox configuration file.
 
     <Solution>
 
@@ -859,7 +1095,7 @@ tags: []
 
     </Solution>
 
-22. Check that your docstrings are showed when you list Nox sessions using the
+26. Check that your docstrings are showed when you list Nox sessions using the
     `nox` CLI.
 
     <Solution>
@@ -870,7 +1106,7 @@ tags: []
 
     </Solution>
 
-23. Add docstrings in the `wikipedia-cli` package.
+27. Add docstrings in the `wikipedia-cli` package.
 
     <Solution>
 
@@ -927,7 +1163,7 @@ tags: []
 
     </Solution>
 
-24. Add docstrings in the test suite.
+28. Add docstrings in the test suite.
 
     <Solution>
 
@@ -991,7 +1227,7 @@ tags: []
 
     </Solution>
 
-25. Configure Sphinx to build a documentation.
+29. Configure Sphinx to build a documentation.
 
     <Solution>
 
@@ -1103,17 +1339,66 @@ tags: []
         :members:
     ```
 
-    ```gitignore fp=.gitignore hl=10
-    /.python-version
-    __pycache__/
-    /.coverage
-    /dist/
-    .pytest_cache/
-    /.nox/
-    /.devcontainer/
-    /.mypy_cache/
-    /.pytype/
-    /docs/_build/
+    </Solution>
+
+30. Configure the project to host documentation at Read the Docs. Add the
+    related badge in the readme file.
+
+    <Solution>
+
+    Sign up at Read the Docs, and import your GitHub repository, using the
+    button Import a Project.
+
+    ```yaml nu fp=.readthedocs.yml
+    version: 2
+    sphinx:
+      configuration: docs/conf.py
+    formats: all
+    python:
+      version: 3.8
+      install:
+        - requirements: docs/requirements.txt
+        - path: .
+    ```
+
+    ```txt nu fp=docs/requirements.txt
+    sphinx==4.2.0
+    sphinx-autodoc-typehints==1.12.0
+    ```
+
+    ```toml fp=pyproject.toml
+    documentation = "https://wikipedia-cli.readthedocs.io/en/latest/"
+    ```
+
+    ```markdown fp=README.md
+    [![Documentation Status](https://readthedocs.org/projects/wikipedia-cli/badge/? version=latest)](https://wikipedia-cli.readthedocs.io/en/latest/?badge=latest)
     ```
 
     </Solution>
+
+31. What is the command to change the version of the project? And the command to
+    upgrade patch/minor/major version of the project.
+
+    <Solution>
+
+    ```shell
+    poetry version <version>
+    poetry version patch
+    poetry version minor
+    poetry version major
+    ```
+
+    </Solution>
+
+**Note:** The final `.gitignore` should be as following:
+
+```gitignore nu fp=.gitignore
+/.coverage
+/.devcontainer/
+/.mypy_cache/
+/.nox/
+/.python-version
+/.pytype/
+/docs/_build/
+__pycache__/
+```

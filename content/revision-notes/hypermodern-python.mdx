@@ -2164,8 +2164,9 @@ jobs:
 ```
 
 If you commit and push now, you can watch the workflow execute under the
-<Scr>Actions</Scr> tab in your GitHub repository, with a separate job for each
-Python version.
+
+<Scr>Actions</Scr> tab in your GitHub repository, with a separate job for each Python
+version.
 
 You should also add a GitHub Actions badge to your repository page. The badge
 indicates whether the tests are passing or failing on the master branch, and
@@ -2278,7 +2279,7 @@ published, and keeps the build and upload process itself reliable.
 Sign up at PyPI, and enable two-factor authentication for an additional layer of
 security. Next, grant GitHub Actions permission to upload to PyPI:
 
-1. Go to the <Scr>Account Settings</Scr> on PyPI, generate an API token, and
+1. Go to the <Scr>Account settings</Scr> on PyPI, generate an API token, and
    copy it.
 2. Go to the repository settings on GitHub, and add a secret named `PYPI_TOKEN`
    with the token you just copied.
@@ -2303,7 +2304,9 @@ jobs:
       - run: pip install poetry==1.0.5
       - run: nox
       - run: poetry build
-      - run: poetry publish --username=__token__ --password=${{ secrets.PYPI_TOKEN }}
+      - run:
+          poetry publish --username=__token__ --password=${{ secrets.PYPI_TOKEN
+          }}
 ```
 
 The release workflow is triggered when you publish a GitHub Release. GitHub
@@ -2311,14 +2314,17 @@ Releases are based on Git tags, which mark a specific point in your repository�
 history. Here’s how you can create and publish a release for your project:
 
 1. Go to the Releases tab of your main repository page.
-2. Click <Scr>Draft a new release</Scr>.
+2. Click <Scr>Create a new release</Scr>.
 3. Enter the Git tag. By convention, these tags have the form `v<version>`.
 4. Enter the title and description for your release.
 5. Click <Scr>Publish release</Scr>.
 
-The release workflow should now start building your package, and upload the resulting artifacts to PyPI. At the start of the workflow, the test suite is run once more to ensure that the package passes all checks.
+The release workflow should now start building your package, and upload the
+resulting artifacts to PyPI. At the start of the workflow, the test suite is run
+once more to ensure that the package passes all checks.
 
-Add a badge to `README.md` which links to your PyPI project page and displays the latest release:
+Add a badge to `README.md` which links to your PyPI project page and displays
+the latest release:
 
 ```markdown fp=README.md
 [![PyPI](https://img.shields.io/pypi/v/hypermodern-python.svg)](https://pypi.org/project/hypermodern-python/)
@@ -2326,9 +2332,14 @@ Add a badge to `README.md` which links to your PyPI project page and displays th
 
 ### Documenting releases with Release Drafter
 
-The Release Drafter action drafts your next release notes as pull requests are merged into master. It does this by creating and maintaining a draft release. When a pull request gets accepted, the release description is updated to include its title, author, and a link to the pull request itself.
+The Release Drafter action drafts your next release notes as pull requests are
+merged into master. It does this by creating and maintaining a draft release.
+When a pull request gets accepted, the release description is updated to include
+its title, author, and a link to the pull request itself.
 
-When you’re ready to make a release, you simply need to add the tag name, and click *Publish*. You’re also free to edit the release description further, for example to include a more general description of the release.
+When you’re ready to make a release, you simply need to add the tag name, and
+click _Publish_. You’re also free to edit the release description further, for
+example to include a more general description of the release.
 
 Add the following workflow to use Release Drafter:
 
@@ -2347,34 +2358,40 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-Another useful feature of Release Drafter is to group pull requests based on labels you apply to them. This would allow you, for example, to have separate headings for features, bugfixes, and documentation in the release notes, using GitHub’s *enhancement*, *bug*, and *documentation* labels.
+Another useful feature of Release Drafter is to group pull requests based on
+labels you apply to them. This would allow you, for example, to have separate
+headings for features, bugfixes, and documentation in the release notes, using
+GitHub’s _enhancement_, _bug_, and _documentation_ labels.
 
-The configuration file below goes somewhat further, and is very loosely based on the Angular Commit Message Convention and gitmoji. You will need to add the remaining labels to your repository manually, using New Label on the Issues tab of the repository.
+The configuration file below goes somewhat further, and is very loosely based on
+the Angular Commit Message Convention and gitmoji. You will need to add the
+remaining labels to your repository manually, using New Label on the Issues tab
+of the repository.
 
 ```yaml nu fp=.github/release-drafter.yml
 categories:
-  - title: ':boom: Breaking Changes'
-    label: 'breaking'
-  - title: ':package: Build System'
-    label: 'build'
-  - title: ':construction_worker: Continuous Integration'
-    label: 'ci'
-  - title: ':books: Documentation'
-    label: 'documentation'
-  - title: ':rocket: Features'
-    label: 'enhancement'
-  - title: ':beetle: Fixes'
-    label: 'bug'
-  - title: ':racehorse: Performance'
-    label: 'performance'
-  - title: ':hammer: Refactoring'
-    label: 'refactoring'
-  - title: ':fire: Removals and Deprecations'
-    label: 'removal'
-  - title: ':lipstick: Style'
-    label: 'style'
-  - title: ':rotating_light: Testing'
-    label: 'testing'
+  - title: ":boom: Breaking Changes"
+    label: "breaking"
+  - title: ":package: Build System"
+    label: "build"
+  - title: ":construction_worker: Continuous Integration"
+    label: "ci"
+  - title: ":books: Documentation"
+    label: "documentation"
+  - title: ":rocket: Features"
+    label: "enhancement"
+  - title: ":beetle: Fixes"
+    label: "bug"
+  - title: ":racehorse: Performance"
+    label: "performance"
+  - title: ":hammer: Refactoring"
+    label: "refactoring"
+  - title: ":fire: Removals and Deprecations"
+    label: "removal"
+  - title: ":lipstick: Style"
+    label: "style"
+  - title: ":rotating_light: Testing"
+    label: "testing"
 template: |
   ## What’s Changed
 
@@ -2383,15 +2400,26 @@ template: |
 
 ### Single-sourcing the package version
 
-Before creating the next release of your package, you need to bump the version of your package. Use `poetry version` to update the version declared in `pyproject.toml`:
+Before creating the next release of your package, you need to bump the version
+of your package. Use `poetry version` to update the version declared in
+`pyproject.toml`:
 
 ```shell
 poetry version <version>
 ```
 
-You can pass the new version explicitly, or a rule such as `major`, `minor`, or `patch`. In a nutshell, increment the major version if the release contains breaking changes, the patch level if the release contains only bugfixes, and the minor version in all other cases. This assumes that your project has a stable and public API, and a version number greater than or equal to `1.0.0`. For more details, refer to the Semantic Versioning standard.
+You can pass the new version explicitly, or a rule such as `major`, `minor`, or
+`patch`. In a nutshell, increment the major version if the release contains
+breaking changes, the patch level if the release contains only bugfixes, and the
+minor version in all other cases. This assumes that your project has a stable
+and public API, and a version number greater than or equal to `1.0.0`. For more
+details, refer to the Semantic Versioning standard.
 
-As it stands, you also need to update the version declared inside your package’s `__init__.py`. We can streamline this process even further, by determining the version automatically using the installed package metadata. This is possible in Python 3.8 using the standard `importlib.metadata` library, and in Python 3.7 and earlier using its backport `importlib_metadata`.
+As it stands, you also need to update the version declared inside your package’s
+`__init__.py`. We can streamline this process even further, by determining the
+version automatically using the installed package metadata. This is possible in
+Python 3.8 using the standard `importlib.metadata` library, and in Python 3.7
+and earlier using its backport `importlib_metadata`.
 
 ```shell
 poetry add --python="<3.8" importlib_metadata
@@ -2408,7 +2436,11 @@ from importlib.metadata import version
 __version__ = version(__name__)
 ```
 
-However, the actual implementation is slightly more complicated, due to the fact that the import path depends on the Python version, and the possibility that the package has not been installed (although this should rarely happen, thanks to src layout). For the same reasons, we need to disable type checking and coverage for certain lines.
+However, the actual implementation is slightly more complicated, due to the fact
+that the import path depends on the Python version, and the possibility that the
+package has not been installed (although this should rarely happen, thanks to
+src layout). For the same reasons, we need to disable type checking and coverage
+for certain lines.
 
 ```python nu fp=src/hypermodern_python/__init__.py
 """The hypermodern Python project."""
@@ -2425,18 +2457,23 @@ except PackageNotFoundError:  # pragma: no cover
     __version__ = "unknown"
 ```
 
-With this in place, `pyproject.toml` has become the single source of truth for your package version.
+With this in place, `pyproject.toml` has become the single source of truth for
+your package version.
 
 ### Uploading your package to TestPyPI
 
-TestPyPI is a separate instance of the Python Package Index that allows you to try distribution tools and processes without affecting the real index.
+TestPyPI is a separate instance of the Python Package Index that allows you to
+try distribution tools and processes without affecting the real index.
 
 Sign up at TestPyPI, and grant GitHub Actions permission to upload to TestPyPI:
 
-1. Go to the <Scr>Account Settings</Scr> on TestPyPI, generate an API token, and copy it.
-2. Go to the repository settings on GitHub, and add a secret named `TEST_PYPI_TOKEN` with the token you just copied.
+1. Go to the <Scr>Account settings</Scr> on TestPyPI, generate an API token, and
+   copy it.
+2. Go to the repository settings on GitHub, and add a secret named
+   `TEST_PYPI_TOKEN` with the token you just copied.
 
-The following GitHub workflow builds and uploads your package to TestPyPI from the master branch of your repository:
+The following GitHub workflow builds and uploads your package to TestPyPI from
+the master branch of your repository:
 
 ```yaml nu fp=.github/workflows/test-pypi.yml
 name: TestPyPI
@@ -2448,29 +2485,35 @@ jobs:
   test_pypi:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
-      with:
-        python-version: '3.8'
-        architecture: x64
-    - run: pip install poetry==1.0.5
-    - run: >-
-        poetry version patch &&
-        version=$(poetry version | awk '{print $2}') &&
-        poetry version $version.dev.$(date +%s)
-    - run: poetry build
-    - uses: pypa/gh-action-pypi-publish@v1.0.0a0
-      with:
-        user: __token__
-        password: ${{ secrets.TEST_PYPI_TOKEN }}
-        repository_url: https://test.pypi.org/legacy/
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: "3.8"
+          architecture: x64
+      - run: pip install poetry==1.0.5
+      - run: >-
+          poetry version patch && version=$(poetry version | awk '{print $2}')
+          && poetry version $version.dev.$(date +%s)
+      - run: poetry build
+      - uses: pypa/gh-action-pypi-publish@v1.0.0a0
+        with:
+          user: __token__
+          password: ${{ secrets.TEST_PYPI_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
 ```
 
-TestPyPI does not allow you to overwrite an existing package version. The workflow therefore bumps the version and appends a suffix of the form `.dev.<timestamp>`, indicating a developmental release. The package is then built and uploaded using the PyPI publish GitHub Action of the Python Packaging Authority.
+TestPyPI does not allow you to overwrite an existing package version. The
+workflow therefore bumps the version and appends a suffix of the form
+`.dev.<timestamp>`, indicating a developmental release. The package is then
+built and uploaded using the PyPI publish GitHub Action of the Python Packaging
+Authority.
 
 ### Hosting documentation at Read the Docs
 
-Read the Docs hosts documentation for countless open-source Python projects. The hosting service also takes care of rebuilding the documentation when you update your project. Users can browse documentation for every published version, as well as the latest development version.
+Read the Docs hosts documentation for countless open-source Python projects. The
+hosting service also takes care of rebuilding the documentation when you update
+your project. Users can browse documentation for every published version, as
+well as the latest development version.
 
 Create the `.readthedocs.yml` configuration file:
 
@@ -2486,26 +2529,40 @@ python:
     - path: .
 ```
 
-The `install` section in the configuration file tells Read the Docs how to install your package and its documentation dependencies. Read the Docs does not support installation of dependencies using Poetry directly. Luckily, pip can install any package with a standard `pyproject.toml` file, and will use `poetry-core` behind the scenes.
+The `install` section in the configuration file tells Read the Docs how to
+install your package and its documentation dependencies. Read the Docs does not
+support installation of dependencies using Poetry directly. Luckily, pip can
+install any package with a standard `pyproject.toml` file, and will use
+`poetry-core` behind the scenes.
 
-On the other hand, the development dependencies on Sphinx and its extensions are not declared in the package. (And even if they were, dependencies declared in the package are not pinned, so we might run into problems due to slightly different build environments.) Uploading the documentation from a GitHub workflow would solve this nicely, but this is currently not supported. So let’s be pragmatic and duplicate the documentation dependencies using a separate requirements file:
+On the other hand, the development dependencies on Sphinx and its extensions are
+not declared in the package. (And even if they were, dependencies declared in
+the package are not pinned, so we might run into problems due to slightly
+different build environments.) Uploading the documentation from a GitHub
+workflow would solve this nicely, but this is currently not supported. So let’s
+be pragmatic and duplicate the documentation dependencies using a separate
+requirements file:
 
 ```txt nu fp=docs/requirements.txt
 sphinx==2.3.1
 sphinx-autodoc-typehints==1.10.3
 ```
 
-Sign up at Read the Docs, and import your GitHub repository, using the button Import a Project. Read the Docs automatically starts building your documentation. When the build has completed, your documentation will have a public URL like this:
-https://hypermodern-python.readthedocs.io/.
+Sign up at Read the Docs, and import your GitHub repository, using the button
+Import a Project. Read the Docs automatically starts building your
+documentation. When the build has completed, your documentation will have a
+public URL like this: https://hypermodern-python.readthedocs.io/.
 
-You can display the documentation link on PyPI by including it in your package configuration file:
+You can display the documentation link on PyPI by including it in your package
+configuration file:
 
 ```toml fp=pyproject.toml
 [tool.poetry]
 documentation = "https://hypermodern-python.readthedocs.io"
 ```
 
-Let’s also add the link to the GitHub repository page, by adding a Read the Docs badge to `README.md`:
+Let’s also add the link to the GitHub repository page, by adding a Read the Docs
+badge to `README.md`:
 
 ```markdown fp=README.md
 [![Read the Docs](https://readthedocs.org/projects/hypermodern-python/badge/)](https://hypermodern-python.readthedocs.io/)
