@@ -381,9 +381,238 @@ Gatsby Type Builders or createResolvers API.
 
 #### Extensions and directives
 
+Out of the box, Gatsby provides four extensions that allow adding custom
+functionality to fields without having to manually write field resolvers:
+`link`, `dateformat`, `fileByRelativePath` and `proxy`.
+
+To add an extension to a field you can either use a directive in SDL, or the
+`extensions` property when using Gatsby Type Builders:
+
+```js fp=gatsby-node.js
+exports.createSchemaCustomization = ({ actions, schema }) => {
+  const { createTypes } = actions
+  const typeDefs = [
+    "type MarkdownRemark implements Node { frontmatter: Frontmatter }",
+    `type Frontmatter {
+      publishedAt: Date @dateformat(formatString: "DD-MM-YYYY")
+    }`,
+    schema.buildObjectType({
+      name: "AuthorJson",
+      fields: {
+        joinedAt: {
+          type: "Date",
+          extensions: {
+            dateformat: {},
+          },
+        },
+      },
+    }),
+  ]
+  createTypes(typeDefs)
+}
+```
+
+Those options are available as field arguments when querying those fields:
+
+```graphql
+query {
+  allAuthorJson {
+    joinedAt(fromNow: true)
+  }
+}
+```
+
 #### Setting default field values
 
+For setting default field values, Gatsby currently does not (yet) provide an
+out-of-the-box extension, so resolving a field to a default value (instead of
+`null`) requires manually adding a field resolver. For example, to add a default
+tag to every blog post:
+
+```js fp=gatsby-node.js
+exports.createSchemaCustomization = ({ actions, schema }) => {
+  const { createTypes } = actions
+  const typeDefs = [
+    "type MarkdownRemark implements Node { frontmatter: Frontmatter }",
+    schema.buildObjectType({
+      name: "Frontmatter",
+      fields: {
+        tags: {
+          type: "[String!]",
+          resolve(source, args, context, info) {
+            // For a more generic solution, you could pick the field value from
+            // `source[info.fieldName]`
+            const { tags } = source
+            if (source.tags == null || (Array.isArray(tags) && !tags.length)) {
+              return ["uncategorized"]
+            }
+            return tags
+          },
+        },
+      },
+    }),
+  ]
+  createTypes(typeDefs)
+}
+```
+
 #### Creating custom extensions
+
+With the `createFieldExtension` action it is possible to define custom
+extensions as a way to add reusable functionality to fields.
+
+```js fp=gatsby-node.js
+const fullNameResolver = source => `${source.firstName} ${source.name}`
+
+exports.createSchemaCustomization = ({ actions, schema }) => {
+  actions.createTypes([
+    {
+      name: "AuthorJson",
+      interfaces: ["Node"],
+      fields: {
+        fullName: {
+          type: "String",
+          resolve: fullNameResolver,
+        },
+      },
+    },
+    {
+      name: "ContributorJson",
+      interfaces: ["Node"],
+      fields: {
+        fullName: {
+          type: "String",
+          resolve: fullNameResolver,
+        },
+      },
+    },
+  ])
+}
+```
+
+However, to make this functionality available to other plugins as well, and make
+it usable in SDL, you can register it as a field extension.
+
+A field extension definition requires a name, and an `extend` function, which
+should return a (partial) field config (an object, with `type`, `args`,
+`resolve`) which will be merged into the existing field config.
+
+```js fp=gatsby-node.js
+exports.createSchemaCustomization = ({ actions }) => {
+  const { createFieldExtension, createTypes } = actions
+
+  createFieldExtension({
+    name: "fullName",
+    extend(options, prevFieldConfig) {
+      return {
+        resolve(source) {
+          return `${source.firstName} ${source.name}`
+        },
+      }
+    },
+  })
+
+  createTypes(`
+    type AuthorJson implements Node {
+      fullName: String @fullName
+    }
+    type ContributorJson implements Node {
+      fullName: String @fullName
+    }
+  `)
+}
+```
+
+This approach becomes a lot more powerful when plugins provide custom field
+extensions. A _very_ basic markdown transformer plugin could for example provide
+an extension to convert markdown strings into HTML:
+
+```js fp=gatsby-transformer-basic-md/src/gatsby-node.js
+const remark = require(`remark`)
+const remarkHtml = require(`remark-html`)
+
+exports.createSchemaCustomization = ({ actions }) => {
+  actions.createFieldExtension({
+    name: "md",
+    args: {
+      sanitize: {
+        type: "Boolean!",
+        defaultValue: true,
+      },
+    },
+    // The extension `args` (above) are passed to `extend` as
+    // the first argument (`options` below)
+    extend(options, prevFieldConfig) {
+      return {
+        args: {
+          sanitize: "Boolean",
+        },
+        resolve(source, args, context, info) {
+          const fieldValue = context.defaultFieldResolver(
+            source,
+            args,
+            context,
+            info
+          )
+          const shouldSanitize =
+            args.sanitize != null ? args.sanitize : options.sanitize
+          const processor = remark().use(remarkHtml, {
+            sanitize: shouldSanitize,
+          })
+          return processor.processSync(fieldValue).value
+        },
+      }
+    },
+  })
+}
+```
+
+```js fp=gatsby-node.js hl=4
+exports.createSchemaCustomization = ({ actions }) => {
+  actions.createTypes(`
+    type BlogPost implements Node {
+      content: String @md
+    }
+  `)
+}
+```
+
+```js fp=gatsby-node.js hl=4
+exports.createSchemaCustomization = ({ actions }) => {
+  actions.createTypes(`
+    type BlogPost implements Node {
+      content: String @md(sanitize: false)
+    }
+  `)
+}
+```
+
+Also note that field extensions can decide themselves if an existing field
+resolver should be wrapped or overwritten. The above examples have all decided
+to return a new `resolve` function. Because the `extend` function receives the
+current field config as its second argument, an extension can also decide to
+wrap an existing resolver:
+
+```js fp=gatsby-node.js
+extend(options, prevFieldConfig) {
+  const { resolve } = prevFieldConfig
+  return {
+    async resolve(source, args, context, info) {
+      const resultFromPrevResolver = await resolve(source, args, context, info)
+      /* ... */
+      return processor.processSync(resultFromPrevResolver).value
+    }
+  }
+}
+```
+
+If multiple field extensions are added to a field, resolvers are processed in
+this order: first a custom resolver added with `createTypes` (or
+`createResolvers`) runs, then field extension resolvers execute from left to
+right.
+
+Finally, note that in order to get the current `fieldValue`, you use
+`context.defaultFieldResolver`.
 
 ## createResolvers API
 

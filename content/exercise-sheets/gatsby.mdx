@@ -190,7 +190,7 @@ tags: []
 
    </Solution>
 
-9. Use a Gatsby type builder for the `ContributorJson` node type. Ensure that
+9. Use a Gatsby Type Builder for the `ContributorJson` node type. Ensure that
    the `receivedSwag` field is `false` if the field is not defined.
 
    <Solution>
@@ -219,7 +219,7 @@ tags: []
 
    </Solution>
 
-10. Using a Gatsby type builder, keep the `name` field only for the
+10. Using a Gatsby Type Builder, keep the `name` field only for the
     `ContributorJson` type node.
 
    <Solution>
@@ -232,8 +232,8 @@ tags: []
      },
      interfaces: ["Node"],
      extensions: {
-       // While in SDL you have two different directives,  infer and @dontInfer to
-       // control inference behavior, Gatsby Type Builders  ake a single `infer`
+       // While in SDL you have two different directives, @infer and @dontInfer to
+       // control inference behavior, Gatsby Type Builders take a single `infer`
        // extension which accepts a Boolean
        infer: false
      },
@@ -329,3 +329,107 @@ tags: []
    ```
    
    </Solution>
+
+14. Add date formatting options to the `publishedAt` (`MarkdownRemark` node)
+    field using a directive in SDL, and do the same for the `joinedAt`
+    (`AuthorJson` node) using a Gatsby Type Builder. Provide a default string
+    format for `publishedAt` field.
+
+    <Solution>
+
+    ```js fp=gatsby-node.js
+    exports.createSchemaCustomization = ({ actions, schema }) => {
+      const { createTypes } = actions
+      const typeDefs = [
+        "type MarkdownRemark implements Node { frontmatter: Frontmatter }",
+        `type Frontmatter {
+          publishedAt: Date @dateformat(formatString: "DD-MM-YYYY")
+        }`,
+        schema.buildObjectType({
+          name: "AuthorJson",
+          fields: {
+            joinedAt: {
+              type: "Date",
+              extensions: {
+                dateformat: {},
+              },
+            },
+          },
+        }),
+      ]
+      createTypes(typeDefs)
+    }
+    ```
+
+    </Solution>
+
+15. Set a default tag value of `undefined` for posts.
+
+    <Solution>
+
+    ```js fp=gatsby-node.js
+    exports.createSchemaCustomization = ({ actions, schema }) => {
+      const { createTypes } = actions
+      const typeDefs = [
+        "type MarkdownRemark implements Node { frontmatter: Frontmatter }",
+        schema.buildObjectType({
+          name: "Frontmatter",
+          fields: {
+            tags: {
+              type: "[String!]",
+              resolve(source, args, context, info) {
+                // For a more generic solution, you could pick the field value from
+                // `source[info.fieldName]`
+                const { tags } = source
+                if (tags == null || (Array.isArray(tags) && tags.length == 0)) {
+                  return ["uncategorized"]
+                }
+                return tags
+              },
+            },
+          },
+        }),
+      ]
+      createTypes(typeDefs)
+    }
+    ```
+
+    </Solution>
+
+16. Create custom field extension named `fullName` which concatenates a
+    `firstName` field with `name` field. Use it for `AuthorJson` and
+    `ContributorJson` nodes in SDL.
+
+    <Solution>
+
+    ```js fp=gatsby-node.js
+    exports.createSchemaCustomization = ({ actions }) => {
+      const { createFieldExtension, createTypes } = actions
+
+      createFieldExtension({
+        name: "fullName",
+        extend(options, prevFieldConfig) {
+          return {
+            resolve(source) {
+              return `${source.firstName} ${source.name}`
+            },
+          }
+        },
+      })
+
+      createTypes(`
+        type AuthorJson implements Node {
+          fullName: String @fullName
+        }
+        type ContributorJson implements Node {
+          fullName: String @fullName
+        }
+      `)
+    }
+    ```
+
+    </Solution>
+
+17. Provide an extension to convert markdown strings into HTML and use it.
+
+18. Create custom field extensions and chain them.

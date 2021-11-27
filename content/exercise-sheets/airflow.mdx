@@ -142,7 +142,7 @@ tags: []
 
    <Solution>
 
-   ```python nu fp=app.py
+   ```python nu fp=api/app.py
    from datetime import date, datetime, timedelta
    import time
 
@@ -209,7 +209,7 @@ tags: []
        app.run(host="0.0.0.0", port=5000)
    ```
 
-   ```dockerfile nu fp=Dockerfile
+   ```dockerfile nu fp=api/Dockerfile
    FROM python:latest
 
    COPY requirements.txt /tmp/requirements.txt
@@ -225,7 +225,7 @@ tags: []
 
    ```shell
    docker build -t fake-api .
-   docker run -dP fake-api
+   docker run -d -p 5000:5000 fake-api
    ```
 
    </Solution>
@@ -235,7 +235,7 @@ tags: []
 
    <Solution>
 
-   ```python nu fp=dag_event_statistics.py
+   ```python nu fp=dags/dag_event_statistics.py
    from datetime import datetime
    from pathlib import Path
 
@@ -255,7 +255,7 @@ tags: []
        bash_command=(
            "mkdir -p /home/airflow/data && "
            "curl -o /home/airflow/data/events.json "
-           "http://events_api:5000/events"
+           "http://events-api:5000/events"
        ),
        dag=dag,
    )
@@ -278,6 +278,35 @@ tags: []
    )
 
    fetch_events >> calculate_stats
+   ```
+
+   ```bash nu fp=run.sh
+   API_PORT=5000
+   AIRFLOW_PORT=8080
+   API_CID=$(docker run \
+       --rm \
+       -d \
+       -p $API_PORT:$API_PORT \
+       --name fake-api \
+       fake-api)
+   docker run \
+       -p $AIRFLOW_PORT:$AIRFLOW_PORT \
+       --rm \
+       --entrypoint /bin/bash \
+       -v $PWD/dags/:/opt/airflow/dags/ \
+       --link $API_CID:events-api \
+       -e AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS=False \
+       -e AIRFLOW__CORE__LOAD_EXAMPLES=False \
+       -it \
+       --name airflow \
+       apache/airflow:latest \
+       -c '( \
+               airflow db init && \
+               airflow users create --username admin --password admin --firstname Soheil --lastname Salmani --role Admin --email salmani.soheil@gmail.com \
+           ); \
+           airflow webserver & \
+           airflow scheduler \
+          '
    ```
 
    </Solution>
@@ -487,9 +516,1063 @@ tags: []
 14. Disable the backfilling behavior in the Airflow configuration file.
 
     <Solution>
-    
+
     ```cfg fp=/opt/airflow/airflow.cfg
     catchup_by_default = False
+    ```
+
+    </Solution>
+
+15. Check what the most commonly used domain codes are for October 1,
+    10:00-11:00.
+
+    <Solution>
+
+    ```shell
+    curl -O https://dumps.wikimedia.org/other/pageviews/2021/2021-10/    pageviews-20211001-110000.gz
+    gunzip pageviews-20211001-110000.gz
+    awk -F ' ' '${print $1}' pageviews-20211001-110000 | uniq -c | sort -nr | head
+    ```
+
+    </Solution>
+
+16. Check which parameters of the `BashOperator` and the `PythonOperator` would
+    be processed by Jinja.
+
+    <Solution>
+
+    ```python
+    >>> from airflow.operators.bash import BashOperator
+    >>> BashOperator.template_fields
+    ('bash_command', 'env')
+    >>> from airflow.operators.python import PythonOperator
+    >>> PythonOperator.template_fields
+    ('templates_dict', 'op_args', 'op_kwargs')
+    ```
+
+    </Solution>
+
+17. With the help of the `PythonOperator`, prints the dict of all available
+    variables in the task context.
+
+    <Solution>
+
+    ```python nu fp=dag_print_context.py
+    from pprint import pprint
+
+    import airflow.utils.dates
+    from airflow import DAG
+    from airflow.operators.python import PythonOperator
+
+    dag = DAG(
+        dag_id="print_context",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="@daily",
+    )
+
+    def _print_context(**context):
+        pprint(context)
+
+    print_context = PythonOperator(
+        task_id="print_context",
+        python_callable=_print_context,
+        dag=dag,
+    )
+    ```
+
+    </Solution>
+
+18. Build a workflow which extracts information from the Wikimedia API, and
+    writes data to a PostgreSQL database. Use a `PythonOperator` to get the data
+    from the API.
+
+    <Solution>
+
+    ```shell
+    pip install apache-airflow-providers-postgres
+    ```
+
+    ```python nu fp=dags/dag_stocksense.py
+    from urllib import request
+
+    import airflow.utils.dates
+    from airflow import DAG
+    from airflow.operators.bash import BashOperator
+    from airflow.operators.python import PythonOperator
+    from airflow.providers.postgres.operators.postgres import PostgresOperator
+
+    dag = DAG(
+        dag_id="stocksense",
+        start_date=airflow.utils.dates.days_ago(1),
+        schedule_interval="@hourly",
+        template_searchpath="/tmp",
+        max_active_runs=1,
+    )
+
+    def _get_data(year, month, day, hour, output_path):
+        url = (
+            "https://dumps.wikimedia.org/other/pageviews/"
+            f"{year}/{year}-{month:0>2}/"
+            f"pageviews-{year}{month:0>2}{day:0>2}-{hour:0>2}0000.gz"
+        )
+        request.urlretrieve(url, output_path)
+
+    def _fetch_pageviews(pagenames, execution_date, **_):
+        result = dict.fromkeys(pagenames, 0)
+        with open("/tmp/wikipageviews", "r") as f:
+            for line in f:
+                domain_code, page_title, view_counts, _ = line.split(" ")
+                if domain_code == "en" and page_title in pagenames:
+                    result[page_title] = view_counts
+        with open("/tmp/postgres_query.sql", "w") as f:
+            for pagename, pageviewcount in result.items():
+                f.write(
+                    "INSERT INTO pageview_counts VALUES ("
+                    f"'{pagename}', {pageviewcount}, '{execution_date}'"
+                    ");\n"
+                )
+
+    get_data = PythonOperator(
+        task_id="get_data",
+        python_callable=_get_data,
+        op_kwargs={
+            "year": "{{ execution_date.year }}",
+            "month": "{{ execution_date.month }}",
+            "day": "{{ execution_date.day }}",
+            "hour": "{{ execution_date.hour }}",
+            "output_path": "/tmp/wikipageviews.gz",
+        },
+        dag=dag,
+    )
+
+    extract_gz = BashOperator(
+        task_id="extract_gz",
+        bash_command="gunzip --force /tmp/wikipageviews.gz",
+        dag=dag,
+    )
+
+    fetch_pageviews = PythonOperator(
+        task_id="fetch_pageviews",
+        python_callable=_fetch_pageviews,
+        op_kwargs={"pagenames": {"Google", "Amazon_(company)", "Apple_Inc.",    "Microsoft", "Facebook"}},
+        dag=dag,
+    )
+
+    write_to_postgres = PostgresOperator(
+        task_id="write_to_postgres",
+        postgres_conn_id="my_postgres",
+        sql="postgres_query.sql",
+        dag=dag,
+    )
+
+    get_data >> extract_gz >> fetch_pageviews >> write_to_postgres
+    ```
+
+    ```shell nu fp=run.sh
+    POSTGRES_PORT=5432
+    AIRFLOW_PORT=8080
+    POSTGRES_CID=$(docker run \
+        --rm \
+        -d \
+        -p $POSTGRES_PORT:$POSTGRES_PORT \
+        -e POSTGRES_USER=airflow \
+        -e POSTGRES_PASSWORD=airflow \
+        -e POSTGRES_DB=airflow \
+        --name postgres \
+        postgres:latest)
+    docker run \
+        -p $AIRFLOW_PORT:$AIRFLOW_PORT \
+        --rm \
+        --entrypoint /bin/bash \
+        -v $PWD/dags/:/opt/airflow/dags/ \
+        --link $POSTGRES_CID:postgres \
+        -e AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS=False \
+        -e AIRFLOW__CORE__LOAD_EXAMPLES=False \
+        -e AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://airflow:airflow@postgres:5432/airflow \
+        -e AIRFLOW__CORE__EXECUTOR=LocalExecutor \
+        -it \
+        --name airflow \
+        apache/airflow:latest \
+        -c '( \
+                airflow db init && \
+                airflow users create --username admin --password admin --firstname    Soheil --lastname Salmani --role Admin --email salmani.soheil@gmail.com    \
+            ); \
+            airflow webserver & \
+            airflow scheduler \
+           '
+    ```
+
+    ```sql
+    CREATE TABLE pageview_counts (
+        pagename VARCHAR(50) NOT NULL,
+        pageviewcount INT NOT NULL,
+        datetime TIMESTAMP NOT NULL
+    );
+    ```
+
+    ```shell
+    airflow connections add \
+        --conn-type postgres \
+        --conn-host postgres \
+        --conn-login airflow \
+        --conn-password airflow \
+        my_postgres
+    ```
+
+    </Solution>
+
+19. Use the DAG to use a `BashOperator` to get the data from the API.
+
+    <Solution>
+
+    ```shell
+    get_data = BashOperator(
+        task_id="get_data",
+        bash_command=(
+            "curl -o /tmp/wikipageviews.gz "
+            "https://dumps.wikimedia.org/other/pageviews/"
+            "{{ execution_date.year }}/"
+            "{{ execution_date.year }}-"
+            "{{ '{:02}'.format(execution_date.month) }}/"
+            "pageviews-{{ execution_date.year }}"
+            "{{ '{:02}'.format(execution_date.month) }}"
+            "{{ '{:02}'.format(execution_date.day) }}-"
+            "{{ '{:02}'.format(execution_date.hour) }}0000.gz"
+        ),
+        dag=dag,
+    )
+    ```
+
+    </Solution>
+
+20. Inspect the templated argument values of a scheduled task through the
+    Airflow UI.
+
+    <Solution>
+      You can inspect the templated argument values after running a task by
+      selecting it in either the graph or tree view and clicking the
+      <Scr>Rendered</Scr> button.
+    </Solution>
+
+21. Render templated values of a task for any given execution date using the
+    Airflow CLI.
+
+    <Solution>
+
+    ```shell
+    airflow tasks render stocksense get_data 2019-07-19T00:00:00
+    ```
+
+    </Solution>
+
+22. Check all connections stored in Airflow from the UI.
+
+    <Solution>
+
+    Go to <Scr>Admin > Connections</Scr> to view all connections stored in
+    Airflow.
+
+    </Solution>
+
+23. Answer the following question using SQL: "At which hour is each page most
+    popular?".
+
+    <Solution>
+
+    ```sql nu
+    SELECT
+        x.pagename,
+        x.hr AS "hour",
+        x.average AS "average_pageviews"
+
+    FROM (
+        SELECT
+            pagename,
+            date_part('hour', datetime) AS hr,
+            AVG(pageviewcount) AS average,
+            ROW_NUMBER() OVER (
+                PARTITION BY pagename
+                ORDER BY AVG(pageviewcount) DESC
+            )
+        FROM pageview_counts
+        GROUP BY 1, 2
+    ) AS x
+
+    WHERE row_number = 1;
+    ```
+
+    </Solution>
+
+24. Write a DAG which decides between two seperate code paths based on the
+    current execution date.
+
+    <Solution>
+
+    ```python nu fp=dags/dag_branch_function.py
+    import airflow
+
+    from airflow import DAG
+    from airflow.operators.dummy import DummyOperator
+    from airflow.operators.python import PythonOperator
+
+    ERP_CHANGE_DATE = airflow.utils.dates.days_ago(1)
+
+    def _fetch_sales(**context):
+        if context["execution_date"] < ERP_CHANGE_DATE:
+            _fetch_sales_old(**context)
+        else:
+            _fetch_sales_new(**context)
+
+    def _fetch_sales_old(**context):
+        print("Fetching sales data (OLD)...")
+
+    def _fetch_sales_new(**context):
+        print("Fetching sales data (NEW)...")
+
+    def _clean_sales(**context):
+        if context["execution_date"] < ERP_CHANGE_DATE:
+            _clean_sales_old(**context)
+        else:
+            _clean_sales_new(**context)
+
+    def _clean_sales_old(**context):
+        print("Preprocessing sales data (OLD)...")
+
+    def _clean_sales_new(**context):
+        print("Preprocessing sales data (NEW)...")
+
+    with DAG(
+        dag_id="branch_function",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="@daily",
+    ) as dag:
+        start = DummyOperator(task_id="start")
+
+        fetch_sales = PythonOperator(task_id="fetch_sales", python_callable=_fetch_sales)
+        clean_sales = PythonOperator(task_id="clean_sales", python_callable=_clean_sales)
+
+        fetch_weather = DummyOperator(task_id="fetch_weather")
+        clean_weather = DummyOperator(task_id="clean_weather")
+
+        join_datasets = DummyOperator(task_id="join_datasets")
+        train_model = DummyOperator(task_id="train_model")
+        deploy_model = DummyOperator(task_id="deploy_model")
+
+        start >> [fetch_sales, fetch_weather]
+        fetch_sales >> clean_sales
+        fetch_weather >> clean_weather
+        [clean_sales, clean_weather] >> join_datasets
+        join_datasets >> train_model >> deploy_model
+    ```
+
+    </Solution>
+
+25. Transform the previous DAG to use several branches (instead of several code
+    paths), and to let Airflow to choose between multiple execution paths
+    dependending on the execution date.
+
+    <Solution>
+
+    ```python nu fp=dags/dag_branch_dag.py
+    import airflow
+
+    from airflow import DAG
+    from airflow.operators.dummy import DummyOperator
+    from airflow.operators.python import PythonOperator, BranchPythonOperator
+
+    ERP_CHANGE_DATE = airflow.utils.dates.days_ago(1)
+
+    def _pick_erp_system(**context):
+        if context["execution_date"] < ERP_CHANGE_DATE:
+            return "fetch_sales_old"
+        else:
+            return "fetch_sales_new"
+
+    def _fetch_sales_old(**context):
+        print("Fetching sales data (OLD)...")
+
+    def _fetch_sales_new(**context):
+        print("Fetching sales data (NEW)...")
+
+    def _clean_sales_old(**context):
+        print("Preprocessing sales data (OLD)...")
+
+    def _clean_sales_new(**context):
+        print("Preprocessing sales data (NEW)...")
+
+    with DAG(
+        dag_id="branch_dag",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="@daily",
+    ) as dag:
+        start = DummyOperator(task_id="start")
+
+        pick_erp_system = BranchPythonOperator(
+            task_id="pick_erp_system", python_callable=_pick_erp_system
+        )
+
+        fetch_sales_old = PythonOperator(
+            task_id="fetch_sales_old", python_callable=_fetch_sales_old
+        )
+        clean_sales_old = PythonOperator(
+            task_id="clean_sales_old", python_callable=_clean_sales_old
+        )
+
+        fetch_sales_new = PythonOperator(
+            task_id="fetch_sales_new", python_callable=_fetch_sales_new
+        )
+        clean_sales_new = PythonOperator(
+            task_id="clean_sales_new", python_callable=_clean_sales_new
+        )
+
+        join_erp = DummyOperator(task_id="join_erp_branch", trigger_rule="none_failed")
+
+        fetch_weather = DummyOperator(task_id="fetch_weather")
+        clean_weather = DummyOperator(task_id="clean_weather")
+
+        join_datasets = DummyOperator(task_id="join_datasets")
+        train_model = DummyOperator(task_id="train_model")
+        deploy_model = DummyOperator(task_id="deploy_model")
+
+        start >> [pick_erp_system, fetch_weather]
+        pick_erp_system >> [fetch_sales_old, fetch_sales_new]
+        fetch_sales_old >> clean_sales_old
+        fetch_sales_new >> clean_sales_new
+        [clean_sales_old, clean_sales_new] >> join_erp
+        fetch_weather >> clean_weather
+        [join_erp, clean_weather] >> join_datasets
+        join_datasets >> train_model >> deploy_model
+    ```
+
+    </Solution>
+
+26. Using a `PythonOperator`, configure the DAG to run the `deploy_model` task
+    for the latest run only.
+
+    <Solution>
+
+    ```python
+    from airflow.exceptions import AirflowSkipException
+
+    def _latest_only(**context):
+        left_window = context["dag"].following_schedule(context["execution_date"])
+        right_window = context["dag"].following_schedule(left_window)
+
+        now = pendulum.utcnow()
+        if not left_window &lt; now &lt;= right_window:
+            raise AirflowSkipException("Not the most recent run!")
+    ```
+
+    </Solution>
+
+27. Same but this time, use a specialized operator.
+
+    <Solution>
+
+    ```python
+    from airflow.operators.latest_only import LatestOnlyOperator
+
+    latest_only = LatestOnlyOperator(
+        task_id="latest_only",
+        dag=dag,
+    )
+
+    train_model >> latest_only >> deploy_model
+    ```
+
+    </Solution>
+
+28. Write a DAG which tests all trigger rules.
+
+    <Solution>
+
+    | Trigger rule            | Behavior                                                                                                     | Example use case                                                                                                                 |
+    | ----------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+    | `all_success` (default) | Triggers when all parent tasks have been completed successfully                                              | The default trigger rule for a normal workflow                                                                                   |
+    | `all_failed`            | Triggers when all parent tasks have failed (or have failed as a result of a failure in their parents)        | Trigger error handling code in situations where you expected at least one success among a group of tasks                         |
+    | `all_done`              | Triggers when all parents are done with their execution, regardless of their resulting state                 | Execute cleanup code that you want to execute when all tasks have finished (e.g., shutting down a machine or stopping a cluster) |
+    | `one_failed`            | Triggers as soon as at least one parent has failed; does not wait for other parent tasks to finish executing | Quickly trigger some error handling code, such as notifications or rollbacks                                                     |
+    | `one_success`           | Triggers as soon as one parent succeeds; does not wait for other parent tasks to finish executing            | Quickly trigger downstream computations/ notifications as soon as one result becomes available                                   |
+    | `none_failed`           | Triggers if no parents have failed but have either completed successfully or been skipped                    | Join conditional branches in Airflow DAGs                                                                                        |
+    | `none_skipped`          | Triggers if no parents have been skipped but have either completed successfully or failed                    | Trigger a task if all upstream tasks were executed, ignoring their result(s)                                                     |
+    | `dummy`                 | Triggers regardless of the state of any upstream tasks                                                       | Testing                                                                                                                          |
+
+    </Solution>
+
+29. Configure the DAG to share a model ID between the `train_model` and
+    `deploy_model` tasks using XCom. Use `model_id` as key name for the XCom
+    value.
+
+    <Solution>
+
+    ```python
+    def _train_model(**context):
+        model_id = str(uuid.uuid4())
+        context["task_instance"].xcom_push(key="model_id", value=model_id)
+
+    train_model = PythonOperator(
+        task_id="train_model",
+        python_callable=_train_model,
+    )
+
+    def _deploy_model(**context):
+        model_id = context["task_instance"].xcom_pull(
+            task_ids="train_model", key="model_id"
+        )
+        print(f"Deploying model {model_id}")
+
+    deploy_model = PythonOperator(
+        task_id="deploy_model",
+        python_callable=_deploy_model,
+    )
+    ```
+
+    </Solution>
+
+30. Same but this time, reference the XCom variable in a template.
+
+    <Solution>
+
+    ```python
+    def _deploy_model(templates_dict, **context):
+        model_id = templates_dict["model_id"]
+        print(f"Deploying model {model_id}")
+
+    deploy_model = PythonOperator(
+        task_id="deploy_model",
+        python_callable=_deploy_model,
+        templates_dict={
+            "model_id": "{{ task_instance.xcom_pull(task_ids='train_model', key='model_id') }}"
+        },
+    )
+    ```
+
+    </Solution>
+
+31. Same but this time, use the default key for the XCom value.
+
+    <Solution>
+
+    ```python
+    def _train_model(**context):
+        model_id = str(uuid.uuid4())
+        return model_id
+
+    ...
+
+    deploy_model = PythonOperator(
+        task_id="deploy_model",
+        python_callable=_deploy_model,
+        templates_dict={
+            "model_id": "{{ task_instance.xcom_pull(task_ids='train_model', key='return_value') }}"
+        },
+    )
+    ```
+
+    </Solution>
+
+32. Same but this time, use the Taskflow API.
+
+    <Solution>
+
+    ```python nu fp=dag_taskflow.py
+    import uuid
+
+    import airflow
+
+    from airflow import DAG
+    from airflow.decorators import task
+    from airflow.operators.dummy import DummyOperator
+
+    with DAG(
+        dag_id="taskflow",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="@daily",
+    ) as dag:
+        start = DummyOperator(task_id="start")
+
+        fetch_sales = DummyOperator(task_id="fetch_sales")
+        clean_sales = DummyOperator(task_id="clean_sales")
+
+        fetch_weather = DummyOperator(task_id="fetch_weather")
+        clean_weather = DummyOperator(task_id="clean_weather")
+
+        join_datasets = DummyOperator(task_id="join_datasets")
+
+        start >> [fetch_sales, fetch_weather]
+        fetch_sales >> clean_sales
+        fetch_weather >> clean_weather
+        [clean_sales, clean_weather] >> join_datasets
+
+        @task
+        def train_model():
+            model_id = str(uuid.uuid4())
+            return model_id
+
+        @task
+        def deploy_model(model_id):
+            print(f"Deploying model {model_id}")
+
+        model_id = train_model()
+        deploy_model(model_id)
+
+        join_datasets >> model_id
+    ```
+
+    </Solution>
+
+33. Use a custom XCom backend which uses Google Cloud Storage, and test it.
+
+34. Build a DAG which uses a file sensor.
+
+    <Solution>
+
+    ```shell
+    airflow connections add --conn-uri fs://@?path=/ fs_default
+    ```
+
+    Or set the `AIRFLOW_CONN_FS_DEFAULT` environment variable as
+    `fs://@?path=/`.
+
+    ```python nu fp=dags/dag_ingest_supermarket_data.py
+    from pathlib import Path
+
+    import airflow.utils.dates
+    from airflow import DAG
+    from airflow.operators.dummy import DummyOperator
+    from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+    from airflow.sensors.filesystem import FileSensor
+
+    dag = DAG(
+        dag_id="ingest_supermarket_data",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="0 16 * * *",
+    )
+
+    wait = FileSensor(
+        task_id=f"wait_for_supermarket",
+        filepath="/data/supermarket/data.csv",
+        dag=dag,
+    )
+    copy = DummyOperator(task_id=f"copy_to_raw_supermarket", dag=dag)
+    process = DummyOperator(task_id=f"process_supermarket", dag=dag)
+
+    wait >> copy >> process
+    ```
+
+    </Solution>
+
+35. Update the poking interval and the timeout.
+
+    <Solution>
+
+    ```python hl=2..3
+    wait = FileSensor(
+        poke_interval=10,
+        timeout=120,
+        ...
+    )
+    ```
+
+    </Solution>
+
+36. Update the DAG the sensor to use a polling custom condition.
+
+    <Solution>
+
+    ```python nu fp=dags/dag_ingest_supermarket_data.py
+    from pathlib import Path
+
+    import airflow.utils.dates
+    from airflow import DAG
+    from airflow.operators.dummy import DummyOperator
+    from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+    from airflow.sensors.python import PythonSensor
+
+    dag = DAG(
+        dag_id="ingest_supermarket_data",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="0 16 * * *",
+        default_args={"depends_on_past": True},
+    )
+
+    create_metrics = DummyOperator(task_id="create_metrics", dag=dag)
+
+    def _wait_for_supermarket(supermarket_id):
+        supermarket_path = Path("/data/" + supermarket_id)
+        data_files = supermarket_path.glob("data-*.csv")
+        success_file = supermarket_path / "_SUCCESS"
+        return data_files and success_file.exists()
+
+    for supermarket_id in range(1, 5):
+        wait = PythonSensor(
+            task_id=f"wait_for_supermarket_{supermarket_id}",
+            python_callable=_wait_for_supermarket,
+            op_kwargs={"supermarket_id": f"supermarket{supermarket_id}"},
+            dag=dag,
+        )
+        copy = DummyOperator(task_id=f"copy_to_raw_supermarket_{supermarket_id}", dag=dag)
+        process = DummyOperator(task_id=f"process_supermarket_{supermarket_id}", dag=dag)
+        wait >> copy >> process >> create_metrics
+    ```
+
+    </Solution>
+
+37. Change the number of running tasks allowed within a DAG, and configure
+    sensors to release their slots after they have finished poking.
+
+    <Solution>
+
+    ```python fp=dags/dag_ingest_supermarket_data.py hl=6,11
+    dag = DAG(
+        dag_id="ingest_supermarket_data",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="0 16 * * *",
+        default_args={"depends_on_past": True},
+        concurrency=3,
+    )
+
+    for supermarket_id in range(1, 5):
+        wait = PythonSensor(
+            mode="reschedule"
+            ...
+        )
+    ```
+
+    </Solution>
+
+38. Build a DAG which triggers a second DAG.
+
+    <Solution>
+
+    ```python nu fp=dags/dag_trigger_dag.py
+    import airflow.utils.dates
+    from airflow import DAG
+    from airflow.operators.dummy import DummyOperator
+    from airflow.operators.python import PythonOperator
+    from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+
+    dag_1 = DAG(
+        dag_id="dag_1",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="0 0 * * *",
+    )
+    dag_2 = DAG(
+        dag_id="dag_2",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval=None,
+    )
+
+    DummyOperator(task_id="etl", dag=example_1_dag_1) >> TriggerDagRunOperator(
+        task_id="trigger_dag_2",
+        trigger_dag_id="dag_2",
+        dag=dag_1,
+    )
+
+    PythonOperator(
+        task_id="report", dag=dag_2, python_callable=lambda: print("hello")
+    )
+    ```
+
+    </Solution>
+
+39. Build three DAGs which trigger the same DAG.
+
+    <Solution>
+
+    ```python nu fp=dags/dags_trigger_dag.py
+    import airflow.utils.dates
+    from airflow import DAG
+    from airflow.operators.dummy import DummyOperator
+    from airflow.operators.python import PythonOperator
+    from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+
+    dag_1 = DAG(
+        dag_id="figure_6_17_example_2_dag_1",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="0 0 * * *",
+    )
+    dag_2 = DAG(
+        dag_id="figure_6_17_example_2_dag_2",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="0 0 * * *",
+    )
+    dag_3 = DAG(
+        dag_id="figure_6_17_example_2_dag_3",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="0 0 * * *",
+    )
+    dag_4 = DAG(
+        dag_id="figure_6_17_example_2_dag_4",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval=None,
+    )
+
+    for dag in [dag_1, dag_2, dag_3]:
+        DummyOperator(task_id="etl", dag=dag) >> TriggerDagRunOperator(
+            task_id="trigger_dag_4", trigger_dag_id="dag_4", dag=dag
+        )
+
+    PythonOperator(
+        task_id="report", dag=dag_4, python_callable=lambda: print("hello")
+    )
+    ```
+
+    </Solution>
+
+40. Build a DAG which triggers three DAGs.
+
+    <Solution>
+
+    ```python nu fp=dags/dag_trigger_dags.py
+    import airflow.utils.dates
+    from airflow import DAG
+    from airflow.operators.dummy import DummyOperator
+    from airflow.operators.python import PythonOperator
+    from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+
+    dag_1 = DAG(
+        dag_id="dag_1",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="0 0 * * *",
+    )
+    dag_2 = DAG(
+        dag_id="dag_2",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval=None,
+    )
+    dag_3 = DAG(
+        dag_id="dag_3",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval=None,
+    )
+    dag_4 = DAG(
+        dag_id="dag_4",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval=None,
+    )
+
+    DummyOperator(task_id="etl", dag=dag_1) >> [
+        TriggerDagRunOperator(
+            task_id="trigger_dag_2",
+            trigger_dag_id="dag_2",
+            dag=dag_1,
+        ),
+        TriggerDagRunOperator(
+            task_id="trigger_dag_3",
+            trigger_dag_id="dag_3",
+            dag=dag_1,
+        ),
+        TriggerDagRunOperator(
+            task_id="trigger_dag_4",
+            trigger_dag_id="dag_4",
+            dag=dag_1,
+        ),
+    ]
+
+    PythonOperator(
+        task_id="report", dag=dag_2, python_callable=lambda: print("hello")
+    )
+
+    PythonOperator(
+        task_id="report", dag=dag_3, python_callable=lambda: print("hello")
+    )
+
+    PythonOperator(
+        task_id="report", dag=dag_4, python_callable=lambda: print("hello")
+    )
+    ```
+
+    </Solution>
+
+41. Build a DAG which triggers when a task with an ealier execution date
+    succeeds in another DAG.
+
+    <Solution>
+
+    ```python nu fp=dags/dag_execution_delta.py
+    import datetime
+
+    import airflow.utils.dates
+    from airflow import DAG
+    from airflow.operators.dummy import DummyOperator
+    from airflow.operators.python import PythonOperator
+    from airflow.sensors.external_task import ExternalTaskSensor
+
+    dag_1 = DAG(
+        dag_id="dag_1",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="0 0 * * *",
+    )
+    dag_2 = DAG(
+        dag_id="dag_2",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="0 0 * * *",
+    )
+    dag_3 = DAG(
+        dag_id="dag_3",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="0 0 * * *",
+    )
+    dag_4 = DAG(
+        dag_id="dag_4",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="0 3 * * *",
+    )
+
+    DummyOperator(task_id="etl", dag=dag_1)
+    DummyOperator(task_id="etl", dag=dag_2)
+    DummyOperator(task_id="etl", dag=dag_3)
+    [
+        ExternalTaskSensor(
+            task_id="wait_dag_1",
+            external_dag_id="dag_1",
+            external_task_id="etl",
+            execution_delta=datetime.timedelta(hours=3),
+            dag=dag_4,
+        ),
+        ExternalTaskSensor(
+            task_id="wait_dag_2",
+            external_dag_id="dag_2",
+            external_task_id="etl",
+            execution_delta=datetime.timedelta(hours=3),
+            dag=dag_4,
+        ),
+        ExternalTaskSensor(
+            task_id="wait_dag_3",
+            external_dag_id="dag_3",
+            external_task_id="etl",
+            execution_delta=datetime.timedelta(hours=3),
+            dag=dag_4,
+        ),
+    ] >> PythonOperator(task_id="report", dag=dag_4, python_callable=lambda: print("hello"))
+    ```
+
+    </Solution>
+
+42. Build a DAG which triggers when several runs of the same task with prior
+    execution dates succeeds in another DAG.
+
+    <Solution>
+
+    ```python nu fp=dags/dag_execution_date_fn.py
+    import datetime
+
+    import airflow.utils.dates
+    from airflow import DAG
+    from airflow.operators.dummy import DummyOperator
+    from airflow.operators.python import PythonOperator
+    from airflow.sensors.external_task import ExternalTaskSensor
+
+    dag_1 = DAG(
+        dag_id="dag_1",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="0 5,10,15 * * *",
+    )
+    dag_2 = DAG(
+        dag_id="dag_2",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="0 5,10,15 * * *",
+    )
+    dag_3 = DAG(
+        dag_id="dag_3",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="0 5,10,15 * * *",
+    )
+    dag_4 = DAG(
+        dag_id="dag_4",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval="0 20 * * *",
+    )
+
+    def _get_execution_dates_to_query(execution_date):
+        return [
+            execution_date - datetime.timedelta(hours=5),
+            execution_date - datetime.timedelta(hours=10),
+            execution_date - datetime.timedelta(hours=15),
+        ]
+
+    DummyOperator(task_id="etl", dag=dag_1)
+    DummyOperator(task_id="etl", dag=dag_2)
+    DummyOperator(task_id="etl", dag=dag_3)
+    [
+        ExternalTaskSensor(
+            task_id="wait_dag_1",
+            external_dag_id="dag_1",
+            external_task_id="etl",
+            execution_date_fn=_get_execution_dates_to_query,
+            dag=dag_4,
+        ),
+        ExternalTaskSensor(
+            task_id="wait_dag_2",
+            external_dag_id="dag_2",
+            external_task_id="etl",
+            execution_date_fn=_get_execution_dates_to_query,
+            dag=dag_4,
+        ),
+        ExternalTaskSensor(
+            task_id="wait_dag_3",
+            external_dag_id="dag_3",
+            external_task_id="etl",
+            execution_date_fn=_get_execution_dates_to_query,
+            dag=dag_4,
+        ),
+    ] >> PythonOperator(task_id="report", dag=dag_4, python_callable=lambda: print("hello"))
+    ```
+
+    </Solution>
+
+43. Trigger a DAG using the Airflow CLI. The CLI should define additional
+    configuration and the DAG should prints these configuration values.
+
+    <Solution>
+
+    ```python nu fp=dags/dag_print_dag_run_conf.py
+    import airflow.utils.dates
+    from airflow import DAG
+    from airflow.operators.python import PythonOperator
+
+    dag = DAG(
+        dag_id="print_dag_run_conf",
+        start_date=airflow.utils.dates.days_ago(3),
+        schedule_interval=None,
+    )
+
+    def print_conf(**context):
+        print(context["dag_run"].conf)
+
+    process = PythonOperator(
+        task_id="process",
+        python_callable=print_conf,
+        dag=dag,
+    )
+    ```
+
+    ```shell
+    airflow dags trigger -c '{"supermarket_id": 1}' print_dag_run_conf
+    airflow dags trigger --conf '{"supermarket_id": 1}' print_dag_run_conf
+    ```
+
+    </Solution>
+
+44. Using cURL, trigger the DAG using the Airflow REST API.
+
+    <Solution>
+
+    ```shell
+    curl \
+        -u admin:admin \
+        -X POST \
+        "http://localhost:8080/api/v1/dags/print_dag_run_conf/dagRuns" \
+        -H "Content-Type: application/json" \
+        -d '{"conf": {}}'
+
+    curl \
+        -u admin:admin \
+        -X POST \
+        "http://localhost:8080/api/v1/dags/print_dag_run_conf/dagRuns" \
+        -H "Content-Type: application/json" \
+        -d '{"conf": {"supermarket": 1}}'
     ```
 
     </Solution>
